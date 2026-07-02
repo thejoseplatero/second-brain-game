@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Second Brain: The Game</title>
+<title>JOSE OS · Second Brain: The Game</title>
 <!--
   ═══════════════════════════════════════════════════════════════
   SECOND BRAIN · neon-noir pixel version of the talk game (CANONICAL)
@@ -317,7 +317,7 @@ const SCENES = [
     // CRT boot screen
     ctx.fillStyle="rgba(255,255,255,0.02)";
     for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
-    text("JOSE.EXE · SYSTEM DIAGNOSTIC · v44",W/2,60,14,"#7d7a99");
+    text("JOSE OS · BOOT DIAGNOSTIC · v44",W/2,60,14,"#7d7a99");
     // the patient: a worried piece of toast
     drawMap(SPRITES.toast, 160, 170, 14);
     steam(216,170,t,0); steam(256,165,t,0.4);
@@ -342,7 +342,7 @@ const SCENES = [
   }},
 
 /* 1 · TITLE */
-{ world:"START", title:"SECOND BRAIN",
+{ world:"START", title:"JOSE OS",
   caption:[["q","A mostly true story about the world inside my head."],["l","PRESS START"]],
   render(t){
     street(t,410,0);
@@ -352,9 +352,9 @@ const SCENES = [
     steam(320,410,t,0); steam(700,410,t,0.5);
     // title pulses like a neon sign warming up
     ctx.globalAlpha = 0.8+0.2*Math.sin(t/420);
-    neon("SECOND BRAIN", W/2, 210, 54, PINK);
+    neon("JOSE OS", W/2, 212, 64, PINK);
     ctx.globalAlpha = 1;
-    neon("THE GAME", W/2, 258, 24, CYAN);
+    neon("SECOND BRAIN · THE GAME", W/2, 260, 20, CYAN);
     drawMap(SPRITES.joseIdle, W/2-36, 306, S);
     blink(W/2-36, 306, S, t);
     if(Math.floor(t/500)%2===0) neon("PRESS START", W/2, 490, 20, GREEN);
@@ -434,7 +434,7 @@ const SCENES = [
     ctx.beginPath(); ctx.moveTo(340,440); ctx.lineTo(210,232); ctx.stroke();
     for(let i=1;i<5;i++){ const y=440-i*44;
       ctx.beginPath(); ctx.moveTo(210-(y-232)*0.63,y); ctx.lineTo(210+(y-232)*0.63,y); ctx.stroke(); }
-    text("2030",210,330,13,"#7d7a99"); text("2036",210,272,12,"#7d7a99");
+    text("2030",210,330,13,"#7d7a99"); text("2036",210,290,12,"#7d7a99");
     // tiny jose walks the road toward the vision, forever
     const wp=(t/6000)%1;
     const wsc=3.2-wp*1.9, wy=396-wp*140;
@@ -453,15 +453,50 @@ const SCENES = [
     neon("RIGHT NOW",750,96,16,GREEN);
     ctx.fillStyle="#120a26"; ctx.fillRect(586,400,328,40);
     glow("#e8e6f2",6); ctx.fillStyle="#e8e6f2"; ctx.fillRect(730,72,60,4); noglow();
+    // the door: fully closed → swings open → jose bursts in, brain on fire
     box(660,180,110,260,"#160c26","#3d2a5e");
     ctx.fillStyle="#05030c"; ctx.fillRect(668,188,94,252);
-    sign(668,150,94,26,"OPEN",PINK,12,t);
-    if(Math.floor(t/850)%2===0){
+    const dc=(t%2600)/2600;
+    let doorW=94;
+    if(dc<0.30) doorW=94;
+    else if(dc<0.42) doorW=94*(1-(dc-0.30)/0.12);
+    else doorW=0;
+    sign(668,150,94,26, doorW>2?"CLOSED":"OPEN", doorW>2?"#7d7a99":GREEN, 11, t);
+    if(doorW>2){
+      // a proper door: wood panel, trim panels, gold knob, hinged left
+      ctx.fillStyle="#3a2618"; ctx.fillRect(668,188,doorW,252);
+      ctx.strokeStyle="#241708"; ctx.lineWidth=2;
+      ctx.strokeRect(674,198,Math.max(2,doorW-14),96);
+      ctx.strokeRect(674,308,Math.max(2,doorW-14),118);
+      if(doorW>60){ ctx.fillStyle="#ffd75e"; ctx.beginPath();
+        ctx.arc(668+doorW-12,318,4,0,7); ctx.fill(); }
+    }
+    if(dc>=0.42){
+      const et=dc-0.42;
       drawMap(SPRITES.joseIdle,686,300,4.5);
-      glow(CYAN,8); bubbleC(830,240,34,"#f4f2ec"); noglow();
-      text("got a",830,234,11,"#05030c"); text("sec?",830,248,11,"#05030c");
-    } else {
-      ctx.fillStyle="#241436"; ctx.fillRect(668,188,30,252);
+      // brain on fire
+      for(let i=0;i<5;i++){
+        const fx2=696+i*8, fh=6+8*Math.abs(Math.sin(t/90+i*1.3));
+        ctx.fillStyle=["#ff9a4a","#ffd75e","#ff4f6e"][i%3];
+        ctx.fillRect(fx2,296-fh,4,fh);
+      }
+      // burst of bubbles: big, bold, immediate
+      const shout=[
+        ["NOW!",800,214,17,0.00],
+        ["idea!",876,258,13,0.05],
+        ["OMG",790,302,15,0.10],
+        ["opportunity!",848,352,12,0.15],
+        ["outcomes!",788,398,13,0.20],
+      ];
+      shout.forEach(([msg,bx,by,fs,d])=>{
+        if(et>d){
+          const bob=3*Math.sin(t/200+bx);
+          const bw=msg.length*fs*0.62+18;
+          glow(GOLD,6); ctx.fillStyle="#f4f2ec";
+          ctx.fillRect(bx-bw/2,by-fs+bob-6,bw,fs+12); noglow();
+          text(msg,bx,by+bob,fs,"#05030c");
+        }
+      });
     }
     // aligned footer row
     text("think in decades",210,468,11,"#7d7a99");
@@ -687,9 +722,21 @@ const SCENES = [
     for(let i=0;i<12;i++){ const ax=115+(i%4)*32, ay=200+Math.floor(i/4)*60;
       ctx.fillStyle=[GREEN,GOLD,CYAN,PINK][i%4]; ctx.globalAlpha=0.85;
       ctx.fillRect(ax,ay+3*Math.sin(t/260+i*1.7),14,22); ctx.globalAlpha=1; }
-    const push=Math.floor(t/350)%2;
-    ctx.fillStyle=PINK; ctx.fillRect(120,420-(push?4:0),26,10);
-    text("goggins, pushups",168,442,9,"#7d7a99");
+    // goggins: an actual man doing actual pushups
+    const gy = Math.floor(t/380)%2 ? 414 : 424;
+    ctx.fillStyle="#e0aa72";
+    ctx.fillRect(108,gy-8,9,9);                    // head
+    ctx.fillRect(117,gy,34,8);                     // torso
+    ctx.fillRect(120,gy+8,4,440-(gy+8));           // near arm
+    ctx.fillRect(140,gy+8,4,440-(gy+8));           // far arm
+    ctx.fillRect(169,gy+2,10,5);                   // lower legs
+    ctx.fillStyle="#2b3040"; ctx.fillRect(151,gy+1,18,7);  // shorts
+    ctx.fillStyle="#1c1f29"; ctx.fillRect(176,gy+3,6,6);   // shoes
+    if(Math.floor(t/1700)%2===0){
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(118,366,90,20);
+      ctx.beginPath(); ctx.moveTo(128,386); ctx.lineTo(122,398); ctx.lineTo(140,386); ctx.closePath(); ctx.fill();
+      text("STAY HARD.",163,380,10,"#05030c");
+    }
     // hat room ajar: six hats on pedestals
     ctx.fillStyle="#07040f"; ctx.fillRect(316,156,148,293);
     const hatCols=["#f4f2ec","#ff4f6e","#5c6378","#ffd75e","#00ff88","#3f8cff"];
@@ -699,6 +746,39 @@ const SCENES = [
       ctx.fillStyle=hc; ctx.beginPath(); ctx.arc(hx,hy+8,12,Math.PI,0); ctx.fill();
       ctx.fillRect(hx-16,hy+6,32,4);
     });
+    // dossiers ajar: filing cabinets of people, one file pulled for reading
+    ctx.fillStyle="#07040f"; ctx.fillRect(536,156,148,293);
+    [552,620].forEach((cx2,ci)=>{
+      ctx.fillStyle="#1c2130"; ctx.fillRect(cx2,236,52,168);
+      for(let d2=0;d2<4;d2++){
+        const dy3=242+d2*40;
+        ctx.strokeStyle="#3d4457"; ctx.lineWidth=1.5; ctx.strokeRect(cx2+4,dy3,44,32);
+        ctx.fillStyle=["#e0aa72","#c98f5e","#9a6a44","#e8c48a"][(ci+d2)%4];
+        ctx.fillRect(cx2+9,dy3+6,10,10);
+        ctx.fillStyle="#14110e";
+        ctx.fillRect(cx2+11,dy3+9,2,2); ctx.fillRect(cx2+15,dy3+9,2,2);
+        ctx.fillStyle="#8a92b8"; ctx.fillRect(cx2+26,dy3+13,16,3);
+      }
+    });
+    const fb=4*Math.sin(t/400);
+    glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(596,186+fb,26,34); noglow();
+    ctx.fillStyle="#0d0820"; ctx.fillRect(600,192+fb,18,2);
+    ctx.fillRect(600,198+fb,18,2); ctx.fillRect(600,204+fb,12,2);
+    // broadcast ajar: mic, ON AIR, content flying out the door
+    ctx.fillStyle="#07040f"; ctx.fillRect(756,156,148,293);
+    sign(776,176,108,24,"ON AIR",PINK,11,t);
+    ctx.fillStyle="#3d4457"; ctx.fillRect(824,320,6,58);
+    ctx.fillRect(806,378,42,6);
+    glow(CYAN,8); ctx.fillStyle="#8ee3ff";
+    ctx.beginPath(); ctx.arc(827,308,14,0,7); ctx.fill(); noglow();
+    ctx.fillStyle="#1c2130";
+    for(let g2=0;g2<3;g2++) ctx.fillRect(816,302+g2*5,22,2);
+    for(let i2=0;i2<3;i2++){
+      const pp=((t/1500)+i2*0.33)%1;
+      ctx.globalAlpha=1-pp;
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(792-pp*70, 252-pp*44+i2*26, 14,18);
+      ctx.globalAlpha=1;
+    }
     drawMap(SPRITES.joseIdle,700,355,S);
     blink(700,355,S,t);
     glow(CYAN,10); drawMap(SPRITES.orb,800,340+6*Math.sin(t/300),4); noglow();
