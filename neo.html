@@ -5,13 +5,13 @@
 <title>Second Brain: The Game</title>
 <!--
   ═══════════════════════════════════════════════════════════════
-  SECOND BRAIN — neon-noir pixel version of the talk game
-  Same story, same scenes, same copy as v1. Rain, neon, wet streets.
+  SECOND BRAIN · neon-noir pixel version of the talk game (CANONICAL)
+  Rain, neon, wet streets. The Last Night / Katana ZERO energy.
   ═══════════════════════════════════════════════════════════════
   HOW TO TWEAK:
-    1. CONFIG  — URLs, names. Right below.
-    2. SCENES  — every caption string. Search "const SCENES".
-    3. SPRITES — pixel maps, edit like ASCII art. Legend in PALETTE.
+    1. CONFIG  · URLs, names. Right below.
+    2. SCENES  · every caption string. Search "const SCENES".
+    3. SPRITES · pixel maps, edit like ASCII art. Legend in PALETTE.
   CONTROLS: click / space / → next. ← back. F fullscreen. 1-7 world jumps.
   QR PNGs: qr-starter.png, qr-substack.png, qr-linkedin.png (same folder).
   ═══════════════════════════════════════════════════════════════
@@ -175,6 +175,10 @@ function drawMap(map,x,y,sc,tint){
   }
 }
 function walker(x,y,sc,t){ drawMap(Math.floor(t/180)%2 ? SPRITES.joseWalkA : SPRITES.joseWalkB, x, y, sc); }
+function blink(x,y,sc,t){ // idle jose blinks every ~3.4s
+  if((t%3400)<140){ ctx.fillStyle=PALETTE.s;
+    ctx.fillRect(x+4*sc,y+3*sc,sc,sc); ctx.fillRect(x+8*sc,y+3*sc,sc,sc); }
+}
 function text(str,x,y,size,col,align="center",font="bold"){
   ctx.fillStyle=col; ctx.font=`${font} ${size}px 'Courier New',monospace`;
   ctx.textAlign=align; ctx.fillText(str,x,y);
@@ -183,7 +187,6 @@ function glow(col,blur){ ctx.shadowColor=col; ctx.shadowBlur=blur; }
 function noglow(){ ctx.shadowBlur=0; }
 function neon(str,x,y,size,col,align="center"){ glow(col,16); text(str,x,y,size,col,align); noglow(); }
 function sign(x,y,w,h,txt,col,size,t){
-  // neon shop sign with occasional flicker
   const fl = (t!==undefined && Math.floor(t/90)%41===0) ? 0.3 : 1;
   ctx.globalAlpha = fl;
   ctx.fillStyle="rgba(5,3,12,0.88)"; ctx.fillRect(x,y,w,h);
@@ -203,7 +206,6 @@ function meterBar(x,y,w,pct,label){
   glow(col,8); ctx.fillStyle=col; ctx.fillRect(x+2,y+2,(w-4)*Math.max(0,Math.min(1,pct)),12); noglow();
   text(label, x+w/2, y-6, 11, "#7d7a99");
 }
-// detailed parallax skyline: aligned window grids, antennas, rooftop boxes
 function skyline(t,floorY,scroll){
   const layers=[{c:"#0a0618",per:210,hmin:130,winA:0.45,speed:1},
                 {c:"#140b2a",per:150,hmin:70, winA:0.85,speed:1.9}];
@@ -215,13 +217,11 @@ function skyline(t,floorY,scroll){
       const hgt = L.hmin+((seed*97)%110);
       const x = i*L.per-off, y = floorY-hgt;
       ctx.fillStyle=L.c; ctx.fillRect(x,y,bw,hgt);
-      // rooftop details
       if(seed%3===0){ ctx.fillStyle=L.c; ctx.fillRect(x+bw/2-2,y-24,4,24);
         if(Math.floor(t/650+i)%2===0){ glow("#ff4455",6); ctx.fillStyle="#ff4455";
           ctx.fillRect(x+bw/2-3,y-29,6,5); noglow(); } }
       if(seed%4===1){ ctx.fillStyle=L.c; ctx.fillRect(x+8,y-11,20,11); }
       if(seed%5===2){ ctx.fillStyle=L.c; ctx.fillRect(x+bw-26,y-8,16,8); }
-      // aligned window grid
       const rows=Math.floor((hgt-14)/16), cols=Math.floor((bw-10)/14);
       for(let r=0;r<rows;r++) for(let c2=0;c2<cols;c2++){
         const wx=x+6+c2*14, wy=y+8+r*16;
@@ -245,7 +245,6 @@ function wet(y,h){
   g.addColorStop(0,"rgba(255,46,136,0.12)"); g.addColorStop(0.5,"rgba(0,229,255,0.07)"); g.addColorStop(1,"rgba(0,0,0,0)");
   ctx.fillStyle=g; ctx.fillRect(0,y,W,h);
 }
-// rising steam from street vents
 function steam(x,baseY,t,seedO){
   for(let i=0;i<4;i++){
     const p=((t/1800)+i*0.25+(seedO||0))%1;
@@ -254,7 +253,6 @@ function steam(x,baseY,t,seedO){
     ctx.beginPath(); ctx.arc(x+6*Math.sin(p*6+i),yy,r,0,7); ctx.fill();
   }
 }
-// passing car with glowing lights
 function car(t,y,dir,speed,offset){
   let x=((t*(speed||0.35)+(offset||0))%(W+280))-140;
   if(dir<0) x = W-x;
@@ -272,6 +270,14 @@ function street(t,floorY,scroll){
   ctx.fillStyle="#0a0714"; ctx.fillRect(0,floorY+2,W,H-floorY);
   wet(floorY+2, Math.min(90,H-floorY));
 }
+function clockFace(cx,cy,r,t){
+  ctx.fillStyle="#0d0820"; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+  ctx.strokeStyle="#7d7a99"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  const a=t/600;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.72*Math.cos(a),cy+r*0.72*Math.sin(a)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.45*Math.cos(a/12),cy+r*0.45*Math.sin(a/12)); ctx.stroke();
+}
 const qrImgs={};
 for(const k in CONFIG.qrFiles){ const im=new Image(); im.src=CONFIG.qrFiles[k]; qrImgs[k]=im; }
 function drawQR(key,x,y,size,url,col){
@@ -288,10 +294,11 @@ function drawQR(key,x,y,size,url,col){
   neon(url, x+size/2, y+size+30, 13, col||PINK);
 }
 
-/* ═══════════ SCENES — same story as v1, neon-noir world ═══════════ */
+/* ═══════════ SCENES ═══════════ */
 const S = 6;
 const SCENES = [
 
+/* 0 · TITLE */
 { world:"START", title:"SECOND BRAIN",
   caption:[["q","A mostly true story about the world inside my head."],["l","PRESS START"]],
   render(t){
@@ -300,15 +307,19 @@ const SCENES = [
     sign(70,90,150,50,"OPEN 24HRS",CYAN,14,t);
     sign(750,130,150,46,"IDEAS",PINK,16,t);
     steam(320,410,t,0); steam(700,410,t,0.5);
+    // title pulses like a neon sign warming up
+    ctx.globalAlpha = 0.8+0.2*Math.sin(t/420);
     neon("SECOND BRAIN", W/2, 210, 54, PINK);
+    ctx.globalAlpha = 1;
     neon("THE GAME", W/2, 258, 24, CYAN);
     drawMap(SPRITES.joseIdle, W/2-36, 306, S);
+    blink(W/2-36, 306, S, t);
     if(Math.floor(t/500)%2===0) neon("PRESS START", W/2, 490, 20, GREEN);
     text("a talk by "+CONFIG.speaker, W/2, 520, 13, "#7d7a99");
     rain(t);
   }},
 
-/* ── WORLD 1 ── */
+/* 1 · THE HUNDRED PLACES */
 { world:"WORLD 1", title:"The Hundred Places",
   caption:[
     ["q","“How many of you have had a great idea in the shower and lost it by noon?”"],
@@ -317,7 +328,7 @@ const SCENES = [
   render(t){
     box(80,60,800,380,"#0d0820","#2a1a44");
     sign(110,80,170,44,"IDEA FACTORY",PINK,13,t);
-    // window with living city: rain + a blinking rooftop light
+    // window with living city
     box(700,90,150,150,"#05030c","#2a1a44");
     ctx.save(); ctx.beginPath(); ctx.rect(700,90,150,150); ctx.clip();
     skyline(t,240,0);
@@ -326,70 +337,96 @@ const SCENES = [
       ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-4,y+9); ctx.stroke(); }
     ctx.restore();
     ctx.strokeStyle="#2a1a44"; ctx.strokeRect(700,90,150,150);
-    // desk with a glowing screen jose is ignoring
+    // desk with a glowing screen whose todo list keeps growing
     box(150,380,180,60,"#160c26","#2a1a44");
     glow(CYAN,8); box(180,330,90,50,"#0a1420",CYAN); noglow();
-    text("todo: 47",225,358,11,CYAN);
+    text("todo: "+(47+Math.floor(t/5000)),225,358,11,CYAN);
     drawMap(SPRITES.joseIdle, W/2-36, 340, S);
+    blink(W/2-36, 340, S, t);
+    // thought bubbles about actual things, not just circles
+    const topics=["ux","$","ai","","?","team","","ship",""];
     for(let i=0;i<9;i++){
       const bx=150+((i*97)%660), phase=(t/900+i*0.7);
       const by=140+40*Math.sin(phase)+(i%3)*50;
       const col = i===4 ? GOLD : "#3d2a5e";
       if(i===4) glow(GOLD,10);
       bubbleC(bx,by,16+(i%3)*5,col); noglow();
+      if(topics[i] && i!==4) text(topics[i],bx,by+4,10,"#7d7a99");
     }
+    // the golden one escapes and pops with a burst
     const gx=480+(t/12)%520;
     if(gx<940){ glow(GOLD,12); bubbleC(gx,105,22,GOLD,"!"); noglow(); }
-    else neon("POP",900,110,16,PINK);
+    else{
+      neon("POP",900,110,16,PINK);
+      ctx.strokeStyle=GOLD; ctx.lineWidth=2;
+      for(let i=0;i<4;i++){ const a=i*1.57+0.78;
+        ctx.beginPath(); ctx.moveTo(900+10*Math.cos(a),105+10*Math.sin(a));
+        ctx.lineTo(900+18*Math.cos(a),105+18*Math.sin(a)); ctx.stroke(); }
+    }
   }},
 
+/* 2 · THE PARADOX */
 { world:"WORLD 1", title:"The Paradox",
   caption:[
     ["q","“I think in decades. Then I think: what's the quickest thing I can do today?”"],
     ["l","Ten-year vision. Five-minute action."],
     ["l","The middle? Doesn't exist."]],
   render(t){
-    // LEFT: the decade — synthwave horizon
+    /* three panels, one aligned grid: headers y96 · content · footers y468 */
+    // LEFT · THE DECADE
     box(40,60,340,380,"#0d0820","#2a1a44");
-    neon("THE DECADE",210,95,18,GOLD);
+    neon("THE DECADE",210,96,16,GOLD);
+    // twinkling stars
+    for(let i=0;i<8;i++){ const sx=70+(i*41)%290, sy2=112+(i*29)%56;
+      ctx.globalAlpha=0.35+0.4*Math.sin(t/500+i*2); ctx.fillStyle="#e8e6f2";
+      ctx.fillRect(sx,sy2,2,2); ctx.globalAlpha=1; }
+    // synthwave sun
     glow(PINK,20); ctx.fillStyle=PINK;
     ctx.beginPath(); ctx.arc(210,230,52,Math.PI,0); ctx.fill(); noglow();
     ctx.fillStyle="#0d0820";
     for(let i=0;i<4;i++) ctx.fillRect(150,196+i*12,120,5);
+    // grid road to the horizon
     ctx.strokeStyle="rgba(0,229,255,0.5)"; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(80,440); ctx.lineTo(210,232); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(340,440); ctx.lineTo(210,232); ctx.stroke();
     for(let i=1;i<5;i++){ const y=440-i*44;
       ctx.beginPath(); ctx.moveTo(210-(y-232)*0.63,y); ctx.lineTo(210+(y-232)*0.63,y); ctx.stroke(); }
     text("2030",210,330,13,"#7d7a99"); text("2036",210,272,12,"#7d7a99");
-    neon("the vision",210,140,11,CYAN);
-    // MIDDLE: the void
+    // tiny jose walks the road toward the vision, forever
+    const wp=(t/6000)%1;
+    const wsc=3.2-wp*1.9, wy=396-wp*140;
+    drawMap(SPRITES.joseWalkA, 210-6*wsc, wy, wsc);
+    neon("the vision",210,126,11,CYAN);
+    // MIDDLE · THE VOID
     box(400,60,160,380,"#050310","#1c1030");
-    text("NEXT MONTH",480,95,12,"#7d7a99");
-    text("?",480,260+6*Math.sin(t/500),46,"#2a1a44");
-    text("(nothing here)",480,420,11,"#2a1a44");
-    // RIGHT: right now — the door pop, with a hallway behind
+    neon("NEXT MONTH",480,96,16,"#6a5f8f");
+    // dust drifting in the emptiness
+    for(let i=0;i<5;i++){ const dy2=(t/30+i*77)%340;
+      ctx.fillStyle="rgba(125,122,153,0.25)"; ctx.fillRect(420+(i*31)%120, 80+dy2, 2,2); }
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/600);
+    text("?",480,262,46,"#2a1a44"); ctx.globalAlpha=1;
+    // RIGHT · RIGHT NOW
     box(580,60,340,380,"#0d0820","#2a1a44");
-    neon("RIGHT NOW",750,95,18,GREEN);
-    // hallway floor + ceiling light
+    neon("RIGHT NOW",750,96,16,GREEN);
     ctx.fillStyle="#120a26"; ctx.fillRect(586,400,328,40);
     glow("#e8e6f2",6); ctx.fillStyle="#e8e6f2"; ctx.fillRect(730,72,60,4); noglow();
     box(660,180,110,260,"#160c26","#3d2a5e");
     ctx.fillStyle="#05030c"; ctx.fillRect(668,188,94,252);
     sign(668,150,94,26,"OPEN",PINK,12,t);
-    const popped = Math.floor(t/850)%2===0;
-    if(popped){
+    if(Math.floor(t/850)%2===0){
       drawMap(SPRITES.joseIdle,686,300,4.5);
       glow(CYAN,8); bubbleC(830,240,34,"#f4f2ec"); noglow();
       text("got a",830,234,11,"#05030c"); text("sec?",830,248,11,"#05030c");
     } else {
-      // door swings shut
       ctx.fillStyle="#241436"; ctx.fillRect(668,188,30,252);
     }
-    text("*door pop*",715,470,12,"#7d7a99");
+    // aligned footer row
+    text("think in decades",210,468,11,"#7d7a99");
+    text("(nothing here)",480,468,11,"#4a4066");
+    text("*door pop*",750,468,11,"#7d7a99");
   }},
 
-/* ── WORLD 2 ── */
+/* 3 · THE MEETING GAUNTLET */
 { world:"WORLD 2", title:"The Meeting Gauntlet",
   caption:[
     ["q","“Every meeting, I'm running two programs: the conversation, and the translation.”"],
@@ -397,6 +434,7 @@ const SCENES = [
   render(t){
     skyline(t,330,0);
     neon("MEETINGS. ALL. DAY.", W/2, 56, 16, PINK);
+    clockFace(60,84,16,t);
     const pipeX = i => 100 + i*220;
     const groundY = 228;
     const T = 3200, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
@@ -407,23 +445,18 @@ const SCENES = [
     else if(f<0.72){ inRoom=true; jx=pipeX(seg)+10; jy=400; }
     else if(f<0.87){ jx=pipeX(seg)+8; jy=groundY+(1-((f-0.72)/0.15))*172; }
     else { jx=pipeX(seg)+8; jy=groundY; }
-    // surface + earth
     ctx.strokeStyle="#241436"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(0,330); ctx.lineTo(W,330); ctx.stroke();
     ctx.fillStyle="#0e0818"; ctx.fillRect(0,332,W,208);
     steam(60,330,t,0.2); steam(920,330,t,0.7);
-    // meeting rooms — cold fluorescent light, table, two attendees
     for(let i=0;i<4;i++){
       const x=pipeX(i)-40;
       box(x,360,170,140,"#101828","#2a3a58");
-      // ceiling light bar
       glow("#bcd8ff",6); ctx.fillStyle="#bcd8ff"; ctx.fillRect(x+55,364,60,3); noglow();
       ctx.fillStyle="rgba(160,200,255,0.05)"; ctx.fillRect(x+30,367,110,80);
       text("MTG "+(i+1),x+36,384,10,"#5a7a9e");
-      // table + laptops
       ctx.fillStyle="#243248"; ctx.fillRect(x+34,452,106,14);
       ctx.fillStyle="#3d5878"; ctx.fillRect(x+48,444,14,8); ctx.fillRect(x+106,444,14,8);
-      // two attendees, one nodding
       const nod = Math.floor((t/420)+i)%2 ? 2 : 0;
       ctx.fillStyle="#3d5878"; ctx.fillRect(x+126,410,20,42);
       ctx.fillStyle="#7d9ac2"; ctx.fillRect(x+129,396+nod,14,14);
@@ -431,17 +464,16 @@ const SCENES = [
       ctx.fillStyle="#6e88ab"; ctx.fillRect(x+20,400,14,14);
     }
     if(walking) walker(jx,jy,S,t); else drawMap(SPRITES.joseWalkA,jx,jy,inRoom?5:S);
-    // chat bubble from the attendee, drawn AFTER jose so it stays visible
     if(inRoom){
       const rx=pipeX(seg)-40;
-      const msg = Math.floor(t/450)%2===0 ? "blah blah blah" : "circling back...";
+      const msgs=["blah blah blah","circling back...","any blockers?"];
+      const msg=msgs[Math.floor(t/450)%3];
       const bx=rx+112, by=374;
       ctx.fillStyle="#f4f2ec";
       ctx.fillRect(bx-54,by-15,108,24);
       ctx.beginPath(); ctx.moveTo(bx+20,by+9); ctx.lineTo(bx+28,by+21); ctx.lineTo(bx+32,by+9); ctx.closePath(); ctx.fill();
       text(msg,bx,by+2,10,"#05030c");
     }
-    // neon pipes over him
     for(let i=0;i<4;i++){
       const x=pipeX(i);
       ctx.fillStyle="#0d3524"; ctx.fillRect(x,264,88,66);
@@ -455,6 +487,7 @@ const SCENES = [
     rain(t);
   }},
 
+/* 4 · THE TRANSLATION GAP */
 { world:"WORLD 2", title:"The Translation Gap",
   caption:[
     ["q","“You clearly see the opportunity. But the moment you pitch it, people think you're a space cadet.”"],
@@ -462,16 +495,22 @@ const SCENES = [
   render(t){
     street(t,440,0);
     car(t,436,-1,0.22,300);
-    // crosswalk stripes
     ctx.fillStyle="rgba(232,230,242,0.10)";
     for(let i=0;i<6;i++) ctx.fillRect(70+i*50,452,28,60);
     steam(120,440,t,0.4);
-    // the gap — hazard glow
     ctx.fillStyle="#05030c"; ctx.fillRect(400,436,180,104);
     glow(PINK,14); ctx.strokeStyle=PINK; ctx.lineWidth=2; ctx.strokeRect(400,436,180,104); noglow();
     neon("THE GAP",490,500,13,PINK);
+    // ghost bridge flickers across the gap, then vanishes (world 3 foreshadow)
+    const bp=(t%4200)/4200;
+    if(bp>0.68){
+      const a=Math.max(0,0.5*(1-Math.abs(bp-0.84)/0.16));
+      ctx.setLineDash([6,6]); ctx.strokeStyle=`rgba(0,229,255,${a})`; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(400,436); ctx.lineTo(580,436); ctx.stroke(); ctx.setLineDash([]);
+      if(bp>0.78) text("bridge not found",490,424,10,`rgba(0,229,255,${a+0.2})`);
+    }
     drawMap(SPRITES.joseIdle,200,340,S);
-    // glowing blueprint — lines draw themselves in
+    blink(200,340,S,t);
     const prog = Math.min(1, t/1600);
     glow(CYAN,12); ctx.strokeStyle=CYAN; ctx.lineWidth=2;
     ctx.strokeRect(150,180,180*Math.min(1,prog*1.4),110);
@@ -480,7 +519,6 @@ const SCENES = [
     noglow();
     neon("THE SYSTEM (fully formed)",240,168,12,CYAN);
     drawMap(SPRITES.joseIdle,700,340,S,"#4a4066");
-    // their scribble wobbles
     ctx.strokeStyle="#7d7a99"; ctx.beginPath();
     for(let i=0;i<40;i++){ const a=i/6;
       ctx.lineTo(760+30*Math.cos(a*3+t/900)+i,220+26*Math.sin(a*5+t/700)); }
@@ -491,28 +529,42 @@ const SCENES = [
     rain(t);
   }},
 
+/* 5 · GAME OVER? */
 { world:"WORLD 2", title:"Game Over?",
   caption:[
     ["q","“I stopped trying to fix my brain. I built it a second one.”"]],
   render(t){
-    if(t<1600){ if(Math.floor(t/240)%2===0) neon("GAME OVER?",W/2,250,64,PINK); }
-    else{
-      if(t<2100 && Math.floor(t/70)%2===0) text("GAME OVER?",W/2+(t%13)-6,250,64,"#2a1a44");
+    // CRT scanlines
+    ctx.fillStyle="rgba(255,255,255,0.025)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    if(t<1900){
+      if(Math.floor(t/240)%2===0) neon("GAME OVER?",W/2,240,64,PINK);
+      const n=Math.max(0,9-Math.floor(t/200));
+      text("CONTINUE? "+n,W/2,320,18,"#7d7a99");
+      text("(same brain, same settings)",W/2,352,12,"#4a4066");
+    } else {
+      if(t<2400 && Math.floor(t/70)%2===0) text("GAME OVER?",W/2+(t%13)-6,240,64,"#2a1a44");
       text("I stopped trying to fix my brain.",W/2,330,26,"#e8e6f2");
       neon("I built it a second one.",W/2,375,30,GREEN);
     }
   }},
 
+/* 6 · WORLD 3 TITLE CARD */
 { world:"", title:"",
   caption:[],
   render(t){
     skyline(t,420,0);
-    text("WORLD 3",W/2,210,24,"#7d7a99");
-    neon("THE SECOND BRAIN",W/2,280,52,GOLD);
+    text("WORLD 3",W/2,190,24,"#7d7a99");
+    neon("THE SECOND BRAIN",W/2,260,52,GOLD);
+    // install bar
+    const lp=Math.min(1,t/1600);
+    box(330,310,300,14,"#0d0820","#2a1a44");
+    glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(332,312,296*lp,10); noglow();
+    text(lp<1 ? "installing a better system..." : "ready.",W/2,352,12,"#7d7a99");
     rain(t);
   }},
 
-/* ── WORLD 3 ── */
+/* 7 · THE ROOMS */
 { world:"WORLD 3", title:"The Rooms",
   caption:[
     ["q","“It's embarrassingly simple. Flat folders. Markdown files.”"],
@@ -522,35 +574,38 @@ const SCENES = [
   render(t){
     street(t,470,0);
     steam(500,470,t,0.1);
-    const rooms=[["inbox/",PINK],["notes/",CYAN],["daily/",GOLD],
-                 ["projects/",GREEN],["people/",PINK],["transcripts/",CYAN]];
+    const rooms=[["inbox/",PINK,"✉"],["notes/",CYAN,"◆"],["daily/",GOLD,"▤"],
+                 ["projects/",GREEN,"⚑"],["people/",PINK,"☺"],["transcripts/",CYAN,"♪"]];
     rooms.forEach((r,i)=>{
       const x=110+(i%3)*260, y=100+Math.floor(i/3)*150;
       sign(x,y,220,86,r[0],r[1],20,t+i*997);
-      // doorway under each sign
+      neon(r[2], x+30, y+52, 18, r[1]);
       ctx.fillStyle="#0a0714"; ctx.fillRect(x+80,y+86,60,470-y-86);
     });
-    walker(W/2-36, 385, 5, t);
+    // jose patrols his own street
+    const px3=100+((t/9)%660);
+    walker(px3, 385, 5, t);
     rain(t);
   }},
 
+/* 8 · THE POWER-UP */
 { world:"WORLD 3", title:"The Power-Up",
   caption:[
     ["q","“One file changes everything. CLAUDE.md programs how the AI behaves inside my world.”"],
     ["l","It's the difference between a chatbot and a collaborator who knows the whole system."]],
   render(t){
-    // dark alley with wet ground and a dumpster
     box(0,0,W,540,"#07040f");
     box(60,60,120,380,"#0d0820"); box(780,60,120,380,"#0d0820");
-    // fire escape hint on the left wall
     ctx.strokeStyle="#1c1030"; ctx.lineWidth=2;
     for(let i=0;i<4;i++){ ctx.strokeRect(70,90+i*90,100,4); }
     ctx.fillStyle="#120a26"; ctx.fillRect(180,60,4,380); ctx.fillRect(776,60,4,380);
+    sign(430,80,80,32,"24H",PINK,13,t);
     ctx.strokeStyle="#241436"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(0,442); ctx.lineTo(W,442); ctx.stroke();
     wet(444,80);
     steam(250,442,t,0.3);
     drawMap(SPRITES.joseIdle,300,340,S);
+    blink(300,340,S,t);
     const fy=180+12*Math.sin(t/400);
     glow(GOLD,20); box(560,fy,150,90,"#160c26",GOLD);
     neon("CLAUDE.md",635,fy+40,16,GOLD);
@@ -558,10 +613,16 @@ const SCENES = [
     ctx.strokeStyle="rgba(255,215,94,0.35)"; ctx.lineWidth=2;
     for(let i=0;i<6;i++){ const a=i*1.05+t/900;
       ctx.beginPath(); ctx.moveTo(635,fy+45); ctx.lineTo(635+90*Math.cos(a),fy+45+90*Math.sin(a)); ctx.stroke(); }
+    // orbiting sparkles
+    for(let i=0;i<5;i++){ const a=t/500+i*1.26, r2=62+10*Math.sin(t/300+i);
+      ctx.globalAlpha=0.5+0.5*Math.sin(t/200+i); ctx.fillStyle=GOLD;
+      ctx.fillRect(635+r2*Math.cos(a),fy+45+r2*Math.sin(a),3,3); ctx.globalAlpha=1; }
     if(t>1200){ glow(CYAN,14); drawMap(SPRITES.orb,420,320+6*Math.sin(t/300),5); noglow();
       neon("+ COLLABORATOR JOINED",480,300,13,CYAN); }
+    if(t>2400) neon("context loaded ✓",480,272,12,GREEN);
   }},
 
+/* 9 · THE DOORS */
 { world:"WORLD 3", title:"The Doors (Skills)",
   caption:[
     ["q","“Each door is just a markdown file. That's the part nobody believes.”"],
@@ -578,7 +639,7 @@ const SCENES = [
       sign(x+10,116,140,28,d[0],d[2],12,t+i*1373);
       text(d[1],x+80,480,11,"#7d7a99");
     });
-    // council door open — advisors mid-debate (they bob)
+    // council door open: advisors mid-debate
     ctx.fillStyle="#07040f"; ctx.fillRect(96,156,148,293);
     for(let i=0;i<12;i++){ const ax=115+(i%4)*32, ay=200+Math.floor(i/4)*60;
       ctx.fillStyle=[GREEN,GOLD,CYAN,PINK][i%4]; ctx.globalAlpha=0.85;
@@ -586,23 +647,46 @@ const SCENES = [
     const push=Math.floor(t/350)%2;
     ctx.fillStyle=PINK; ctx.fillRect(120,420-(push?4:0),26,10);
     text("goggins, pushups",168,442,9,"#7d7a99");
+    // hat room ajar: six hats on pedestals
+    ctx.fillStyle="#07040f"; ctx.fillRect(316,156,148,293);
+    const hatCols=["#f4f2ec","#ff4f6e","#5c6378","#ffd75e","#00ff88","#3f8cff"];
+    hatCols.forEach((hc,i)=>{
+      const hx=352+(i%2)*72, hy=216+Math.floor(i/2)*84;
+      ctx.fillStyle="#160c26"; ctx.fillRect(hx-16,hy+12,32,8);
+      ctx.fillStyle=hc; ctx.beginPath(); ctx.arc(hx,hy+8,12,Math.PI,0); ctx.fill();
+      ctx.fillRect(hx-16,hy+6,32,4);
+    });
     drawMap(SPRITES.joseIdle,700,355,S);
+    blink(700,355,S,t);
     glow(CYAN,10); drawMap(SPRITES.orb,800,340+6*Math.sin(t/300),4); noglow();
     rain(t);
   }},
 
+/* 10 · BOSS FIGHT (LIVE DEMO) */
 { world:"LIVE", title:"Boss Fight",
   caption:[
     ["q","“That was the cartoon. Here's the actual thing, running. Give me a real problem.”"]],
   render(t){
     skyline(t,470,0);
-    neon("▶ LIVE DEMO",W/2,240,54,GREEN);
-    neon("BOSS FIGHT: your problem vs. the council",W/2,300,18,CYAN);
-    if(Math.floor(t/500)%2===0) text("EXIT GAME → ENTER REAL WORLD",W/2,360,14,"#7d7a99");
+    neon("▶ LIVE DEMO",W/2,80,34,GREEN);
+    // versus layout
+    drawMap(SPRITES.joseIdle,170,200,6);
+    blink(170,200,6,t);
+    glow(CYAN,10); drawMap(SPRITES.orb,290,230+6*Math.sin(t/300),4); noglow();
+    if(Math.floor(t/400)%2===0) neon("VS",W/2,280,46,GOLD);
+    ctx.fillStyle="#0a0d20"; ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.fill();
+    glow(PINK,10); ctx.strokeStyle=PINK; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.stroke(); noglow();
+    text("?",720,288,48,"#7d7a99");
+    sign(110,410,200,34,"JOSE + CLAUDE",CYAN,12,t);
+    sign(620,410,200,34,"YOUR PROBLEM",PINK,12,t);
+    meterBar(110,390,200,1,"");
+    meterBar(620,390,200,1,"");
+    if(Math.floor(t/500)%2===0) text("EXIT GAME → ENTER REAL WORLD",W/2,510,14,"#7d7a99");
     rain(t);
   }},
 
-/* ── WORLD 4 ── */
+/* 11 · THE MATRIX MORNING */
 { world:"WORLD 4", title:"The Matrix Morning",
   caption:[
     ["q","“Five agents run before I wake up.”"],
@@ -613,20 +697,23 @@ const SCENES = [
     box(90,80,200,150,"#05030c","#2a1a44");
     ctx.save(); ctx.beginPath(); ctx.rect(90,80,200,150); ctx.clip();
     skyline(t,230,0);
-    // pre-dawn glow
     const g=ctx.createLinearGradient(0,80,0,230);
     g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(255,120,60,0.10)");
     ctx.fillStyle=g; ctx.fillRect(90,80,200,150);
     ctx.restore(); ctx.strokeStyle="#2a1a44"; ctx.strokeRect(90,80,200,150);
-    text("6:55 AM",190,68,14,"#7d7a99");
+    // the clock ticks toward the alarm
+    const min=Math.min(60,55+Math.floor(t/900));
+    text(min>=60 ? "7:00 AM" : "6:"+min+" AM",190,68,14,min>=60?GOLD:"#7d7a99");
     box(90,330,240,100,"#0d0820","#2a1a44");
     drawMap(SPRITES.joseSleep,130,350,5);
-    text("z".repeat(1+Math.floor(t/600)%3),300,320,20,"#7d7a99");
+    if(min<60) text("z".repeat(1+Math.floor(t/600)%3),300,320,20,"#7d7a99");
+    else neon("!",300,320,20,GOLD);
     const props=["news","charts","vendors","macro","scan"];
     for(let i=0;i<5;i++){ const ax=480+i*90, ay=170+8*Math.sin(t/250+i);
       glow([GREEN,GOLD,CYAN,PINK,"#c98fff"][i],8);
       drawMap(SPRITES.agent,ax,ay,5,[GREEN,GOLD,CYAN,PINK,"#c98fff"][i]); noglow();
       text(props[i],ax+15,ay+55,10,"#7d7a99");
+      if(t>1200+i*550) neon("✓",ax+15,ay-14,12,GREEN);
       const fx=ax+15-((t/6+i*40)%200);
       ctx.fillStyle="#e8e6f2"; ctx.fillRect(Math.max(fx,380),ay+10,10,12);
     }
@@ -636,6 +723,7 @@ const SCENES = [
       sign(660,330,140,70,"🎧 PODCAST",CYAN,13,t); }
   }},
 
+/* 12 · I KNOW KUNG FU */
 { world:"WORLD 4", title:"I Know Kung Fu",
   caption:[
     ["q","“So I can absorb it on the bike without getting hit by a car.”"],
@@ -651,22 +739,17 @@ const SCENES = [
       ctx.fillStyle="#1c1030"; ctx.fillRect(x+56,150,6,280);
       sign(x,120,120,44,s2[0],s2[1],13,t+i*777);
     });
-    // jose on bike — pedaling knees + bobbing
     const jx=W/2-40, jy=290, b2=3*Math.sin(t/150);
     drawMap(SPRITES.joseIdle,jx,jy+b2,5);
-    // frame connects rider to wheels
     ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(jx+16,420); ctx.lineTo(jx+40,386);
     ctx.lineTo(jx+45,408); ctx.lineTo(jx+74,420); ctx.stroke();
-    // pedal crank animation
     const pa=t/120;
-    ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45+10*Math.cos(pa),408+10*Math.sin(pa)); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45-10*Math.cos(pa),408-10*Math.sin(pa)); ctx.stroke();
     ctx.strokeStyle="#7d7a99"; ctx.lineWidth=5;
     ctx.beginPath(); ctx.arc(jx+16,420,24,0,7); ctx.stroke();
     ctx.beginPath(); ctx.arc(jx+74,420,24,0,7); ctx.stroke();
-    // spinning spokes
     ctx.strokeStyle="rgba(125,122,153,0.5)"; ctx.lineWidth=2;
     [[jx+16],[jx+74]].forEach(([cx])=>{
       for(let k=0;k<3;k++){ const a=t/90+k*1.05;
@@ -675,6 +758,10 @@ const SCENES = [
     });
     glow(CYAN,10); ctx.strokeStyle=CYAN; ctx.lineWidth=4;
     ctx.beginPath(); ctx.arc(jx+30,jy+b2+18,22,Math.PI,0); ctx.stroke(); noglow();
+    // wet-road splash off the rear wheel
+    for(let i=0;i<3;i++){ const sp=(t/220+i*0.33)%1;
+      ctx.fillStyle=`rgba(140,180,255,${0.5*(1-sp)})`;
+      ctx.fillRect(jx+6-sp*24, 438-sp*16, 3, 3); }
     ctx.globalAlpha=0.25;
     ctx.strokeStyle="#7d7a99"; ctx.beginPath(); ctx.arc(jx+16,452,20,0,7); ctx.stroke();
     ctx.beginPath(); ctx.arc(jx+74,452,20,0,7); ctx.stroke();
@@ -686,6 +773,7 @@ const SCENES = [
     rain(t);
   }},
 
+/* 13 · THE SAVE POINT */
 { world:"WORLD 4", title:"The Save Point",
   caption:[
     ["q","“Boxing and bowling are the only places my brain goes quiet. I didn't know why until I wrote it down.”"],
@@ -699,17 +787,14 @@ const SCENES = [
     neon("SAVE POINT",W/2,64,22,GREEN);
     sign(60,90,140,44,"BOWL",PINK,18,t);
     sign(760,90,140,44,"BOX",CYAN,18,t);
-
-    /* LEFT — bowling: ball rolls, pins fall, STRIKE, reset */
-    // lane in perspective
+    /* LEFT · bowling */
     ctx.fillStyle="#2a1c10";
     ctx.beginPath(); ctx.moveTo(80,436); ctx.lineTo(320,436); ctx.lineTo(282,240); ctx.lineTo(150,240); ctx.closePath(); ctx.fill();
     ctx.strokeStyle="#3d2a18"; ctx.lineWidth=1.5;
-    for(let i=1;i<5;i++){ // lane boards
+    for(let i=1;i<5;i++){
       ctx.beginPath(); ctx.moveTo(80+i*48,436); ctx.lineTo(150+i*26.4,240); ctx.stroke(); }
     const TB=4200, pB=(t%TB)/TB;
     const rolled = pB>0.55, fallQ = Math.min(1,Math.max(0,(pB-0.55)/0.14));
-    // pins (4) at lane end — fall outward when hit
     const pinsX=[192,212,232,252];
     pinsX.forEach((px2,i)=>{
       ctx.save();
@@ -720,19 +805,18 @@ const SCENES = [
       ctx.fillStyle=PINK; ctx.fillRect(-4,-15,8,4);
       ctx.restore();
     });
-    // ball
     if(pB>0.08 && pB<0.58){
       const q=(pB-0.08)/0.5;
       const bx2=200+ q*22, by2=420 - q*160, br=13-6*q;
       glow(CYAN,8); ctx.fillStyle="#182848";
       ctx.beginPath(); ctx.arc(bx2,by2,br,0,7); ctx.fill(); noglow();
+      // finger dots spin as it rolls
+      ctx.fillStyle="#8ee3ff";
+      ctx.fillRect(bx2+(br-5)*Math.cos(t/80), by2+(br-5)*Math.sin(t/80), 2,2);
     }
     if(rolled && pB<0.92) neon("STRIKE!",222,205,18,GOLD);
-    // jose's bowling follow-through pose (reuse walk frame, arm out)
     drawMap(SPRITES.joseWalkA,120,336,4.4);
-
-    /* RIGHT — boxing: punch cycle, bag reacts, POW */
-    // bag hangs low enough that the glove line meets it
+    /* RIGHT · boxing */
     const TP=1000, q2=(t%TP)/TP;
     const punching = q2>0.18 && q2<0.40;
     const hitKick = (q2>0.30 && q2<0.85) ? Math.sin((q2-0.30)*9)*(1-q2)*26 : 0;
@@ -741,19 +825,20 @@ const SCENES = [
     ctx.fillStyle="#a83a5e";
     ctx.fillRect(620+hitKick,270,56,150);
     ctx.fillStyle="#8f2e4e"; ctx.fillRect(620+hitKick,270,56,18);
-    // jose in boxing stance, jab extends INTO the bag
     drawMap(SPRITES.joseBox,692,336,S);
+    if(Math.floor(t/1100)%3===0){ ctx.fillStyle="#8ee3ff"; ctx.fillRect(756,324,3,6); }
     if(punching){
       const ext=(q2-0.18)/0.22;
       glow(PINK,6); ctx.fillStyle="#ff4f6e";
       ctx.fillRect(704-ext*52,382,52*ext+14,13); noglow();
-      if(q2>0.30) neon("POW",672,250,15,GOLD);
+      if(q2>0.30) neon(Math.floor(t/2000)%2 ? "POW" : "THWACK",672,250,15,GOLD);
     }
     meterBar(340,140,280,Math.min(1,(t/3500)),"MASK METER · REFILLING");
     glow(GREEN,10); box(300,478,360,40,"#0d0820",GREEN); noglow();
     neon("notes/flow-as-leverage.md",W/2,503,13,GREEN);
   }},
 
+/* 14 · THE IDEA ROOM, REVISITED */
 { world:"WORLD 4", title:"The Idea Room, Revisited",
   caption:[
     ["q","“Same brain. Same hundred places. Nothing lost. Everything compounds.”"],
@@ -761,62 +846,70 @@ const SCENES = [
   render(t){
     box(80,60,800,380,"#0d0820","#2a1a44");
     sign(110,80,170,44,"IDEA FACTORY",CYAN,13,t);
-    // the notes board on the back wall — real notes from the brain
     neon("notes/", 470, 104, 13, GREEN);
     const names=["team-os","flow","loops","5-dollar"];
     names.forEach((n,i)=>{ const x=330+i*96;
       box(x,112,84,34,"#0d0820","#2a4436"); text(n,x+42,133,10,"#5aa880"); });
-    // inbox slot on the wall
     glow(GREEN,10); box(800,220,60,80,"#160c26",GREEN); noglow();
     neon("inbox",830,208,12,GREEN);
     drawMap(SPRITES.joseIdle,W/2-36,340,S);
-    // a few ambient thought bubbles (the hundred places haven't gone anywhere)
+    blink(W/2-36,340,S,t);
     for(let i=0;i<3;i++){ const bx=170+i*80, by=210+18*Math.sin(t/800+i*2);
       bubbleC(bx,by,12,"#3d2a5e"); }
-    // THE idea's journey: head → inbox → becomes a note → links to old notes
     const T=5200, p=(t%T)/T;
-    if(p<0.32){ // golden idea arcs from jose's head into the inbox slot
+    if(p<0.32){
       const q=p/0.32, sx=W/2+30, sy=310;
       const bx=sx+(828-sx)*q, by=sy+(255-sy)*q-80*Math.sin(q*Math.PI);
       glow(GOLD,10); bubbleC(bx,by,13,GOLD,"!"); noglow();
     } else if(p<0.42){
       neon("caught", 830, 320, 11, GOLD);
     }
-    if(p>=0.36 && p<0.62){ // file card slides from inbox up to the board
+    if(p>=0.36 && p<0.62){
       const q=(p-0.36)/0.26;
       const cx=812+(714-812)*q, cy=250+(112-250)*q;
       glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(cx,cy,26,32); noglow();
       ctx.fillStyle="#0d0820"; ctx.fillRect(cx+4,cy+6,18,2); ctx.fillRect(cx+4,cy+12,18,2);
     }
-    if(p>=0.62){ // it becomes a note and links itself to two old ones
+    if(p>=0.62){
       const q=(p-0.62)/0.38;
       glow(GOLD,10); box(714,112,84,34,"#241c08",GOLD); noglow();
       text("new-idea",756,133,10,GOLD);
       glow(GREEN,6); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
       if(q>0.15){ ctx.beginPath(); ctx.moveTo(756,146); ctx.lineTo(756,168);
-        ctx.lineTo(372,168); ctx.lineTo(372,146); ctx.stroke(); }
+        ctx.lineTo(372,168); ctx.lineTo(372,146); ctx.stroke();
+        ctx.strokeRect(330,112,84,34); } // linked tile lights up
       if(q>0.5){ ctx.beginPath(); ctx.moveTo(740,146); ctx.lineTo(740,180);
-        ctx.lineTo(468,180); ctx.lineTo(468,146); ctx.stroke(); }
+        ctx.lineTo(468,180); ctx.lineTo(468,146); ctx.stroke();
+        ctx.strokeRect(426,112,84,34); }
       noglow();
       if(q>0.8) neon("linked ✓", 560, 205, 12, GREEN);
     }
   }},
 
+/* 15 · FINAL SCREEN · DAWN */
 { world:"WORLD 4", title:"Final Screen",
   caption:[],
   render(t){
-    skyline(t,430,0); // the rain has stopped. calm.
+    // the rain has stopped. the sun is coming up.
+    const g=ctx.createLinearGradient(0,120,0,430);
+    g.addColorStop(0,"#05030c"); g.addColorStop(1,"rgba(255,130,60,0.20)");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,430);
+    glow("#ff9a4a",24); ctx.fillStyle="rgba(255,154,74,0.7)";
+    ctx.beginPath(); ctx.arc(480,432,44,Math.PI,0); ctx.fill(); noglow();
+    skyline(t,430,0);
     ctx.strokeStyle="#241436"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(0,430); ctx.lineTo(W,430); ctx.stroke();
     wet(432,80);
     steam(760,430,t,0.2);
     drawMap(SPRITES.joseIdle,W/2-36,130,S);
+    blink(W/2-36,130,S,t);
+    glow(CYAN,10); drawMap(SPRITES.orb,W/2+60,160+6*Math.sin(t/300),4); noglow();
     text("I didn't fix my brain.",W/2,300,30,"#e8e6f2");
     neon("I built for it.",W/2,348,34,GOLD);
-    if(t>1400) neon("LEVERAGE, NOT COPE.",W/2,420,26,GREEN);
+    if(t>1400) neon("LEVERAGE, NOT COPE.",W/2,412,26,GREEN);
   }},
 
-/* ── ENDING ── */
+/* 16 · PLAYER 2 START */
 { world:"ENDING", title:"Player 2 Start",
   caption:[
     ["q","“Everything I just showed you is one git clone away. Player 2 is you.”"],
@@ -826,24 +919,36 @@ const SCENES = [
     if(Math.floor(t/450)%2===0) neon("PLAYER 2 START",W/2,110,44,GOLD);
     text("YOUR BRAIN HERE",W/2,150,18,"#7d7a99");
     drawQR("starter",W/2-90,190,180,CONFIG.urls.starter,CYAN);
+    // player 2: a silhouette waiting to spawn
+    drawMap(SPRITES.joseIdle, W/2+180, 240, 5, "#241436");
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/400);
+    neon("?",W/2+216,226,22,GOLD); ctx.globalAlpha=1;
+    text("P2",W/2+216,348,12,"#7d7a99");
   }},
 
+/* 17 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
     ["l","Full walkthrough. All secret rooms. Weekly patch notes for my brain."]],
   render(t){
     skyline(t,520,0);
-    glow(GOLD,14); box(180,90,260,340,"#0d0820",GOLD); noglow();
+    const pulse = 10+6*Math.sin(t/400);
+    glow(GOLD,pulse); box(180,90,260,340,"#0d0820",GOLD); noglow();
     neon("LOOPS",310,180,34,GOLD);
     text("AND",310,220,22,"#e8e6f2");
     neon("LETTERS",310,265,34,GOLD);
     text("· OFFICIAL ·",310,310,13,"#7d7a99");
     neon("STRATEGY GUIDE",310,338,16,GREEN);
+    // NEW! burst
+    ctx.save(); ctx.translate(430,105); ctx.rotate(0.3+0.06*Math.sin(t/300));
+    glow(PINK,10); ctx.fillStyle=PINK; ctx.fillRect(-30,-13,60,26); noglow();
+    text("NEW!",0,5,13,"#05030c"); ctx.restore();
     drawQR("substack",540,120,200,CONFIG.urls.substack,PINK);
     text("weekly patch notes for my brain",640,410,13,"#7d7a99");
   }},
 
+/* 18 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
@@ -853,7 +958,21 @@ const SCENES = [
     neon("CO-OP MODE",W/2,120,40,GREEN);
     text("This game is better multiplayer.",W/2,162,16,"#e8e6f2");
     drawQR("linkedin",W/2-90,195,180,CONFIG.urls.linkedin,CYAN);
-    if(t>1200) text("THANKS FOR PLAYING",W/2,510,14,"#7d7a99");
+    // the party, assembled
+    drawMap(SPRITES.joseIdle, W/2-230, 250, 5);
+    blink(W/2-230, 250, 5, t);
+    glow(CYAN,10); drawMap(SPRITES.orb, W/2-150, 280+6*Math.sin(t/300), 4); noglow();
+    drawMap(SPRITES.joseIdle, W/2+170, 250, 5, "#3d2a5e");
+    text("you?",W/2+206,352,11,"#7d7a99");
+    // confetti
+    if(t>1200){
+      for(let i=0;i<18;i++){
+        const cy2=((t/6)+i*97)%560-20, cx2=60+(i*151)%840;
+        ctx.fillStyle=[PINK,CYAN,GOLD,GREEN][i%4];
+        ctx.fillRect(cx2+8*Math.sin(t/300+i), cy2, 4, 4);
+      }
+      text("THANKS FOR PLAYING",W/2,510,14,"#7d7a99");
+    }
   }},
 ];
 

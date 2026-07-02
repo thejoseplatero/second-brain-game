@@ -5,48 +5,41 @@
 <title>Second Brain: The Game</title>
 <!--
   ═══════════════════════════════════════════════════════════════
-  SECOND BRAIN: THE GAME — BrainStation talk walkthrough
+  SECOND BRAIN · neon-noir pixel version of the talk game (CANONICAL)
+  Rain, neon, wet streets. The Last Night / Katana ZERO energy.
   ═══════════════════════════════════════════════════════════════
-  HOW TO TWEAK (everything lives in one of three places):
-    1. CONFIG  — URLs, names, colors. Right below this comment.
-    2. SCENES  — every scene's title + caption text. Search "const SCENES".
-       Edit any caption string freely. Reorder scenes by reordering the array.
-    3. Sprites — pixel maps as text grids. Search "const SPRITES".
-       Each letter = one pixel, legend in PALETTE. Edit like ASCII art.
-  CONTROLS: click / space / → = next scene. ← = back. F = fullscreen.
-            Number keys 1-9 jump to worlds. Scene counter bottom-right.
-  QR CODES: drop real PNG files named qr-starter.png, qr-substack.png,
-            qr-linkedin.png in this same folder. The game auto-loads them.
-            Until then it shows labeled placeholders.
+  HOW TO TWEAK:
+    1. CONFIG  · URLs, names. Right below.
+    2. SCENES  · every caption string. Search "const SCENES".
+    3. SPRITES · pixel maps, edit like ASCII art. Legend in PALETTE.
+  CONTROLS: click / space / → next. ← back. F fullscreen. 1-7 world jumps.
+  QR PNGs: qr-starter.png, qr-substack.png, qr-linkedin.png (same folder).
   ═══════════════════════════════════════════════════════════════
 -->
 <style>
-  :root{
-    --bg:#0d0f14; --ink:#e8e6df; --dim:#8a8fa3; --accent:#7ee787;
-    --gold:#ffd75e; --danger:#ff6b6b; --matrix:#00ff41;
-  }
+  :root{ --bg:#05030c; --ink:#e8e6f2; --dim:#7d7a99; --pink:#ff2e88; --cyan:#00e5ff; --gold:#ffd75e; }
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);font-family:'Courier New',monospace;
        display:flex;flex-direction:column;align-items:center;justify-content:center;
        min-height:100vh;gap:14px;padding:20px;user-select:none}
-  #wrap{position:relative}
-  canvas{image-rendering:pixelated;border:3px solid #2a2f3d;border-radius:4px;
+  canvas{image-rendering:pixelated;border:3px solid #1c1030;border-radius:4px;
+         box-shadow:0 0 24px rgba(255,46,136,0.25), 0 0 60px rgba(0,229,255,0.12);
          max-width:92vw;height:auto;cursor:pointer}
   #cap{max-width:900px;width:92vw;min-height:96px;text-align:center;line-height:1.55}
-  #cap .t{color:var(--gold);font-weight:bold;letter-spacing:.12em;font-size:13px;
+  #cap .t{color:var(--pink);font-weight:bold;letter-spacing:.12em;font-size:13px;
           text-transform:uppercase;display:block;margin-bottom:8px}
-  #cap .l{font-size:16px;display:block;margin:3px 0;color:var(--ink)}
-  #cap .q{font-size:16px;display:block;margin:6px 0;color:var(--accent);font-style:italic}
+  #cap .l{font-size:16px;display:block;margin:3px 0}
+  #cap .q{font-size:16px;display:block;margin:6px 0;color:var(--cyan);font-style:italic}
   #hud{color:var(--dim);font-size:12px;letter-spacing:.08em}
 </style>
 </head>
 <body>
-<div id="wrap"><canvas id="cv" width="960" height="540"></canvas></div>
+<canvas id="cv" width="960" height="540"></canvas>
 <div id="cap"></div>
 <div id="hud"></div>
 
 <script>
-/* ═══════════ 1. CONFIG — edit freely ═══════════ */
+/* ═══════════ CONFIG ═══════════ */
 const CONFIG = {
   speaker: "JOSE PLATERO",
   urls: {
@@ -57,27 +50,17 @@ const CONFIG = {
   qrFiles: { starter:"qr-starter.png", substack:"qr-substack.png", linkedin:"qr-linkedin.png" },
 };
 
-/* ═══════════ 2. PALETTE + SPRITES — edit like ASCII art ═══════════ */
+/* ═══════════ PALETTE + SPRITES ═══════════ */
 const PALETTE = {
-  s:"#d9a066", // skin
-  d:"#b8834f", // skin shadow
-  e:"#14110e", // eyes
-  b:"#3b2b20", // beard
-  w:"#f4f2ec", // white shirt/collar
-  c:"#2b3040", // cardigan
-  x:"#3d4457", // cardigan light (crossed arms)
-  p:"#464e63", // pants
-  k:"#1c1f29", // shoes
-  o:"#9ecbff", // claude orb
-  O:"#5a9fe8", // orb shade
-  g:"#ffd75e", // gold / glow
-  r:"#c94f4f", // boxing gloves / red
-  m:"#00ff41", // matrix green
+  s:"#e0aa72", d:"#b8834f", e:"#14110e",
+  b:"#3b2b20", w:"#f4f2ec",
+  c:"#2b3040", x:"#3d4457", p:"#464e63", k:"#1c1f29",
+  o:"#8ee3ff", O:"#3aa8d8",
+  g:"#ffd75e", r:"#ff4f6e", m:"#00ff41",
   ".":null,
 };
-
 const SPRITES = {
-  joseIdle: [ // arms crossed, the headshot pose
+  joseIdle: [
     "....ssss....",
     "...ssssss...",
     "...ssssss...",
@@ -96,7 +79,7 @@ const SPRITES = {
     "...pp..pp...",
     "...kk..kk...",
   ],
-  joseWalk: [
+  joseWalkA: [
     "....ssss....",
     "...ssssss...",
     "...ssssss...",
@@ -114,6 +97,25 @@ const SPRITES = {
     "..pp....pp..",
     ".pp......pp.",
     ".kk......kk.",
+  ],
+  joseWalkB: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..scccccccs.",
+    "..cccccccc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
   ],
   joseBox: [
     "....ssss....",
@@ -134,7 +136,7 @@ const SPRITES = {
     "..pp....pp..",
     "..kk....kk..",
   ],
-  joseSleep: [ // horizontal-ish: head + blanket
+  joseSleep: [
     "..ssss......",
     ".ssssss.....",
     ".sessse.....",
@@ -152,7 +154,7 @@ const SPRITES = {
     ".OooooO.",
     "..OOOO..",
   ],
-  agent: [ // tiny agent bot; tint per agent
+  agent: [
     ".oooo.",
     "oowwoo",
     "oooooo",
@@ -160,233 +162,409 @@ const SPRITES = {
   ],
 };
 
-/* ═══════════ 3. ENGINE HELPERS ═══════════ */
+/* ═══════════ ENGINE + WORLD HELPERS ═══════════ */
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
 const cap = document.getElementById("cap"), hud = document.getElementById("hud");
 const W = cv.width, H = cv.height;
+const PINK="#ff2e88", CYAN="#00e5ff", GOLD="#ffd75e", GREEN="#00ff88", MATRIX="#00ff41";
 
-function drawMap(map, x, y, sc, tint){
+function drawMap(map,x,y,sc,tint){
   for(let r=0;r<map.length;r++) for(let i=0;i<map[r].length;i++){
-    const ch = map[r][i]; const col = tint && ch!=='.' ? tint : PALETTE[ch];
-    if(col){ ctx.fillStyle = col; ctx.fillRect(x+i*sc, y+r*sc, sc, sc); }
+    const ch=map[r][i]; const col = tint && ch!=='.' ? tint : PALETTE[ch];
+    if(col){ ctx.fillStyle=col; ctx.fillRect(x+i*sc,y+r*sc,sc,sc); }
   }
 }
-function text(str, x, y, size, col, align="center", font="bold"){
-  ctx.fillStyle = col; ctx.font = `${font} ${size}px 'Courier New',monospace`;
-  ctx.textAlign = align; ctx.fillText(str, x, y);
+function walker(x,y,sc,t){ drawMap(Math.floor(t/180)%2 ? SPRITES.joseWalkA : SPRITES.joseWalkB, x, y, sc); }
+function blink(x,y,sc,t){ // idle jose blinks every ~3.4s
+  if((t%3400)<140){ ctx.fillStyle=PALETTE.s;
+    ctx.fillRect(x+4*sc,y+3*sc,sc,sc); ctx.fillRect(x+8*sc,y+3*sc,sc,sc); }
 }
-function room(x,y,w,h,fill,stroke){ ctx.fillStyle=fill; ctx.fillRect(x,y,w,h);
-  ctx.strokeStyle=stroke||"#454c60"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }
-function bubble(x,y,rad,col,txt){
-  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x,y,rad,0,7); ctx.fill();
-  if(txt) text(txt, x, y+4, 11, "#0d0f14");
+function text(str,x,y,size,col,align="center",font="bold"){
+  ctx.fillStyle=col; ctx.font=`${font} ${size}px 'Courier New',monospace`;
+  ctx.textAlign=align; ctx.fillText(str,x,y);
 }
-function meter(x,y,w,pct,label){
-  ctx.fillStyle="#2a2f3d"; ctx.fillRect(x,y,w,16);
-  ctx.fillStyle = pct>0.4 ? "#7ee787" : "#ff6b6b";
-  ctx.fillRect(x+2,y+2,(w-4)*Math.max(0,Math.min(1,pct)),12);
-  text(label, x+w/2, y-6, 11, "#8a8fa3");
+function glow(col,blur){ ctx.shadowColor=col; ctx.shadowBlur=blur; }
+function noglow(){ ctx.shadowBlur=0; }
+function neon(str,x,y,size,col,align="center"){ glow(col,16); text(str,x,y,size,col,align); noglow(); }
+function sign(x,y,w,h,txt,col,size,t){
+  const fl = (t!==undefined && Math.floor(t/90)%41===0) ? 0.3 : 1;
+  ctx.globalAlpha = fl;
+  ctx.fillStyle="rgba(5,3,12,0.88)"; ctx.fillRect(x,y,w,h);
+  glow(col,12); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h); noglow();
+  neon(txt, x+w/2, y+h/2+(size||14)/2.8, size||14, col);
+  ctx.globalAlpha = 1;
 }
-// fake QR placeholder (seeded blocks) — replaced automatically if PNG exists
-const qrImgs = {};
+function box(x,y,w,h,fill,stroke){ ctx.fillStyle=fill; ctx.fillRect(x,y,w,h);
+  if(stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h); } }
+function bubbleC(x,y,rad,col,txt){
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,rad,0,7); ctx.fill();
+  if(txt) text(txt,x,y+4,11,"#05030c");
+}
+function meterBar(x,y,w,pct,label){
+  ctx.fillStyle="#160c26"; ctx.fillRect(x,y,w,16);
+  const col = pct>0.4 ? CYAN : PINK;
+  glow(col,8); ctx.fillStyle=col; ctx.fillRect(x+2,y+2,(w-4)*Math.max(0,Math.min(1,pct)),12); noglow();
+  text(label, x+w/2, y-6, 11, "#7d7a99");
+}
+function skyline(t,floorY,scroll){
+  const layers=[{c:"#0a0618",per:210,hmin:130,winA:0.45,speed:1},
+                {c:"#140b2a",per:150,hmin:70, winA:0.85,speed:1.9}];
+  layers.forEach((L,li)=>{
+    const off = scroll ? (t*scroll*L.speed)%L.per : 0;
+    for(let i=-1;i<9;i++){
+      const seed=(i*73+li*31)&255;
+      const bw = L.per-26-(seed%36);
+      const hgt = L.hmin+((seed*97)%110);
+      const x = i*L.per-off, y = floorY-hgt;
+      ctx.fillStyle=L.c; ctx.fillRect(x,y,bw,hgt);
+      if(seed%3===0){ ctx.fillStyle=L.c; ctx.fillRect(x+bw/2-2,y-24,4,24);
+        if(Math.floor(t/650+i)%2===0){ glow("#ff4455",6); ctx.fillStyle="#ff4455";
+          ctx.fillRect(x+bw/2-3,y-29,6,5); noglow(); } }
+      if(seed%4===1){ ctx.fillStyle=L.c; ctx.fillRect(x+8,y-11,20,11); }
+      if(seed%5===2){ ctx.fillStyle=L.c; ctx.fillRect(x+bw-26,y-8,16,8); }
+      const rows=Math.floor((hgt-14)/16), cols=Math.floor((bw-10)/14);
+      for(let r=0;r<rows;r++) for(let c2=0;c2<cols;c2++){
+        const wx=x+6+c2*14, wy=y+8+r*16;
+        if(((seed+r*7+c2*13)%9)<3){
+          ctx.fillStyle=[PINK,CYAN,GOLD,"#e8e6f2"][(r+c2+seed)%4];
+          ctx.globalAlpha=0.55*L.winA; ctx.fillRect(wx,wy,8,10); ctx.globalAlpha=1;
+        } else { ctx.fillStyle="rgba(255,255,255,0.04)"; ctx.fillRect(wx,wy,8,10); }
+      }
+    }
+  });
+}
+function rain(t){
+  ctx.strokeStyle="rgba(140,180,255,0.20)"; ctx.lineWidth=1.5;
+  for(let i=0;i<70;i++){
+    const x=((i*137)+(t/2.2))%(W+100)-50, y=((i*211)+(t/1.1))%H;
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-8,y+18); ctx.stroke();
+  }
+}
+function wet(y,h){
+  const g=ctx.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,"rgba(255,46,136,0.12)"); g.addColorStop(0.5,"rgba(0,229,255,0.07)"); g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g; ctx.fillRect(0,y,W,h);
+}
+function steam(x,baseY,t,seedO){
+  for(let i=0;i<4;i++){
+    const p=((t/1800)+i*0.25+(seedO||0))%1;
+    const r=6+p*16, yy=baseY-p*70, a=0.15*(1-p);
+    ctx.fillStyle=`rgba(200,210,230,${a})`;
+    ctx.beginPath(); ctx.arc(x+6*Math.sin(p*6+i),yy,r,0,7); ctx.fill();
+  }
+}
+function car(t,y,dir,speed,offset){
+  let x=((t*(speed||0.35)+(offset||0))%(W+280))-140;
+  if(dir<0) x = W-x;
+  ctx.fillStyle="#181028"; ctx.fillRect(x,y-18,84,16);
+  ctx.fillStyle="#241436"; ctx.fillRect(x+16,y-28,44,12);
+  ctx.fillStyle="#0e1830"; ctx.fillRect(x+20,y-25,16,8); ctx.fillRect(x+40,y-25,16,8);
+  glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(dir<0?x:x+80,y-13,6,5); noglow();
+  glow(PINK,8); ctx.fillStyle=PINK; ctx.fillRect(dir<0?x+80:x,y-13,4,5); noglow();
+  ctx.fillStyle="#0a0714"; ctx.beginPath(); ctx.arc(x+18,y,7,0,7); ctx.arc(x+66,y,7,0,7); ctx.fill();
+}
+function street(t,floorY,scroll){
+  skyline(t,floorY,scroll);
+  ctx.strokeStyle="#241436"; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(0,floorY); ctx.lineTo(W,floorY); ctx.stroke();
+  ctx.fillStyle="#0a0714"; ctx.fillRect(0,floorY+2,W,H-floorY);
+  wet(floorY+2, Math.min(90,H-floorY));
+}
+function clockFace(cx,cy,r,t){
+  ctx.fillStyle="#0d0820"; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+  ctx.strokeStyle="#7d7a99"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  const a=t/600;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.72*Math.cos(a),cy+r*0.72*Math.sin(a)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.45*Math.cos(a/12),cy+r*0.45*Math.sin(a/12)); ctx.stroke();
+}
+const qrImgs={};
 for(const k in CONFIG.qrFiles){ const im=new Image(); im.src=CONFIG.qrFiles[k]; qrImgs[k]=im; }
-function drawQR(key,x,y,size,url){
-  const im = qrImgs[key];
-  if(im && im.complete && im.naturalWidth>0){ ctx.imageSmoothingEnabled=false; ctx.drawImage(im,x,y,size,size); }
-  else {
-    ctx.fillStyle="#f4f2ec"; ctx.fillRect(x,y,size,size);
+function drawQR(key,x,y,size,url,col){
+  glow(col||PINK,18); ctx.fillStyle="#f4f2ec"; ctx.fillRect(x-8,y-8,size+16,size+16); noglow();
+  const im=qrImgs[key];
+  if(im&&im.complete&&im.naturalWidth>0){ ctx.imageSmoothingEnabled=false; ctx.drawImage(im,x,y,size,size); }
+  else{
     let seed=0; for(const c of key) seed+=c.charCodeAt(0);
-    const n=13, cell=size/n;
-    for(let r=0;r<n;r++)for(let c=0;c<n;c++){ seed=(seed*73+17)%97;
-      if(seed%2===0){ ctx.fillStyle="#0d0f14"; ctx.fillRect(x+c*cell+1,y+r*cell+1,cell-2,cell-2);} }
-    text("PLACEHOLDER", x+size/2, y+size/2+4, 10, "#c94f4f");
+    const n=13,cell=size/n;
+    for(let r=0;r<n;r++)for(let c2=0;c2<n;c2++){ seed=(seed*73+17)%97;
+      if(seed%2===0){ ctx.fillStyle="#05030c"; ctx.fillRect(x+c2*cell+1,y+r*cell+1,cell-2,cell-2);} }
+    text("PLACEHOLDER", x+size/2, y+size/2+4, 10, PINK);
   }
-  text(url, x+size/2, y+size+22, 13, "#8a8fa3");
+  neon(url, x+size/2, y+size+30, 13, col||PINK);
 }
-function floorLine(y){ ctx.strokeStyle="#2a2f3d"; ctx.lineWidth=4;
-  ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
 
-/* ═══════════ 4. SCENES — all copy lives here. Edit freely. ═══════════ */
-const S = 6; // sprite pixel scale
+/* ═══════════ SCENES ═══════════ */
+const S = 6;
 const SCENES = [
 
-{ world:"START", title:"SECOND BRAIN: THE GAME",
+/* 0 · TITLE */
+{ world:"START", title:"SECOND BRAIN",
   caption:[["q","A mostly true story about the world inside my head."],["l","PRESS START"]],
   render(t){
-    text("SECOND BRAIN", W/2, 200, 58, "#ffd75e");
-    text("THE GAME", W/2, 260, 34, "#e8e6df");
-    drawMap(SPRITES.joseIdle, W/2-36, 300, S);
-    if(Math.floor(t/500)%2===0) text("PRESS START", W/2, 470, 20, "#7ee787");
-    text("a talk by "+CONFIG.speaker, W/2, 505, 13, "#8a8fa3");
+    street(t,410,0);
+    car(t,436,1,0.30,0);
+    sign(70,90,150,50,"OPEN 24HRS",CYAN,14,t);
+    sign(750,130,150,46,"IDEAS",PINK,16,t);
+    steam(320,410,t,0); steam(700,410,t,0.5);
+    // title pulses like a neon sign warming up
+    ctx.globalAlpha = 0.8+0.2*Math.sin(t/420);
+    neon("SECOND BRAIN", W/2, 210, 54, PINK);
+    ctx.globalAlpha = 1;
+    neon("THE GAME", W/2, 258, 24, CYAN);
+    drawMap(SPRITES.joseIdle, W/2-36, 306, S);
+    blink(W/2-36, 306, S, t);
+    if(Math.floor(t/500)%2===0) neon("PRESS START", W/2, 490, 20, GREEN);
+    text("a talk by "+CONFIG.speaker, W/2, 520, 13, "#7d7a99");
+    rain(t);
   }},
 
-/* ── WORLD 1: THE HUNDRED PLACES ── */
+/* 1 · THE HUNDRED PLACES */
 { world:"WORLD 1", title:"The Hundred Places",
   caption:[
     ["q","“How many of you have had a great idea in the shower and lost it by noon?”"],
     ["l","My mind is in a hundred different places all the time."],
     ["l","That's not a metaphor. That's just how it is in here."]],
   render(t){
-    room(80,60,800,380,"#141824");
-    floorLine(440);
+    box(80,60,800,380,"#0d0820","#2a1a44");
+    sign(110,80,170,44,"IDEA FACTORY",PINK,13,t);
+    // window with living city
+    box(700,90,150,150,"#05030c","#2a1a44");
+    ctx.save(); ctx.beginPath(); ctx.rect(700,90,150,150); ctx.clip();
+    skyline(t,240,0);
+    ctx.strokeStyle="rgba(140,180,255,0.25)";
+    for(let i=0;i<12;i++){ const x=700+((i*29)+(t/3))%150, y=90+((i*47)+t/1.4)%150;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-4,y+9); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle="#2a1a44"; ctx.strokeRect(700,90,150,150);
+    // desk with a glowing screen whose todo list keeps growing
+    box(150,380,180,60,"#160c26","#2a1a44");
+    glow(CYAN,8); box(180,330,90,50,"#0a1420",CYAN); noglow();
+    text("todo: "+(47+Math.floor(t/5000)),225,358,11,CYAN);
     drawMap(SPRITES.joseIdle, W/2-36, 340, S);
-    // thought bubbles spawn, one golden one drifts away and pops
+    blink(W/2-36, 340, S, t);
+    // thought bubbles about actual things, not just circles
+    const topics=["ux","$","ai","","?","team","","ship",""];
     for(let i=0;i<9;i++){
-      const bx = 150+((i*97)%660), phase=(t/900+i*0.7);
-      const by = 120+40*Math.sin(phase)+ (i%3)*50;
-      bubble(bx, by, 16+(i%3)*5, i===4 ? "#ffd75e" : "#454c60");
+      const bx=150+((i*97)%660), phase=(t/900+i*0.7);
+      const by=140+40*Math.sin(phase)+(i%3)*50;
+      const col = i===4 ? GOLD : "#3d2a5e";
+      if(i===4) glow(GOLD,10);
+      bubbleC(bx,by,16+(i%3)*5,col); noglow();
+      if(topics[i] && i!==4) text(topics[i],bx,by+4,10,"#7d7a99");
     }
-    const gx = 480+ (t/12)%520;
-    if(gx < 940) bubble(gx, 100, 22, "#ffd75e", "!");
-    else text("POP", 900, 105, 16, "#ff6b6b");
+    // the golden one escapes and pops with a burst
+    const gx=480+(t/12)%520;
+    if(gx<940){ glow(GOLD,12); bubbleC(gx,105,22,GOLD,"!"); noglow(); }
+    else{
+      neon("POP",900,110,16,PINK);
+      ctx.strokeStyle=GOLD; ctx.lineWidth=2;
+      for(let i=0;i<4;i++){ const a=i*1.57+0.78;
+        ctx.beginPath(); ctx.moveTo(900+10*Math.cos(a),105+10*Math.sin(a));
+        ctx.lineTo(900+18*Math.cos(a),105+18*Math.sin(a)); ctx.stroke(); }
+    }
   }},
 
+/* 2 · THE PARADOX */
 { world:"WORLD 1", title:"The Paradox",
   caption:[
     ["q","“I think in decades. Then I think: what's the quickest thing I can do today?”"],
     ["l","Ten-year vision. Five-minute action."],
     ["l","The middle? Doesn't exist."]],
   render(t){
-    // LEFT: the decade — a road to the horizon
-    room(40,60,340,380,"#10141f");
-    text("THE DECADE", 210, 95, 18, "#ffd75e");
-    ctx.strokeStyle="#454c60"; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(80,440); ctx.lineTo(210,200); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(340,440); ctx.lineTo(210,200); ctx.stroke();
-    text("2030", 210, 300, 13, "#8a8fa3");
-    text("2036", 210, 240, 12, "#8a8fa3");
-    // flag on the horizon
-    ctx.fillStyle="#ffd75e"; ctx.fillRect(208,170,4,30);
-    ctx.fillStyle="#7ee787"; ctx.fillRect(212,170,20,12);
-    text("the vision", 210, 155, 11, "#7ee787");
-    // MIDDLE: the void
-    room(400,60,160,380,"#0a0c10");
-    text("NEXT MONTH", 480, 95, 12, "#8a8fa3");
-    text("?", 480, 260+6*Math.sin(t/500), 46, "#454c60");
-    text("(nothing here)", 480, 420, 11, "#454c60");
-    // RIGHT: right now — the door pop
-    room(580,60,340,380,"#141824");
-    text("RIGHT NOW", 750, 95, 18, "#7ee787");
-    // door frame
-    room(660,180,110,260,"#1c2130","#8a8fa3");
-    ctx.fillStyle="#0d0f14"; ctx.fillRect(668,188,94,252);
-    // jose pops in and out of the door
+    /* three panels, one aligned grid: headers y96 · content · footers y468 */
+    // LEFT · THE DECADE
+    box(40,60,340,380,"#0d0820","#2a1a44");
+    neon("THE DECADE",210,96,16,GOLD);
+    // twinkling stars
+    for(let i=0;i<8;i++){ const sx=70+(i*41)%290, sy2=112+(i*29)%56;
+      ctx.globalAlpha=0.35+0.4*Math.sin(t/500+i*2); ctx.fillStyle="#e8e6f2";
+      ctx.fillRect(sx,sy2,2,2); ctx.globalAlpha=1; }
+    // synthwave sun
+    glow(PINK,20); ctx.fillStyle=PINK;
+    ctx.beginPath(); ctx.arc(210,230,52,Math.PI,0); ctx.fill(); noglow();
+    ctx.fillStyle="#0d0820";
+    for(let i=0;i<4;i++) ctx.fillRect(150,196+i*12,120,5);
+    // grid road to the horizon
+    ctx.strokeStyle="rgba(0,229,255,0.5)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(80,440); ctx.lineTo(210,232); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(340,440); ctx.lineTo(210,232); ctx.stroke();
+    for(let i=1;i<5;i++){ const y=440-i*44;
+      ctx.beginPath(); ctx.moveTo(210-(y-232)*0.63,y); ctx.lineTo(210+(y-232)*0.63,y); ctx.stroke(); }
+    text("2030",210,330,13,"#7d7a99"); text("2036",210,272,12,"#7d7a99");
+    // tiny jose walks the road toward the vision, forever
+    const wp=(t/6000)%1;
+    const wsc=3.2-wp*1.9, wy=396-wp*140;
+    drawMap(SPRITES.joseWalkA, 210-6*wsc, wy, wsc);
+    neon("the vision",210,126,11,CYAN);
+    // MIDDLE · THE VOID
+    box(400,60,160,380,"#050310","#1c1030");
+    neon("NEXT MONTH",480,96,16,"#6a5f8f");
+    // dust drifting in the emptiness
+    for(let i=0;i<5;i++){ const dy2=(t/30+i*77)%340;
+      ctx.fillStyle="rgba(125,122,153,0.25)"; ctx.fillRect(420+(i*31)%120, 80+dy2, 2,2); }
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/600);
+    text("?",480,262,46,"#2a1a44"); ctx.globalAlpha=1;
+    // RIGHT · RIGHT NOW
+    box(580,60,340,380,"#0d0820","#2a1a44");
+    neon("RIGHT NOW",750,96,16,GREEN);
+    ctx.fillStyle="#120a26"; ctx.fillRect(586,400,328,40);
+    glow("#e8e6f2",6); ctx.fillStyle="#e8e6f2"; ctx.fillRect(730,72,60,4); noglow();
+    box(660,180,110,260,"#160c26","#3d2a5e");
+    ctx.fillStyle="#05030c"; ctx.fillRect(668,188,94,252);
+    sign(668,150,94,26,"OPEN",PINK,12,t);
     if(Math.floor(t/850)%2===0){
-      drawMap(SPRITES.joseIdle, 686, 300, 4.5);
-      bubble(820, 240, 34, "#f4f2ec"); text("got a", 820, 234, 11, "#0d0f14"); text("sec?", 820, 248, 11, "#0d0f14");
+      drawMap(SPRITES.joseIdle,686,300,4.5);
+      glow(CYAN,8); bubbleC(830,240,34,"#f4f2ec"); noglow();
+      text("got a",830,234,11,"#05030c"); text("sec?",830,248,11,"#05030c");
+    } else {
+      ctx.fillStyle="#241436"; ctx.fillRect(668,188,30,252);
     }
-    text("*door pop*", 715, 470, 12, "#8a8fa3");
+    // aligned footer row
+    text("think in decades",210,468,11,"#7d7a99");
+    text("(nothing here)",480,468,11,"#4a4066");
+    text("*door pop*",750,468,11,"#7d7a99");
   }},
 
-/* ── WORLD 2: THE COST ── */
+/* 3 · THE MEETING GAUNTLET */
 { world:"WORLD 2", title:"The Meeting Gauntlet",
   caption:[
     ["q","“Every meeting, I'm running two programs: the conversation, and the translation.”"],
     ["l","Nobody sees the second one. But man, it bills by the hour."]],
   render(t){
-    text("MEETINGS. ALL. DAY.", W/2, 56, 16, "#8a8fa3");
+    skyline(t,330,0);
+    neon("MEETINGS. ALL. DAY.", W/2, 56, 16, PINK);
+    clockFace(60,84,16,t);
     const pipeX = i => 100 + i*220;
-    const groundY = 228; // sprite top when standing on the surface
-    // full mario cycle per meeting: walk → down pipe → sit in meeting → up pipe → walk on
-    const T = 3200, ph = (t/T)%4, seg = Math.floor(ph), f = ph - seg;
-    let jx, jy, inRoom = false;
-    if(f < 0.18){ // walk to this pipe
-      const to = pipeX(seg)+8;
-      const start = seg===0 ? -90 : pipeX(seg-1)+8;
-      jx = start + (to-start)*(f/0.18); jy = groundY;
-    } else if(f < 0.33){ // descend through the pipe
-      jx = pipeX(seg)+8; jy = groundY + ((f-0.18)/0.15)*172;
-    } else if(f < 0.72){ // in the meeting
-      inRoom = true; jx = pipeX(seg)+10; jy = 400;
-    } else if(f < 0.87){ // ascend
-      jx = pipeX(seg)+8; jy = groundY + (1-((f-0.72)/0.15))*172;
-    } else { jx = pipeX(seg)+8; jy = groundY; } // back on the surface
-    // 1) surface + earth cutaway
-    ctx.strokeStyle="#2a2f3d"; ctx.lineWidth=4;
+    const groundY = 228;
+    const T = 3200, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    let jx,jy,inRoom=false,walking=false;
+    if(f<0.18){ const to=pipeX(seg)+8, start= seg===0? -90 : pipeX(seg-1)+8;
+      jx=start+(to-start)*(f/0.18); jy=groundY; walking=true; }
+    else if(f<0.33){ jx=pipeX(seg)+8; jy=groundY+((f-0.18)/0.15)*172; }
+    else if(f<0.72){ inRoom=true; jx=pipeX(seg)+10; jy=400; }
+    else if(f<0.87){ jx=pipeX(seg)+8; jy=groundY+(1-((f-0.72)/0.15))*172; }
+    else { jx=pipeX(seg)+8; jy=groundY; }
+    ctx.strokeStyle="#241436"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(0,330); ctx.lineTo(W,330); ctx.stroke();
-    ctx.fillStyle="#241a12"; ctx.fillRect(0,332,W,208);
-    // 2) meeting rooms carved into the earth
+    ctx.fillStyle="#0e0818"; ctx.fillRect(0,332,W,208);
+    steam(60,330,t,0.2); steam(920,330,t,0.7);
     for(let i=0;i<4;i++){
-      const x = pipeX(i)-40;
-      ctx.fillStyle="#141824"; ctx.fillRect(x,360,170,140);
-      ctx.strokeStyle="#454c60"; ctx.lineWidth=2; ctx.strokeRect(x,360,170,140);
-      text("MTG "+(i+1), x+36, 384, 10, "#8a8fa3");
-      // table + an npc
-      ctx.fillStyle="#3a4258"; ctx.fillRect(x+42,452,92,14);
-      ctx.fillStyle="#5c6378"; ctx.fillRect(x+126,410,20,42);
-      ctx.fillStyle="#8a8fa3"; ctx.fillRect(x+129,396,14,14);
+      const x=pipeX(i)-40;
+      box(x,360,170,140,"#101828","#2a3a58");
+      glow("#bcd8ff",6); ctx.fillStyle="#bcd8ff"; ctx.fillRect(x+55,364,60,3); noglow();
+      ctx.fillStyle="rgba(160,200,255,0.05)"; ctx.fillRect(x+30,367,110,80);
+      text("MTG "+(i+1),x+36,384,10,"#5a7a9e");
+      ctx.fillStyle="#243248"; ctx.fillRect(x+34,452,106,14);
+      ctx.fillStyle="#3d5878"; ctx.fillRect(x+48,444,14,8); ctx.fillRect(x+106,444,14,8);
+      const nod = Math.floor((t/420)+i)%2 ? 2 : 0;
+      ctx.fillStyle="#3d5878"; ctx.fillRect(x+126,410,20,42);
+      ctx.fillStyle="#7d9ac2"; ctx.fillRect(x+129,396+nod,14,14);
+      ctx.fillStyle="#31445e"; ctx.fillRect(x+18,414,18,38);
+      ctx.fillStyle="#6e88ab"; ctx.fillRect(x+20,400,14,14);
     }
-    // 3) jose
-    drawMap(SPRITES.joseWalk, jx, jy, inRoom ? 5 : S);
-    // chat bubble from the attendee, drawn AFTER jose so it stays visible
+    if(walking) walker(jx,jy,S,t); else drawMap(SPRITES.joseWalkA,jx,jy,inRoom?5:S);
     if(inRoom){
-      const rx = pipeX(seg)-40;
-      const msg = Math.floor(t/450)%2===0 ? "blah blah blah" : "circling back...";
+      const rx=pipeX(seg)-40;
+      const msgs=["blah blah blah","circling back...","any blockers?"];
+      const msg=msgs[Math.floor(t/450)%3];
       const bx=rx+112, by=374;
       ctx.fillStyle="#f4f2ec";
       ctx.fillRect(bx-54,by-15,108,24);
       ctx.beginPath(); ctx.moveTo(bx+20,by+9); ctx.lineTo(bx+28,by+21); ctx.lineTo(bx+32,by+9); ctx.closePath(); ctx.fill();
-      text(msg,bx,by+2,10,"#0d0f14");
+      text(msg,bx,by+2,10,"#05030c");
     }
-    // 4) pipes over him (so he vanishes into them)
     for(let i=0;i<4;i++){
-      const x = pipeX(i);
-      ctx.fillStyle="#2e8b3a"; ctx.fillRect(x, 264, 88, 66);
-      ctx.fillStyle="#37a447"; ctx.fillRect(x-8, 250, 104, 18);
-      ctx.strokeStyle="#1d5c27"; ctx.lineWidth=3;
-      ctx.strokeRect(x, 264, 88, 66); ctx.strokeRect(x-8, 250, 104, 18);
+      const x=pipeX(i);
+      ctx.fillStyle="#0d3524"; ctx.fillRect(x,264,88,66);
+      ctx.fillStyle="#124a30"; ctx.fillRect(x-8,250,104,18);
+      glow(GREEN,10); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
+      ctx.strokeRect(x,264,88,66); ctx.strokeRect(x-8,250,104,18); noglow();
     }
-    // 5) earth patch between pipe bottom and room top (hides transit)
-    ctx.fillStyle="#241a12";
-    for(let i=0;i<4;i++) ctx.fillRect(pipeX(i)-8, 332, 104, 28);
-    meter(340, 90, 280, Math.max(0.05, 1 - ((t/T)%4)*0.24), "MASK METER");
+    ctx.fillStyle="#0e0818";
+    for(let i=0;i<4;i++) ctx.fillRect(pipeX(i)-8,332,104,28);
+    meterBar(340,90,280,Math.max(0.05,1-((t/T)%4)*0.24),"MASK METER");
+    rain(t);
   }},
 
+/* 4 · THE TRANSLATION GAP */
 { world:"WORLD 2", title:"The Translation Gap",
   caption:[
     ["q","“You clearly see the opportunity. But the moment you pitch it, people think you're a space cadet.”"],
     ["l","The idea isn't wrong. The bridge is missing."]],
   render(t){
-    floorLine(440);
-    // the gap in the floor
-    ctx.fillStyle="#0d0f14"; ctx.fillRect(400,436,180,104);
-    text("THE GAP", 490, 500, 13, "#ff6b6b");
-    drawMap(SPRITES.joseIdle, 200, 340, S);
-    // jose's glowing blueprint
-    ctx.strokeStyle="#7ee787"; ctx.lineWidth=2; ctx.strokeRect(150,180,180,110);
-    for(let i=1;i<4;i++){ ctx.beginPath(); ctx.moveTo(150,180+i*27); ctx.lineTo(330,180+i*27); ctx.stroke(); }
-    text("THE SYSTEM (fully formed)", 240, 170, 12, "#7ee787");
-    // npc sees a scribble
-    drawMap(SPRITES.joseIdle, 700, 340, S, "#5c6378");
-    ctx.strokeStyle="#8a8fa3"; ctx.beginPath();
-    for(let i=0;i<40;i++){ const a=i/6; ctx.lineTo(760+30*Math.cos(a*3)+i, 220+26*Math.sin(a*5)); }
+    street(t,440,0);
+    car(t,436,-1,0.22,300);
+    ctx.fillStyle="rgba(232,230,242,0.10)";
+    for(let i=0;i<6;i++) ctx.fillRect(70+i*50,452,28,60);
+    steam(120,440,t,0.4);
+    ctx.fillStyle="#05030c"; ctx.fillRect(400,436,180,104);
+    glow(PINK,14); ctx.strokeStyle=PINK; ctx.lineWidth=2; ctx.strokeRect(400,436,180,104); noglow();
+    neon("THE GAP",490,500,13,PINK);
+    // ghost bridge flickers across the gap, then vanishes (world 3 foreshadow)
+    const bp=(t%4200)/4200;
+    if(bp>0.68){
+      const a=Math.max(0,0.5*(1-Math.abs(bp-0.84)/0.16));
+      ctx.setLineDash([6,6]); ctx.strokeStyle=`rgba(0,229,255,${a})`; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(400,436); ctx.lineTo(580,436); ctx.stroke(); ctx.setLineDash([]);
+      if(bp>0.78) text("bridge not found",490,424,10,`rgba(0,229,255,${a+0.2})`);
+    }
+    drawMap(SPRITES.joseIdle,200,340,S);
+    blink(200,340,S,t);
+    const prog = Math.min(1, t/1600);
+    glow(CYAN,12); ctx.strokeStyle=CYAN; ctx.lineWidth=2;
+    ctx.strokeRect(150,180,180*Math.min(1,prog*1.4),110);
+    for(let i=1;i<4;i++){ if(prog > 0.3+i*0.18){
+      ctx.beginPath(); ctx.moveTo(150,180+i*27); ctx.lineTo(330,180+i*27); ctx.stroke(); } }
+    noglow();
+    neon("THE SYSTEM (fully formed)",240,168,12,CYAN);
+    drawMap(SPRITES.joseIdle,700,340,S,"#4a4066");
+    ctx.strokeStyle="#7d7a99"; ctx.beginPath();
+    for(let i=0;i<40;i++){ const a=i/6;
+      ctx.lineTo(760+30*Math.cos(a*3+t/900)+i,220+26*Math.sin(a*5+t/700)); }
     ctx.stroke();
-    text("what they see", 790, 170, 12, "#8a8fa3");
-    text("?", 745, 320, 30, "#ffd75e");
+    text("what they see",790,168,12,"#7d7a99");
+    const qb = Math.floor(t/600)%2 ? 0 : 4;
+    neon("?",745,320-qb,30,GOLD);
+    rain(t);
   }},
 
+/* 5 · GAME OVER? */
 { world:"WORLD 2", title:"Game Over?",
   caption:[
     ["q","“I stopped trying to fix my brain. I built it a second one.”"]],
   render(t){
-    if(t<1600){
-      if(Math.floor(t/240)%2===0) text("GAME OVER?", W/2, 250, 64, "#ff6b6b");
+    // CRT scanlines
+    ctx.fillStyle="rgba(255,255,255,0.025)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    if(t<1900){
+      if(Math.floor(t/240)%2===0) neon("GAME OVER?",W/2,240,64,PINK);
+      const n=Math.max(0,9-Math.floor(t/200));
+      text("CONTINUE? "+n,W/2,320,18,"#7d7a99");
+      text("(same brain, same settings)",W/2,352,12,"#4a4066");
     } else {
-      // glitch flicker then the line
-      if(t<2100 && Math.floor(t/70)%2===0) text("GAME OVER?", W/2+(t%13)-6, 250, 64, "#454c60");
-      text("I stopped trying to fix my brain.", W/2, 330, 26, "#e8e6df");
-      text("I built it a second one.", W/2, 375, 30, "#7ee787");
+      if(t<2400 && Math.floor(t/70)%2===0) text("GAME OVER?",W/2+(t%13)-6,240,64,"#2a1a44");
+      text("I stopped trying to fix my brain.",W/2,330,26,"#e8e6f2");
+      neon("I built it a second one.",W/2,375,30,GREEN);
     }
   }},
 
+/* 6 · WORLD 3 TITLE CARD */
 { world:"", title:"",
-  caption:[["l",""]],
+  caption:[],
   render(t){
-    text("WORLD 3", W/2, 220, 24, "#8a8fa3");
-    text("THE SECOND BRAIN", W/2, 285, 52, "#ffd75e");
+    skyline(t,420,0);
+    text("WORLD 3",W/2,190,24,"#7d7a99");
+    neon("THE SECOND BRAIN",W/2,260,52,GOLD);
+    // install bar
+    const lp=Math.min(1,t/1600);
+    box(330,310,300,14,"#0d0820","#2a1a44");
+    glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(332,312,296*lp,10); noglow();
+    text(lp<1 ? "installing a better system..." : "ready.",W/2,352,12,"#7d7a99");
+    rain(t);
   }},
 
-/* ── WORLD 3: THE BUILD ── */
+/* 7 · THE ROOMS */
 { world:"WORLD 3", title:"The Rooms",
   caption:[
     ["q","“It's embarrassingly simple. Flat folders. Markdown files.”"],
@@ -394,277 +572,430 @@ const SCENES = [
     ["l","I'd been offloading my brain into Claude for months. No structure. Ideas went in, nothing came back."],
     ["l","The convo plus the structure is what made it click."]],
   render(t){
-    const rooms=[["inbox/","mail slot. anything fits"],["notes/","one idea per tile"],
-                 ["daily/","the archive vault"],["projects/","status + decisions"],
-                 ["people/","mental models"],["transcripts/","my own talks"]];
+    street(t,470,0);
+    steam(500,470,t,0.1);
+    const rooms=[["inbox/",PINK,"✉"],["notes/",CYAN,"◆"],["daily/",GOLD,"▤"],
+                 ["projects/",GREEN,"⚑"],["people/",PINK,"☺"],["transcripts/",CYAN,"♪"]];
     rooms.forEach((r,i)=>{
-      const x=110+(i%3)*260, y=90+Math.floor(i/3)*180;
-      room(x,y,220,130,"#1c2130","#7ee787");
-      text(r[0], x+110, y+55, 20, "#ffd75e");
-      text(r[1], x+110, y+85, 12, "#8a8fa3");
+      const x=110+(i%3)*260, y=100+Math.floor(i/3)*150;
+      sign(x,y,220,86,r[0],r[1],20,t+i*997);
+      neon(r[2], x+30, y+52, 18, r[1]);
+      ctx.fillStyle="#0a0714"; ctx.fillRect(x+80,y+86,60,470-y-86);
     });
-    drawMap(SPRITES.joseWalk, W/2-36, 445, 5);
+    // jose patrols his own street
+    const px3=100+((t/9)%660);
+    walker(px3, 385, 5, t);
+    rain(t);
   }},
 
+/* 8 · THE POWER-UP */
 { world:"WORLD 3", title:"The Power-Up",
   caption:[
     ["q","“One file changes everything. CLAUDE.md programs how the AI behaves inside my world.”"],
     ["l","It's the difference between a chatbot and a collaborator who knows the whole system."]],
   render(t){
-    floorLine(440);
-    drawMap(SPRITES.joseIdle, 300, 340, S);
-    // floating file
-    const fy = 180+12*Math.sin(t/400);
-    room(560,fy,150,90,"#1c2130","#ffd75e");
-    text("CLAUDE.md", 635, fy+40, 16, "#ffd75e");
-    text("★", 635, fy+70, 20, "#ffd75e");
-    // glow rays
-    ctx.strokeStyle="rgba(255,215,94,0.4)"; ctx.lineWidth=2;
+    box(0,0,W,540,"#07040f");
+    box(60,60,120,380,"#0d0820"); box(780,60,120,380,"#0d0820");
+    ctx.strokeStyle="#1c1030"; ctx.lineWidth=2;
+    for(let i=0;i<4;i++){ ctx.strokeRect(70,90+i*90,100,4); }
+    ctx.fillStyle="#120a26"; ctx.fillRect(180,60,4,380); ctx.fillRect(776,60,4,380);
+    sign(430,80,80,32,"24H",PINK,13,t);
+    ctx.strokeStyle="#241436"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(0,442); ctx.lineTo(W,442); ctx.stroke();
+    wet(444,80);
+    steam(250,442,t,0.3);
+    drawMap(SPRITES.joseIdle,300,340,S);
+    blink(300,340,S,t);
+    const fy=180+12*Math.sin(t/400);
+    glow(GOLD,20); box(560,fy,150,90,"#160c26",GOLD);
+    neon("CLAUDE.md",635,fy+40,16,GOLD);
+    neon("★",635,fy+70,20,GOLD); noglow();
+    ctx.strokeStyle="rgba(255,215,94,0.35)"; ctx.lineWidth=2;
     for(let i=0;i<6;i++){ const a=i*1.05+t/900;
-      ctx.beginPath(); ctx.moveTo(635,fy+45); ctx.lineTo(635+90*Math.cos(a), fy+45+90*Math.sin(a)); ctx.stroke(); }
-    // claude orb companion appears
-    if(t>1200) drawMap(SPRITES.orb, 420, 320+6*Math.sin(t/300), 5);
-    if(t>1200) text("+ COLLABORATOR JOINED", 480, 300, 13, "#9ecbff");
+      ctx.beginPath(); ctx.moveTo(635,fy+45); ctx.lineTo(635+90*Math.cos(a),fy+45+90*Math.sin(a)); ctx.stroke(); }
+    // orbiting sparkles
+    for(let i=0;i<5;i++){ const a=t/500+i*1.26, r2=62+10*Math.sin(t/300+i);
+      ctx.globalAlpha=0.5+0.5*Math.sin(t/200+i); ctx.fillStyle=GOLD;
+      ctx.fillRect(635+r2*Math.cos(a),fy+45+r2*Math.sin(a),3,3); ctx.globalAlpha=1; }
+    if(t>1200){ glow(CYAN,14); drawMap(SPRITES.orb,420,320+6*Math.sin(t/300),5); noglow();
+      neon("+ COLLABORATOR JOINED",480,300,13,CYAN); }
+    if(t>2400) neon("context loaded ✓",480,272,12,GREEN);
   }},
 
+/* 9 · THE DOORS */
 { world:"WORLD 3", title:"The Doors (Skills)",
   caption:[
     ["q","“Each door is just a markdown file. That's the part nobody believes.”"],
     ["l","No product. No plugin. Text files and context."],
     ["l","Remember the translation gap? COUNCIL and DOSSIERS are the bridge. I built one."]],
   render(t){
-    floorLine(455);
-    const doors=[["COUNCIL","21 advisors"],["HAT ROOM","six modes"],["DOSSIERS","people intel"],["BROADCAST","content"]];
+    street(t,455,0);
+    car(t,450,1,0.26,500);
+    const doors=[["COUNCIL","21 advisors",PINK],["HAT ROOM","six modes",CYAN],
+                 ["DOSSIERS","people intel",GOLD],["BROADCAST","content",GREEN]];
     doors.forEach((d,i)=>{
       const x=90+i*220;
-      room(x,150,160,305,"#1c2130","#454c60");
-      text(d[0], x+80, 135, 14, "#ffd75e");
-      text(d[1], x+80, 480, 11, "#8a8fa3");
+      box(x,150,160,305,"#0d0820","#2a1a44");
+      sign(x+10,116,140,28,d[0],d[2],12,t+i*1373);
+      text(d[1],x+80,480,11,"#7d7a99");
     });
-    // council door open: tiny advisors + goggins doing pushups
-    ctx.fillStyle="#10141f"; ctx.fillRect(96,156,148,293);
+    // council door open: advisors mid-debate
+    ctx.fillStyle="#07040f"; ctx.fillRect(96,156,148,293);
     for(let i=0;i<12;i++){ const ax=115+(i%4)*32, ay=200+Math.floor(i/4)*60;
-      ctx.fillStyle=["#7ee787","#ffd75e","#9ecbff","#ff6b6b"][i%4]; ctx.fillRect(ax,ay,14,22); }
-    const push = Math.floor(t/350)%2;
-    ctx.fillStyle="#ff6b6b"; ctx.fillRect(120, 420-(push?4:0), 26, 10);
-    text("goggins, pushups", 168, 442, 9, "#8a8fa3");
-    drawMap(SPRITES.joseIdle, 700, 355, S);
-    drawMap(SPRITES.orb, 800, 340+6*Math.sin(t/300), 4);
+      ctx.fillStyle=[GREEN,GOLD,CYAN,PINK][i%4]; ctx.globalAlpha=0.85;
+      ctx.fillRect(ax,ay+3*Math.sin(t/260+i*1.7),14,22); ctx.globalAlpha=1; }
+    const push=Math.floor(t/350)%2;
+    ctx.fillStyle=PINK; ctx.fillRect(120,420-(push?4:0),26,10);
+    text("goggins, pushups",168,442,9,"#7d7a99");
+    // hat room ajar: six hats on pedestals
+    ctx.fillStyle="#07040f"; ctx.fillRect(316,156,148,293);
+    const hatCols=["#f4f2ec","#ff4f6e","#5c6378","#ffd75e","#00ff88","#3f8cff"];
+    hatCols.forEach((hc,i)=>{
+      const hx=352+(i%2)*72, hy=216+Math.floor(i/2)*84;
+      ctx.fillStyle="#160c26"; ctx.fillRect(hx-16,hy+12,32,8);
+      ctx.fillStyle=hc; ctx.beginPath(); ctx.arc(hx,hy+8,12,Math.PI,0); ctx.fill();
+      ctx.fillRect(hx-16,hy+6,32,4);
+    });
+    drawMap(SPRITES.joseIdle,700,355,S);
+    blink(700,355,S,t);
+    glow(CYAN,10); drawMap(SPRITES.orb,800,340+6*Math.sin(t/300),4); noglow();
+    rain(t);
   }},
 
+/* 10 · BOSS FIGHT (LIVE DEMO) */
 { world:"LIVE", title:"Boss Fight",
   caption:[
     ["q","“That was the cartoon. Here's the actual thing, running. Give me a real problem.”"]],
   render(t){
-    text("▶ LIVE DEMO", W/2, 240, 54, "#7ee787");
-    text("BOSS FIGHT: your problem vs. the council", W/2, 300, 18, "#e8e6df");
-    if(Math.floor(t/500)%2===0) text("EXIT GAME → ENTER REAL WORLD", W/2, 360, 14, "#8a8fa3");
+    skyline(t,470,0);
+    neon("▶ LIVE DEMO",W/2,80,34,GREEN);
+    // versus layout
+    drawMap(SPRITES.joseIdle,170,200,6);
+    blink(170,200,6,t);
+    glow(CYAN,10); drawMap(SPRITES.orb,290,230+6*Math.sin(t/300),4); noglow();
+    if(Math.floor(t/400)%2===0) neon("VS",W/2,280,46,GOLD);
+    ctx.fillStyle="#0a0d20"; ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.fill();
+    glow(PINK,10); ctx.strokeStyle=PINK; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.stroke(); noglow();
+    text("?",720,288,48,"#7d7a99");
+    sign(110,410,200,34,"JOSE + CLAUDE",CYAN,12,t);
+    sign(620,410,200,34,"YOUR PROBLEM",PINK,12,t);
+    meterBar(110,390,200,1,"");
+    meterBar(620,390,200,1,"");
+    if(Math.floor(t/500)%2===0) text("EXIT GAME → ENTER REAL WORLD",W/2,510,14,"#7d7a99");
+    rain(t);
   }},
 
-/* ── WORLD 4: THE LEVERAGE ── */
+/* 11 · THE MATRIX MORNING */
 { world:"WORLD 4", title:"The Matrix Morning",
   caption:[
     ["q","“Five agents run before I wake up.”"],
     ["l","They write to daily/. The archive builds itself whether I show up or not."],
     ["l","The brief lands two ways: in my inbox to read, and as a podcast to hear."]],
   render(t){
-    // sleeping jose
-    floorLine(430);
-    room(90,330,240,100,"#1c2130");
-    drawMap(SPRITES.joseSleep, 130, 350, 5);
-    const z = Math.floor(t/600)%3;
-    text("z".repeat(z+1), 300, 320, 20, "#8a8fa3");
-    text("6:55 AM", 200, 300, 14, "#8a8fa3");
-    // five agents at work
+    box(0,0,W,540,"#07040f");
+    box(90,80,200,150,"#05030c","#2a1a44");
+    ctx.save(); ctx.beginPath(); ctx.rect(90,80,200,150); ctx.clip();
+    skyline(t,230,0);
+    const g=ctx.createLinearGradient(0,80,0,230);
+    g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(255,120,60,0.10)");
+    ctx.fillStyle=g; ctx.fillRect(90,80,200,150);
+    ctx.restore(); ctx.strokeStyle="#2a1a44"; ctx.strokeRect(90,80,200,150);
+    // the clock ticks toward the alarm
+    const min=Math.min(60,55+Math.floor(t/900));
+    text(min>=60 ? "7:00 AM" : "6:"+min+" AM",190,68,14,min>=60?GOLD:"#7d7a99");
+    box(90,330,240,100,"#0d0820","#2a1a44");
+    drawMap(SPRITES.joseSleep,130,350,5);
+    if(min<60) text("z".repeat(1+Math.floor(t/600)%3),300,320,20,"#7d7a99");
+    else neon("!",300,320,20,GOLD);
     const props=["news","charts","vendors","macro","scan"];
     for(let i=0;i<5;i++){ const ax=480+i*90, ay=170+8*Math.sin(t/250+i);
-      drawMap(SPRITES.agent, ax, ay, 5, ["#7ee787","#ffd75e","#9ecbff","#ff6b6b","#c98fff"][i]);
-      text(props[i], ax+15, ay+55, 10, "#8a8fa3");
-      // files flying to vault
-      const fx = ax+15-((t/6+i*40)%200);
-      ctx.fillStyle="#e8e6df"; ctx.fillRect(Math.max(fx,380), ay+10, 10, 12);
+      glow([GREEN,GOLD,CYAN,PINK,"#c98fff"][i],8);
+      drawMap(SPRITES.agent,ax,ay,5,[GREEN,GOLD,CYAN,PINK,"#c98fff"][i]); noglow();
+      text(props[i],ax+15,ay+55,10,"#7d7a99");
+      if(t>1200+i*550) neon("✓",ax+15,ay-14,12,GREEN);
+      const fx=ax+15-((t/6+i*40)%200);
+      ctx.fillStyle="#e8e6f2"; ctx.fillRect(Math.max(fx,380),ay+10,10,12);
     }
-    room(340,120,60,140,"#1c2130","#ffd75e"); text("VAULT", 370, 105, 11, "#ffd75e");
-    // the two artifacts
-    if(t>1500){ room(480,330,140,70,"#1c2130","#7ee787"); text("✉ THE BRIEF", 550, 370, 13, "#7ee787");
-      room(660,330,140,70,"#1c2130","#7ee787"); text("🎧 PODCAST", 730, 370, 13, "#7ee787"); }
+    box(340,120,60,140,"#0d0820",GOLD); neon("VAULT",370,105,11,GOLD);
+    text("daily/",370,280,11,"#7d7a99");
+    if(t>1500){ sign(480,330,140,70,"✉ THE BRIEF",GREEN,13,t);
+      sign(660,330,140,70,"🎧 PODCAST",CYAN,13,t); }
   }},
 
+/* 12 · I KNOW KUNG FU */
 { world:"WORLD 4", title:"I Know Kung Fu",
   caption:[
     ["q","“So I can absorb it on the bike without getting hit by a car.”"],
     ["l","By the time I walk into my first meeting, I'm the most informed person in the room."],
     ["l","And it cost me a commute."]],
   render(t){
-    // matrix tint
-    ctx.fillStyle="rgba(0,255,65,0.04)"; ctx.fillRect(0,0,W,H);
-    // scrolling city
-    floorLine(430);
-    for(let i=0;i<6;i++){ const bx=(i*220 - (t/5)%220);
-      room(bx,180,120,250,"#141824","#2a2f3d"); }
-    // jose on bike: reuse idle torso above wheels
-    const jx=W/2-40, jy=290, bounce=3*Math.sin(t/150);
-    drawMap(SPRITES.joseIdle, jx, jy+bounce, 5);
-    // frame connects rider to wheels
+    street(t,430,0.09);
+    car(t,456,-1,0.4,200);
+    steam(180,430,t,0.6);
+    const signs=[["MEMORY",CYAN],["NOODLES",PINK],["AI + HUMAN",GOLD],["SYNC",GREEN]];
+    signs.forEach((s2,i)=>{
+      const x=W-((t/4+i*260)%(W+300));
+      ctx.fillStyle="#1c1030"; ctx.fillRect(x+56,150,6,280);
+      sign(x,120,120,44,s2[0],s2[1],13,t+i*777);
+    });
+    const jx=W/2-40, jy=290, b2=3*Math.sin(t/150);
+    drawMap(SPRITES.joseIdle,jx,jy+b2,5);
     ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(jx+16,420); ctx.lineTo(jx+40,386);
     ctx.lineTo(jx+45,408); ctx.lineTo(jx+74,420); ctx.stroke();
-    // pedal cranks
     const pa=t/120;
     ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45+10*Math.cos(pa),408+10*Math.sin(pa)); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45-10*Math.cos(pa),408-10*Math.sin(pa)); ctx.stroke();
-    ctx.strokeStyle="#8a8fa3"; ctx.lineWidth=5;
-    ctx.beginPath(); ctx.arc(jx+16, 420, 24, 0, 7); ctx.stroke();
-    ctx.beginPath(); ctx.arc(jx+74, 420, 24, 0, 7); ctx.stroke();
-    // headphones
-    ctx.strokeStyle="#7ee787"; ctx.lineWidth=4;
-    ctx.beginPath(); ctx.arc(jx+30, jy+bounce+18, 22, Math.PI, 0); ctx.stroke();
-    // matrix text streaming past
+    ctx.strokeStyle="#7d7a99"; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.arc(jx+16,420,24,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(jx+74,420,24,0,7); ctx.stroke();
+    ctx.strokeStyle="rgba(125,122,153,0.5)"; ctx.lineWidth=2;
+    [[jx+16],[jx+74]].forEach(([cx])=>{
+      for(let k=0;k<3;k++){ const a=t/90+k*1.05;
+        ctx.beginPath(); ctx.moveTo(cx-22*Math.cos(a),420-22*Math.sin(a));
+        ctx.lineTo(cx+22*Math.cos(a),420+22*Math.sin(a)); ctx.stroke(); }
+    });
+    glow(CYAN,10); ctx.strokeStyle=CYAN; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(jx+30,jy+b2+18,22,Math.PI,0); ctx.stroke(); noglow();
+    // wet-road splash off the rear wheel
+    for(let i=0;i<3;i++){ const sp=(t/220+i*0.33)%1;
+      ctx.fillStyle=`rgba(140,180,255,${0.5*(1-sp)})`;
+      ctx.fillRect(jx+6-sp*24, 438-sp*16, 3, 3); }
+    ctx.globalAlpha=0.25;
+    ctx.strokeStyle="#7d7a99"; ctx.beginPath(); ctx.arc(jx+16,452,20,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(jx+74,452,20,0,7); ctx.stroke();
+    ctx.globalAlpha=1;
     const words=["S&P","AI capex","loyalty","DSP bids","M&A","agents","FX","LTV"];
-    words.forEach((w,i)=>{ const wx = W - ((t/4 + i*130)%(W+140));
-      text(w, wx, 120+ (i%3)*36, 14, "rgba(0,255,65,0.7)", "left"); });
-    if(t>1800 && Math.floor(t/400)%2===0) text("I KNOW KUNG FU.", W/2, 90, 34, "#00ff41");
+    words.forEach((w2,i)=>{ const wx=W-((t/4+i*130)%(W+140));
+      text(w2,wx,80+(i%3)*30,14,"rgba(0,255,65,0.75)","left"); });
+    if(t>1800 && Math.floor(t/400)%2===0) neon("I KNOW KUNG FU.",W/2,60,34,MATRIX);
+    rain(t);
   }},
 
+/* 13 · THE SAVE POINT */
 { world:"WORLD 4", title:"The Save Point",
   caption:[
     ["q","“Boxing and bowling are the only places my brain goes quiet. I didn't know why until I wrote it down.”"],
     ["l","The brain doesn't just store what I know. It stores what I've learned about how I work."],
     ["l","That insight is a note: notes/flow-as-leverage.md. Now recovery is scheduled, like shipping."]],
   render(t){
-    floorLine(440);
-    text("⛨ SAVE POINT ⛨", W/2, 90, 22, "#7ee787");
-    // boxing bag — hangs at glove height, right next to jose
-    ctx.strokeStyle="#454c60"; ctx.lineWidth=3;
-    const sway = 8*Math.sin(t/280);
-    ctx.beginPath(); ctx.moveTo(550,60); ctx.lineTo(550+sway*0.5,280); ctx.stroke();
-    ctx.fillStyle="#c94f4f"; ctx.fillRect(520+sway,280,60,130);
-    // jose boxing — gloves land on the bag
-    drawMap(SPRITES.joseBox, 440, 340, S);
-    if(Math.floor(t/350)%2===0) text("POW", 545, 260, 14, "#ffd75e");
-    // bowling lane hint
-    room(90,340,220,100,"#1c2130");
-    ctx.fillStyle="#f4f2ec"; ctx.beginPath(); ctx.arc(160,390,4,0,7); ctx.fill();
-    text("PERFECT", 200, 385, 13, "#ffd75e");
-    // mask meter refilling
-    meter(340, 140, 280, Math.min(1,(t/3500)), "MASK METER · REFILLING");
-    // the connection: this scene IS a note in the brain
-    room(300,470,360,40,"#1c2130","#7ee787");
-    text("notes/flow-as-leverage.md", W/2, 495, 13, "#7ee787");
+    box(0,0,W,540,"#07040f");
+    ctx.strokeStyle="#241436"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(0,440); ctx.lineTo(W,440); ctx.stroke();
+    wet(442,80);
+    neon("SAVE POINT",W/2,64,22,GREEN);
+    sign(60,90,140,44,"BOWL",PINK,18,t);
+    sign(760,90,140,44,"BOX",CYAN,18,t);
+    /* LEFT · bowling */
+    ctx.fillStyle="#2a1c10";
+    ctx.beginPath(); ctx.moveTo(80,436); ctx.lineTo(320,436); ctx.lineTo(282,240); ctx.lineTo(150,240); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="#3d2a18"; ctx.lineWidth=1.5;
+    for(let i=1;i<5;i++){
+      ctx.beginPath(); ctx.moveTo(80+i*48,436); ctx.lineTo(150+i*26.4,240); ctx.stroke(); }
+    const TB=4200, pB=(t%TB)/TB;
+    const rolled = pB>0.55, fallQ = Math.min(1,Math.max(0,(pB-0.55)/0.14));
+    const pinsX=[192,212,232,252];
+    pinsX.forEach((px2,i)=>{
+      ctx.save();
+      const dir = i<2 ? -1 : 1;
+      ctx.translate(px2, 258);
+      if(rolled) ctx.rotate(dir * fallQ * 1.35);
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(-4,-22,8,22);
+      ctx.fillStyle=PINK; ctx.fillRect(-4,-15,8,4);
+      ctx.restore();
+    });
+    if(pB>0.08 && pB<0.58){
+      const q=(pB-0.08)/0.5;
+      const bx2=200+ q*22, by2=420 - q*160, br=13-6*q;
+      glow(CYAN,8); ctx.fillStyle="#182848";
+      ctx.beginPath(); ctx.arc(bx2,by2,br,0,7); ctx.fill(); noglow();
+      // finger dots spin as it rolls
+      ctx.fillStyle="#8ee3ff";
+      ctx.fillRect(bx2+(br-5)*Math.cos(t/80), by2+(br-5)*Math.sin(t/80), 2,2);
+    }
+    if(rolled && pB<0.92) neon("STRIKE!",222,205,18,GOLD);
+    drawMap(SPRITES.joseWalkA,120,336,4.4);
+    /* RIGHT · boxing */
+    const TP=1000, q2=(t%TP)/TP;
+    const punching = q2>0.18 && q2<0.40;
+    const hitKick = (q2>0.30 && q2<0.85) ? Math.sin((q2-0.30)*9)*(1-q2)*26 : 0;
+    ctx.strokeStyle="#2a1a44"; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(648,150); ctx.lineTo(648+hitKick*0.5,270); ctx.stroke();
+    ctx.fillStyle="#a83a5e";
+    ctx.fillRect(620+hitKick,270,56,150);
+    ctx.fillStyle="#8f2e4e"; ctx.fillRect(620+hitKick,270,56,18);
+    drawMap(SPRITES.joseBox,692,336,S);
+    if(Math.floor(t/1100)%3===0){ ctx.fillStyle="#8ee3ff"; ctx.fillRect(756,324,3,6); }
+    if(punching){
+      const ext=(q2-0.18)/0.22;
+      glow(PINK,6); ctx.fillStyle="#ff4f6e";
+      ctx.fillRect(704-ext*52,382,52*ext+14,13); noglow();
+      if(q2>0.30) neon(Math.floor(t/2000)%2 ? "POW" : "THWACK",672,250,15,GOLD);
+    }
+    meterBar(340,140,280,Math.min(1,(t/3500)),"MASK METER · REFILLING");
+    glow(GREEN,10); box(300,478,360,40,"#0d0820",GREEN); noglow();
+    neon("notes/flow-as-leverage.md",W/2,503,13,GREEN);
   }},
 
+/* 14 · THE IDEA ROOM, REVISITED */
 { world:"WORLD 4", title:"The Idea Room, Revisited",
   caption:[
     ["q","“Same brain. Same hundred places. Nothing lost. Everything compounds.”"],
     ["l","inbox/ catches it. notes/ keeps it. The links connect it to everything I already know."]],
   render(t){
-    room(80,60,800,380,"#141824"); floorLine(440);
-    // the notes board on the back wall — real notes from the brain
-    text("notes/", 470, 100, 13, "#7ee787");
+    box(80,60,800,380,"#0d0820","#2a1a44");
+    sign(110,80,170,44,"IDEA FACTORY",CYAN,13,t);
+    neon("notes/", 470, 104, 13, GREEN);
     const names=["team-os","flow","loops","5-dollar"];
     names.forEach((n,i)=>{ const x=330+i*96;
-      room(x,112,84,34,"#1c2130","#454c60"); text(n,x+42,133,10,"#8a8fa3"); });
-    // inbox slot on the wall
-    room(800,220,60,80,"#1c2130","#7ee787"); text("inbox", 830, 208, 12, "#7ee787");
-    drawMap(SPRITES.joseIdle, W/2-36, 340, S);
-    // a few ambient thought bubbles (the hundred places haven't gone anywhere)
+      box(x,112,84,34,"#0d0820","#2a4436"); text(n,x+42,133,10,"#5aa880"); });
+    glow(GREEN,10); box(800,220,60,80,"#160c26",GREEN); noglow();
+    neon("inbox",830,208,12,GREEN);
+    drawMap(SPRITES.joseIdle,W/2-36,340,S);
+    blink(W/2-36,340,S,t);
     for(let i=0;i<3;i++){ const bx=170+i*80, by=210+18*Math.sin(t/800+i*2);
-      bubble(bx,by,12,"#454c60"); }
-    // THE idea's journey: head → inbox → becomes a note → links to old notes
+      bubbleC(bx,by,12,"#3d2a5e"); }
     const T=5200, p=(t%T)/T;
-    if(p<0.32){ // golden idea arcs from jose's head into the inbox slot
+    if(p<0.32){
       const q=p/0.32, sx=W/2+30, sy=310;
       const bx=sx+(828-sx)*q, by=sy+(255-sy)*q-80*Math.sin(q*Math.PI);
-      bubble(bx,by,13,"#ffd75e","!");
+      glow(GOLD,10); bubbleC(bx,by,13,GOLD,"!"); noglow();
     } else if(p<0.42){
-      text("caught", 830, 320, 11, "#ffd75e");
+      neon("caught", 830, 320, 11, GOLD);
     }
-    if(p>=0.36 && p<0.62){ // file card slides from inbox up to the board
+    if(p>=0.36 && p<0.62){
       const q=(p-0.36)/0.26;
       const cx=812+(714-812)*q, cy=250+(112-250)*q;
-      ctx.fillStyle="#f4f2ec"; ctx.fillRect(cx,cy,26,32);
-      ctx.fillStyle="#141824"; ctx.fillRect(cx+4,cy+6,18,2); ctx.fillRect(cx+4,cy+12,18,2);
+      glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(cx,cy,26,32); noglow();
+      ctx.fillStyle="#0d0820"; ctx.fillRect(cx+4,cy+6,18,2); ctx.fillRect(cx+4,cy+12,18,2);
     }
-    if(p>=0.62){ // it becomes a note and links itself to two old ones
+    if(p>=0.62){
       const q=(p-0.62)/0.38;
-      room(714,112,84,34,"#2e2810","#ffd75e"); text("new-idea",756,133,10,"#ffd75e");
-      ctx.strokeStyle="#7ee787"; ctx.lineWidth=2;
+      glow(GOLD,10); box(714,112,84,34,"#241c08",GOLD); noglow();
+      text("new-idea",756,133,10,GOLD);
+      glow(GREEN,6); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
       if(q>0.15){ ctx.beginPath(); ctx.moveTo(756,146); ctx.lineTo(756,168);
-        ctx.lineTo(372,168); ctx.lineTo(372,146); ctx.stroke(); }
+        ctx.lineTo(372,168); ctx.lineTo(372,146); ctx.stroke();
+        ctx.strokeRect(330,112,84,34); } // linked tile lights up
       if(q>0.5){ ctx.beginPath(); ctx.moveTo(740,146); ctx.lineTo(740,180);
-        ctx.lineTo(468,180); ctx.lineTo(468,146); ctx.stroke(); }
-      if(q>0.8) text("linked ✓", 560, 205, 12, "#7ee787");
+        ctx.lineTo(468,180); ctx.lineTo(468,146); ctx.stroke();
+        ctx.strokeRect(426,112,84,34); }
+      noglow();
+      if(q>0.8) neon("linked ✓", 560, 205, 12, GREEN);
     }
   }},
 
+/* 15 · FINAL SCREEN · DAWN */
 { world:"WORLD 4", title:"Final Screen",
   caption:[],
   render(t){
-    drawMap(SPRITES.joseIdle, W/2-36, 130, S);
-    text("I didn't fix my brain.", W/2, 300, 30, "#e8e6df");
-    text("I built for it.", W/2, 345, 34, "#ffd75e");
-    if(t>1400) text("LEVERAGE, NOT COPE.", W/2, 430, 26, "#7ee787");
+    // the rain has stopped. the sun is coming up.
+    const g=ctx.createLinearGradient(0,120,0,430);
+    g.addColorStop(0,"#05030c"); g.addColorStop(1,"rgba(255,130,60,0.20)");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,430);
+    glow("#ff9a4a",24); ctx.fillStyle="rgba(255,154,74,0.7)";
+    ctx.beginPath(); ctx.arc(480,432,44,Math.PI,0); ctx.fill(); noglow();
+    skyline(t,430,0);
+    ctx.strokeStyle="#241436"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(0,430); ctx.lineTo(W,430); ctx.stroke();
+    wet(432,80);
+    steam(760,430,t,0.2);
+    drawMap(SPRITES.joseIdle,W/2-36,130,S);
+    blink(W/2-36,130,S,t);
+    glow(CYAN,10); drawMap(SPRITES.orb,W/2+60,160+6*Math.sin(t/300),4); noglow();
+    text("I didn't fix my brain.",W/2,300,30,"#e8e6f2");
+    neon("I built for it.",W/2,348,34,GOLD);
+    if(t>1400) neon("LEVERAGE, NOT COPE.",W/2,412,26,GREEN);
   }},
 
-/* ── ENDING SEQUENCE ── */
+/* 16 · PLAYER 2 START */
 { world:"ENDING", title:"Player 2 Start",
   caption:[
     ["q","“Everything I just showed you is one git clone away. Player 2 is you.”"],
     ["l","Starter kit: folders, a template CLAUDE.md, one working skill."]],
   render(t){
-    if(Math.floor(t/450)%2===0) text("PLAYER 2 START", W/2, 130, 44, "#ffd75e");
-    text("YOUR BRAIN HERE", W/2, 175, 18, "#8a8fa3");
-    drawQR("starter", W/2-90, 220, 180, CONFIG.urls.starter);
+    skyline(t,520,0);
+    if(Math.floor(t/450)%2===0) neon("PLAYER 2 START",W/2,110,44,GOLD);
+    text("YOUR BRAIN HERE",W/2,150,18,"#7d7a99");
+    drawQR("starter",W/2-90,190,180,CONFIG.urls.starter,CYAN);
+    // player 2: a silhouette waiting to spawn
+    drawMap(SPRITES.joseIdle, W/2+180, 240, 5, "#241436");
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/400);
+    neon("?",W/2+216,226,22,GOLD); ctx.globalAlpha=1;
+    text("P2",W/2+216,348,12,"#7d7a99");
   }},
 
+/* 17 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
     ["l","Full walkthrough. All secret rooms. Weekly patch notes for my brain."]],
   render(t){
-    // pixel book cover
-    room(180,100,260,340,"#1c2130","#ffd75e");
-    text("LOOPS", 310, 190, 34, "#ffd75e");
-    text("AND", 310, 230, 22, "#e8e6df");
-    text("LETTERS", 310, 275, 34, "#ffd75e");
-    text("· OFFICIAL ·", 310, 320, 13, "#8a8fa3");
-    text("STRATEGY GUIDE", 310, 345, 16, "#7ee787");
-    drawQR("substack", 540, 150, 200, CONFIG.urls.substack);
-    text("weekly patch notes for my brain", 640, 420, 13, "#8a8fa3");
+    skyline(t,520,0);
+    const pulse = 10+6*Math.sin(t/400);
+    glow(GOLD,pulse); box(180,90,260,340,"#0d0820",GOLD); noglow();
+    neon("LOOPS",310,180,34,GOLD);
+    text("AND",310,220,22,"#e8e6f2");
+    neon("LETTERS",310,265,34,GOLD);
+    text("· OFFICIAL ·",310,310,13,"#7d7a99");
+    neon("STRATEGY GUIDE",310,338,16,GREEN);
+    // NEW! burst
+    ctx.save(); ctx.translate(430,105); ctx.rotate(0.3+0.06*Math.sin(t/300));
+    glow(PINK,10); ctx.fillStyle=PINK; ctx.fillRect(-30,-13,60,26); noglow();
+    text("NEW!",0,5,13,"#05030c"); ctx.restore();
+    drawQR("substack",540,120,200,CONFIG.urls.substack,PINK);
+    text("weekly patch notes for my brain",640,410,13,"#7d7a99");
   }},
 
+/* 18 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
     ["q","They're the ones with the best context.”"]],
   render(t){
-    text("CO-OP MODE", W/2, 140, 40, "#7ee787");
-    text("This game is better multiplayer.", W/2, 185, 16, "#e8e6df");
-    drawQR("linkedin", W/2-90, 220, 180, CONFIG.urls.linkedin);
-    if(t>1200) text("THANKS FOR PLAYING", W/2, 500, 14, "#8a8fa3");
+    skyline(t,520,0);
+    neon("CO-OP MODE",W/2,120,40,GREEN);
+    text("This game is better multiplayer.",W/2,162,16,"#e8e6f2");
+    drawQR("linkedin",W/2-90,195,180,CONFIG.urls.linkedin,CYAN);
+    // the party, assembled
+    drawMap(SPRITES.joseIdle, W/2-230, 250, 5);
+    blink(W/2-230, 250, 5, t);
+    glow(CYAN,10); drawMap(SPRITES.orb, W/2-150, 280+6*Math.sin(t/300), 4); noglow();
+    drawMap(SPRITES.joseIdle, W/2+170, 250, 5, "#3d2a5e");
+    text("you?",W/2+206,352,11,"#7d7a99");
+    // confetti
+    if(t>1200){
+      for(let i=0;i<18;i++){
+        const cy2=((t/6)+i*97)%560-20, cx2=60+(i*151)%840;
+        ctx.fillStyle=[PINK,CYAN,GOLD,GREEN][i%4];
+        ctx.fillRect(cx2+8*Math.sin(t/300+i), cy2, 4, 4);
+      }
+      text("THANKS FOR PLAYING",W/2,510,14,"#7d7a99");
+    }
   }},
 ];
 
-/* ═══════════ 5. NAV + LOOP ═══════════ */
-let idx = 0, sceneStart = performance.now();
-function setScene(i){ idx = Math.max(0, Math.min(SCENES.length-1, i)); sceneStart = performance.now(); renderCaption(); }
+/* ═══════════ NAV + LOOP ═══════════ */
+let idx=0, sceneStart=performance.now();
+function setScene(i){ idx=Math.max(0,Math.min(SCENES.length-1,i)); sceneStart=performance.now(); renderCaption(); }
 function renderCaption(){
-  const s = SCENES[idx];
-  cap.innerHTML = (s.title?`<span class="t">${s.world? s.world+" · ":""}${s.title}</span>`:"") +
+  const s=SCENES[idx];
+  cap.innerHTML=(s.title?`<span class="t">${s.world? s.world+" · ":""}${s.title}</span>`:"")+
     s.caption.map(([k,l])=>`<span class="${k}">${l}</span>`).join("");
-  hud.textContent = `scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
+  hud.textContent=`scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
 }
 function frame(now){
-  ctx.fillStyle = "#0d0f14"; ctx.fillRect(0,0,W,H);
-  SCENES[idx].render(now - sceneStart);
+  ctx.fillStyle="#05030c"; ctx.fillRect(0,0,W,H);
+  SCENES[idx].render(now-sceneStart);
   requestAnimationFrame(frame);
 }
-cv.addEventListener("click", ()=>setScene(idx+1));
-addEventListener("keydown", e=>{
+cv.addEventListener("click",()=>setScene(idx+1));
+addEventListener("keydown",e=>{
   if(e.key==="ArrowRight"||e.key===" ") setScene(idx+1);
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
-  else if(/^[1-9]$/.test(e.key)){ // jump: 1=start 2=world1 3=world2 4=world3 5=live 6=world4 7=ending
+  else if(/^[1-9]$/.test(e.key)){
     const jumps={1:0,2:1,3:3,4:7,5:10,6:11,7:16}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
