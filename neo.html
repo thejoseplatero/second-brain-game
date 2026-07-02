@@ -1054,9 +1054,53 @@ const SCENES = [
       box(x,112,84,34,"#0d0820","#2a4436"); text(n,x+42,133,10,"#5aa880"); });
     glow(GREEN,10); box(800,220,60,80,"#160c26",GREEN); noglow();
     neon("inbox",830,208,12,GREEN);
+    // TODO MUNCHER II: the sequel cabinet. the system plays itself.
+    ctx.fillStyle="#160c26"; ctx.fillRect(120,210,210,230);
+    glow(GREEN,10); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
+    ctx.strokeRect(120,210,210,230); noglow();
+    ctx.fillStyle="#0d0820"; ctx.fillRect(128,218,194,34);
+    neon("TODO MUNCHER II",225,241,14,GREEN);
+    ctx.fillStyle="#05030c"; ctx.fillRect(140,258,170,120);
+    ctx.strokeStyle="#2a1a44"; ctx.lineWidth=2; ctx.strokeRect(140,258,170,120);
+    ctx.save(); ctx.beginPath(); ctx.rect(140,258,170,120); ctx.clip();
+    // this time the score goes DOWN
+    const TC=17000, tc=t%TC, left=Math.max(0,40-Math.floor(tc/350));
+    text("TODO: "+left,150,274,10,GOLD,"left");
+    text("filed: "+(40-left),230,274,10,GREEN,"left");
+    if(Math.floor(t/700)%2===0) text("AUTO",302,274,8,"#7d7a99","right");
+    // five agent-colored munchers eat the backlog in three lanes
+    const laneY=[300,330,360], pacCols=[GREEN,GOLD,CYAN,PINK,"#c98fff"];
+    let pi=0;
+    laneY.forEach((ly,li)=>{
+      const count = li===0 ? 1 : 2;
+      const pacs=[];
+      for(let k2=0;k2<count;k2++){
+        const px5=140+((tc/(9+li*2))+k2*90+li*40)%176;
+        pacs.push(px5);
+        const mouth=0.25+0.45*Math.abs(Math.sin(t/90+li+k2));
+        ctx.fillStyle=pacCols[pi++ %5];
+        ctx.beginPath(); ctx.moveTo(px5,ly);
+        ctx.arc(px5,ly,9,mouth,6.28-mouth); ctx.closePath(); ctx.fill();
+      }
+      for(let d4=0;d4<11;d4++){
+        const dx4=148+d4*15;
+        const eaten = pacs.some(px5 => dx4<px5 && px5-dx4<55);
+        if(!eaten){ ctx.fillStyle="#f4f2ec"; ctx.fillRect(dx4,ly-2,3,3); }
+      }
+    });
+    if(left===0){ ctx.fillStyle="rgba(5,3,12,0.75)"; ctx.fillRect(140,258,170,120);
+      neon("INBOX ZERO ✓",225,324,16,GREEN); }
+    ctx.restore();
+    ctx.fillStyle="#2a1a44"; ctx.fillRect(132,384,186,22);
+    ctx.strokeStyle="#3d2a5e"; ctx.strokeRect(132,384,186,22);
+    ctx.fillStyle="#7d7a99"; ctx.fillRect(168,376,5,12);
+    ctx.fillStyle="#f4f2ec"; ctx.beginPath(); ctx.arc(170,373,6,0,7); ctx.fill();
+    ctx.fillStyle="#ff4f6e"; ctx.beginPath(); ctx.arc(258,395,6,0,7); ctx.fill();
+    ctx.fillStyle="#ffd75e"; ctx.beginPath(); ctx.arc(284,395,6,0,7); ctx.fill();
+    ctx.fillStyle="#0d0820"; ctx.fillRect(128,406,194,34);
     drawMap(SPRITES.joseIdle,W/2-36,340,S);
     blink(W/2-36,340,S,t);
-    for(let i=0;i<3;i++){ const bx=170+i*80, by=210+18*Math.sin(t/800+i*2);
+    for(let i=0;i<3;i++){ const bx=380+i*70, by=200+18*Math.sin(t/800+i*2);
       bubbleC(bx,by,12,"#3d2a5e"); }
     const T=5200, p=(t%T)/T;
     if(p<0.32){
