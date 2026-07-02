@@ -404,7 +404,7 @@ const SCENES = [
     if(f<0.18){ const to=pipeX(seg)+8, start= seg===0? -90 : pipeX(seg-1)+8;
       jx=start+(to-start)*(f/0.18); jy=groundY; walking=true; }
     else if(f<0.33){ jx=pipeX(seg)+8; jy=groundY+((f-0.18)/0.15)*172; }
-    else if(f<0.72){ inRoom=true; jx=pipeX(seg)-28; jy=400; }
+    else if(f<0.72){ inRoom=true; jx=pipeX(seg)+10; jy=400; }
     else if(f<0.87){ jx=pipeX(seg)+8; jy=groundY+(1-((f-0.72)/0.15))*172; }
     else { jx=pipeX(seg)+8; jy=groundY; }
     // surface + earth
@@ -467,7 +467,7 @@ const SCENES = [
     for(let i=0;i<6;i++) ctx.fillRect(70+i*50,452,28,60);
     steam(120,440,t,0.4);
     // the gap — hazard glow
-    ctx.fillStyle="#05030c"; ctx.fillRect(400,436,180,110);
+    ctx.fillStyle="#05030c"; ctx.fillRect(400,436,180,104);
     glow(PINK,14); ctx.strokeStyle=PINK; ctx.lineWidth=2; ctx.strokeRect(400,436,180,104); noglow();
     neon("THE GAP",490,500,13,PINK);
     drawMap(SPRITES.joseIdle,200,340,S);
@@ -530,7 +530,7 @@ const SCENES = [
       // doorway under each sign
       ctx.fillStyle="#0a0714"; ctx.fillRect(x+80,y+86,60,470-y-86);
     });
-    walker(W/2-36, 372, 5, t);
+    walker(W/2-36, 385, 5, t);
     rain(t);
   }},
 
@@ -654,6 +654,10 @@ const SCENES = [
     // jose on bike — pedaling knees + bobbing
     const jx=W/2-40, jy=290, b2=3*Math.sin(t/150);
     drawMap(SPRITES.joseIdle,jx,jy+b2,5);
+    // frame connects rider to wheels
+    ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(jx+16,420); ctx.lineTo(jx+40,386);
+    ctx.lineTo(jx+45,408); ctx.lineTo(jx+74,420); ctx.stroke();
     // pedal crank animation
     const pa=t/120;
     ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
@@ -745,7 +749,7 @@ const SCENES = [
       ctx.fillRect(704-ext*52,382,52*ext+14,13); noglow();
       if(q2>0.30) neon("POW",672,250,15,GOLD);
     }
-    meterBar(340,140,280,Math.min(1,(t/3500)),"MASK METER — REFILLING");
+    meterBar(340,140,280,Math.min(1,(t/3500)),"MASK METER · REFILLING");
     glow(GREEN,10); box(300,478,360,40,"#0d0820",GREEN); noglow();
     neon("notes/flow-as-leverage.md",W/2,503,13,GREEN);
   }},
@@ -834,7 +838,7 @@ const SCENES = [
     neon("LOOPS",310,180,34,GOLD);
     text("AND",310,220,22,"#e8e6f2");
     neon("LETTERS",310,265,34,GOLD);
-    text("— OFFICIAL —",310,310,13,"#7d7a99");
+    text("· OFFICIAL ·",310,310,13,"#7d7a99");
     neon("STRATEGY GUIDE",310,338,16,GREEN);
     drawQR("substack",540,120,200,CONFIG.urls.substack,PINK);
     text("weekly patch notes for my brain",640,410,13,"#7d7a99");
@@ -858,7 +862,7 @@ let idx=0, sceneStart=performance.now();
 function setScene(i){ idx=Math.max(0,Math.min(SCENES.length-1,i)); sceneStart=performance.now(); renderCaption(); }
 function renderCaption(){
   const s=SCENES[idx];
-  cap.innerHTML=(s.title?`<span class="t">${s.world? s.world+" — ":""}${s.title}</span>`:"")+
+  cap.innerHTML=(s.title?`<span class="t">${s.world? s.world+" · ":""}${s.title}</span>`:"")+
     s.caption.map(([k,l])=>`<span class="${k}">${l}</span>`).join("");
   hud.textContent=`scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
 }

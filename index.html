@@ -297,7 +297,7 @@ const SCENES = [
     } else if(f < 0.33){ // descend through the pipe
       jx = pipeX(seg)+8; jy = groundY + ((f-0.18)/0.15)*172;
     } else if(f < 0.72){ // in the meeting
-      inRoom = true; jx = pipeX(seg)-28; jy = 400;
+      inRoom = true; jx = pipeX(seg)+10; jy = 400;
     } else if(f < 0.87){ // ascend
       jx = pipeX(seg)+8; jy = groundY + (1-((f-0.72)/0.15))*172;
     } else { jx = pipeX(seg)+8; jy = groundY; } // back on the surface
@@ -349,7 +349,7 @@ const SCENES = [
   render(t){
     floorLine(440);
     // the gap in the floor
-    ctx.fillStyle="#0d0f14"; ctx.fillRect(400,436,180,110);
+    ctx.fillStyle="#0d0f14"; ctx.fillRect(400,436,180,104);
     text("THE GAP", 490, 500, 13, "#ff6b6b");
     drawMap(SPRITES.joseIdle, 200, 340, S);
     // jose's glowing blueprint
@@ -505,6 +505,14 @@ const SCENES = [
     // jose on bike: reuse idle torso above wheels
     const jx=W/2-40, jy=290, bounce=3*Math.sin(t/150);
     drawMap(SPRITES.joseIdle, jx, jy+bounce, 5);
+    // frame connects rider to wheels
+    ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(jx+16,420); ctx.lineTo(jx+40,386);
+    ctx.lineTo(jx+45,408); ctx.lineTo(jx+74,420); ctx.stroke();
+    // pedal cranks
+    const pa=t/120;
+    ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45+10*Math.cos(pa),408+10*Math.sin(pa)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45-10*Math.cos(pa),408-10*Math.sin(pa)); ctx.stroke();
     ctx.strokeStyle="#8a8fa3"; ctx.lineWidth=5;
     ctx.beginPath(); ctx.arc(jx+16, 420, 24, 0, 7); ctx.stroke();
     ctx.beginPath(); ctx.arc(jx+74, 420, 24, 0, 7); ctx.stroke();
@@ -539,7 +547,7 @@ const SCENES = [
     ctx.fillStyle="#f4f2ec"; ctx.beginPath(); ctx.arc(160,390,4,0,7); ctx.fill();
     text("PERFECT", 200, 385, 13, "#ffd75e");
     // mask meter refilling
-    meter(340, 140, 280, Math.min(1,(t/3500)), "MASK METER — REFILLING");
+    meter(340, 140, 280, Math.min(1,(t/3500)), "MASK METER · REFILLING");
     // the connection: this scene IS a note in the brain
     room(300,470,360,40,"#1c2130","#7ee787");
     text("notes/flow-as-leverage.md", W/2, 495, 13, "#7ee787");
@@ -619,7 +627,7 @@ const SCENES = [
     text("LOOPS", 310, 190, 34, "#ffd75e");
     text("AND", 310, 230, 22, "#e8e6df");
     text("LETTERS", 310, 275, 34, "#ffd75e");
-    text("— OFFICIAL —", 310, 320, 13, "#8a8fa3");
+    text("· OFFICIAL ·", 310, 320, 13, "#8a8fa3");
     text("STRATEGY GUIDE", 310, 345, 16, "#7ee787");
     drawQR("substack", 540, 150, 200, CONFIG.urls.substack);
     text("weekly patch notes for my brain", 640, 420, 13, "#8a8fa3");
@@ -642,7 +650,7 @@ let idx = 0, sceneStart = performance.now();
 function setScene(i){ idx = Math.max(0, Math.min(SCENES.length-1, i)); sceneStart = performance.now(); renderCaption(); }
 function renderCaption(){
   const s = SCENES[idx];
-  cap.innerHTML = (s.title?`<span class="t">${s.world? s.world+" — ":""}${s.title}</span>`:"") +
+  cap.innerHTML = (s.title?`<span class="t">${s.world? s.world+" · ":""}${s.title}</span>`:"") +
     s.caption.map(([k,l])=>`<span class="${k}">${l}</span>`).join("");
   hud.textContent = `scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
 }
