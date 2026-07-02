@@ -380,10 +380,50 @@ const SCENES = [
       ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-4,y+9); ctx.stroke(); }
     ctx.restore();
     ctx.strokeStyle="#2a1a44"; ctx.strokeRect(700,90,150,150);
-    // desk with a glowing screen whose todo list keeps growing
-    box(150,380,180,60,"#160c26","#2a1a44");
-    glow(CYAN,8); box(180,330,90,50,"#0a1420",CYAN); noglow();
-    text("todo: "+(47+Math.floor(t/5000)),225,358,11,CYAN);
+    // TODO INVADERS: an arcade cabinet where the todos always win
+    ctx.fillStyle="#160c26"; ctx.fillRect(140,255,150,185);
+    glow(PINK,10); ctx.strokeStyle=PINK; ctx.lineWidth=2;
+    ctx.strokeRect(140,255,150,185); noglow();
+    // marquee
+    ctx.fillStyle="#0d0820"; ctx.fillRect(146,261,138,26);
+    neon("TODO INVADERS",215,280,12,GOLD);
+    // screen
+    ctx.fillStyle="#05030c"; ctx.fillRect(155,292,120,90);
+    ctx.strokeStyle="#2a1a44"; ctx.lineWidth=2; ctx.strokeRect(155,292,120,90);
+    ctx.save(); ctx.beginPath(); ctx.rect(155,292,120,90); ctx.clip();
+    // the score is the todo count. firing does not help.
+    text("TODO: "+(99+Math.floor(t/250)),215,304,9,GOLD);
+    // invader waves march, descend, never stop coming
+    const mo=6*Math.sin(t/600), dsc=(t/500)%16, legOut=Math.floor(t/400)%2;
+    for(let r=0;r<3;r++) for(let c2=0;c2<4;c2++){
+      const ix=163+c2*28+mo, iy=310+r*16+dsc;
+      ctx.fillStyle="#7ee787";
+      ctx.fillRect(ix,iy,10,4);
+      ctx.fillRect(ix+2,iy-2,6,2);
+      if(legOut){ ctx.fillRect(ix-2,iy+4,2,2); ctx.fillRect(ix+10,iy+4,2,2); }
+      else { ctx.fillRect(ix+2,iy+4,2,2); ctx.fillRect(ix+6,iy+4,2,2); }
+      ctx.fillStyle="#05030c"; ctx.fillRect(ix+2,iy+1,2,2); ctx.fillRect(ix+6,iy+1,2,2);
+    }
+    // tiny jose-ship strafes and fires nonstop
+    const shx=205+34*Math.sin(t/450);
+    ctx.fillStyle=CYAN; ctx.fillRect(shx,372,12,4); ctx.fillRect(shx+4,368,4,4);
+    [185,215,245].forEach((lane,b3)=>{
+      const bp2=((t/300)+b3*0.33)%1;
+      ctx.fillStyle=GOLD; ctx.fillRect(lane,368-bp2*56,2,6);
+      if(bp2>0.86){ ctx.fillStyle="#ff9a4a";
+        ctx.fillRect(lane-3,308,2,2); ctx.fillRect(lane+3,308,2,2);
+        ctx.fillRect(lane,304,2,2); ctx.fillRect(lane,312,2,2); }
+    });
+    ctx.restore();
+    // control panel: joystick + two buttons
+    ctx.fillStyle="#2a1a44"; ctx.fillRect(148,388,134,18);
+    ctx.strokeStyle="#3d2a5e"; ctx.strokeRect(148,388,134,18);
+    ctx.fillStyle="#7d7a99"; ctx.fillRect(176,380,4,10);
+    ctx.fillStyle="#f4f2ec"; ctx.beginPath(); ctx.arc(178,378,5,0,7); ctx.fill();
+    ctx.fillStyle="#ff4f6e"; ctx.beginPath(); ctx.arc(226,397,5,0,7); ctx.fill();
+    ctx.fillStyle="#ffd75e"; ctx.beginPath(); ctx.arc(248,397,5,0,7); ctx.fill();
+    // cabinet base
+    ctx.fillStyle="#0d0820"; ctx.fillRect(146,406,138,34);
     drawMap(SPRITES.joseIdle, W/2-36, 340, S);
     blink(W/2-36, 340, S, t);
     // thought bubbles about actual things, not just circles
