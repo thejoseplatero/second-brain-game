@@ -551,21 +551,42 @@ const SCENES = [
     ["l","inbox/ catches it. notes/ keeps it. The links connect it to everything I already know."]],
   render(t){
     room(80,60,800,380,"#141824"); floorLine(440);
-    drawMap(SPRITES.joseIdle, W/2-36, 340, S);
+    // the notes board on the back wall — real notes from the brain
+    text("notes/", 470, 100, 13, "#7ee787");
+    const names=["team-os","flow","loops","5-dollar"];
+    names.forEach((n,i)=>{ const x=330+i*96;
+      room(x,112,84,34,"#1c2130","#454c60"); text(n,x+42,133,10,"#8a8fa3"); });
     // inbox slot on the wall
-    room(800,200,60,90,"#1c2130","#7ee787"); text("inbox", 830, 185, 12, "#7ee787");
-    // bubbles arc INTO the slot now
-    for(let i=0;i<7;i++){
-      const prog = ((t/1400)+i*0.35)%1;
-      const bx = 200+i*60+(830-(200+i*60))*prog;
-      const by = 140+(240-140)*prog - 90*Math.sin(prog*Math.PI);
-      bubble(bx, by, 13, i===3 ? "#ffd75e" : "#5c6378");
+    room(800,220,60,80,"#1c2130","#7ee787"); text("inbox", 830, 208, 12, "#7ee787");
+    drawMap(SPRITES.joseIdle, W/2-36, 340, S);
+    // a few ambient thought bubbles (the hundred places haven't gone anywhere)
+    for(let i=0;i<3;i++){ const bx=170+i*80, by=210+18*Math.sin(t/800+i*2);
+      bubble(bx,by,12,"#454c60"); }
+    // THE idea's journey: head → inbox → becomes a note → links to old notes
+    const T=5200, p=(t%T)/T;
+    if(p<0.32){ // golden idea arcs from jose's head into the inbox slot
+      const q=p/0.32, sx=W/2+30, sy=310;
+      const bx=sx+(828-sx)*q, by=sy+(255-sy)*q-80*Math.sin(q*Math.PI);
+      bubble(bx,by,13,"#ffd75e","!");
+    } else if(p<0.42){
+      text("caught", 830, 320, 11, "#ffd75e");
     }
-    // note tiles lighting up + connection lines
-    for(let i=0;i<5;i++){ const nx=140+i*54;
-      room(nx,90,40,28, i<=Math.floor(t/900)%6 ? "#2e4636" : "#1c2130","#454c60"); }
-    ctx.strokeStyle="#7ee787"; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(214,104); ctx.lineTo(268,104); ctx.moveTo(268,104); ctx.lineTo(322,104); ctx.stroke();
+    if(p>=0.36 && p<0.62){ // file card slides from inbox up to the board
+      const q=(p-0.36)/0.26;
+      const cx=812+(714-812)*q, cy=250+(112-250)*q;
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(cx,cy,26,32);
+      ctx.fillStyle="#141824"; ctx.fillRect(cx+4,cy+6,18,2); ctx.fillRect(cx+4,cy+12,18,2);
+    }
+    if(p>=0.62){ // it becomes a note and links itself to two old ones
+      const q=(p-0.62)/0.38;
+      room(714,112,84,34,"#2e2810","#ffd75e"); text("new-idea",756,133,10,"#ffd75e");
+      ctx.strokeStyle="#7ee787"; ctx.lineWidth=2;
+      if(q>0.15){ ctx.beginPath(); ctx.moveTo(756,146); ctx.lineTo(756,168);
+        ctx.lineTo(372,168); ctx.lineTo(372,146); ctx.stroke(); }
+      if(q>0.5){ ctx.beginPath(); ctx.moveTo(740,146); ctx.lineTo(740,180);
+        ctx.lineTo(468,180); ctx.lineTo(468,146); ctx.stroke(); }
+      if(q>0.8) text("linked ✓", 560, 205, 12, "#7ee787");
+    }
   }},
 
 { world:"WORLD 4", title:"Final Screen",

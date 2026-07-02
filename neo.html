@@ -757,22 +757,45 @@ const SCENES = [
   render(t){
     box(80,60,800,380,"#0d0820","#2a1a44");
     sign(110,80,170,44,"IDEA FACTORY",CYAN,13,t);
+    // the notes board on the back wall — real notes from the brain
+    neon("notes/", 470, 104, 13, GREEN);
+    const names=["team-os","flow","loops","5-dollar"];
+    names.forEach((n,i)=>{ const x=330+i*96;
+      box(x,112,84,34,"#0d0820","#2a4436"); text(n,x+42,133,10,"#5aa880"); });
+    // inbox slot on the wall
+    glow(GREEN,10); box(800,220,60,80,"#160c26",GREEN); noglow();
+    neon("inbox",830,208,12,GREEN);
     drawMap(SPRITES.joseIdle,W/2-36,340,S);
-    glow(GREEN,10); box(800,200,60,90,"#160c26",GREEN); noglow();
-    neon("inbox",830,188,12,GREEN);
-    for(let i=0;i<7;i++){
-      const prog=((t/1400)+i*0.35)%1;
-      const bx=200+i*60+(830-(200+i*60))*prog;
-      const by=140+(240-140)*prog-90*Math.sin(prog*Math.PI);
-      const col = i===3 ? GOLD : "#3d2a5e";
-      if(i===3) glow(GOLD,8);
-      bubbleC(bx,by,13,col); noglow();
+    // a few ambient thought bubbles (the hundred places haven't gone anywhere)
+    for(let i=0;i<3;i++){ const bx=170+i*80, by=210+18*Math.sin(t/800+i*2);
+      bubbleC(bx,by,12,"#3d2a5e"); }
+    // THE idea's journey: head → inbox → becomes a note → links to old notes
+    const T=5200, p=(t%T)/T;
+    if(p<0.32){ // golden idea arcs from jose's head into the inbox slot
+      const q=p/0.32, sx=W/2+30, sy=310;
+      const bx=sx+(828-sx)*q, by=sy+(255-sy)*q-80*Math.sin(q*Math.PI);
+      glow(GOLD,10); bubbleC(bx,by,13,GOLD,"!"); noglow();
+    } else if(p<0.42){
+      neon("caught", 830, 320, 11, GOLD);
     }
-    for(let i=0;i<5;i++){ const nx=140+i*54;
-      const lit = i<=Math.floor(t/900)%6;
-      box(nx,90,40,28, lit?"#0d2a1e":"#0d0820", lit?GREEN:"#2a1a44"); }
-    glow(GREEN,6); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(214,104); ctx.lineTo(268,104); ctx.moveTo(268,104); ctx.lineTo(322,104); ctx.stroke(); noglow();
+    if(p>=0.36 && p<0.62){ // file card slides from inbox up to the board
+      const q=(p-0.36)/0.26;
+      const cx=812+(714-812)*q, cy=250+(112-250)*q;
+      glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(cx,cy,26,32); noglow();
+      ctx.fillStyle="#0d0820"; ctx.fillRect(cx+4,cy+6,18,2); ctx.fillRect(cx+4,cy+12,18,2);
+    }
+    if(p>=0.62){ // it becomes a note and links itself to two old ones
+      const q=(p-0.62)/0.38;
+      glow(GOLD,10); box(714,112,84,34,"#241c08",GOLD); noglow();
+      text("new-idea",756,133,10,GOLD);
+      glow(GREEN,6); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
+      if(q>0.15){ ctx.beginPath(); ctx.moveTo(756,146); ctx.lineTo(756,168);
+        ctx.lineTo(372,168); ctx.lineTo(372,146); ctx.stroke(); }
+      if(q>0.5){ ctx.beginPath(); ctx.moveTo(740,146); ctx.lineTo(740,180);
+        ctx.lineTo(468,180); ctx.lineTo(468,146); ctx.stroke(); }
+      noglow();
+      if(q>0.8) neon("linked ✓", 560, 205, 12, GREEN);
+    }
   }},
 
 { world:"WORLD 4", title:"Final Screen",
