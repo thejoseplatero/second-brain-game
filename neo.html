@@ -419,7 +419,7 @@ const SCENES = [
       // ceiling light bar
       glow("#bcd8ff",6); ctx.fillStyle="#bcd8ff"; ctx.fillRect(x+55,364,60,3); noglow();
       ctx.fillStyle="rgba(160,200,255,0.05)"; ctx.fillRect(x+30,367,110,80);
-      text("MTG "+(i+1),x+85,384,11,"#5a7a9e");
+      text("MTG "+(i+1),x+36,384,10,"#5a7a9e");
       // table + laptops
       ctx.fillStyle="#243248"; ctx.fillRect(x+34,452,106,14);
       ctx.fillStyle="#3d5878"; ctx.fillRect(x+48,444,14,8); ctx.fillRect(x+106,444,14,8);
@@ -430,12 +430,17 @@ const SCENES = [
       ctx.fillStyle="#31445e"; ctx.fillRect(x+18,414,18,38);
       ctx.fillStyle="#6e88ab"; ctx.fillRect(x+20,400,14,14);
     }
+    if(walking) walker(jx,jy,S,t); else drawMap(SPRITES.joseWalkA,jx,jy,inRoom?5:S);
+    // chat bubble from the attendee, drawn AFTER jose so it stays visible
     if(inRoom){
       const rx=pipeX(seg)-40;
-      if(Math.floor(t/450)%2===0) text('"blah blah blah"',rx+85,404,11,"#8aa4c8");
-      else text('"circling back..."',rx+85,404,11,"#8aa4c8");
+      const msg = Math.floor(t/450)%2===0 ? "blah blah blah" : "circling back...";
+      const bx=rx+112, by=374;
+      ctx.fillStyle="#f4f2ec";
+      ctx.fillRect(bx-54,by-15,108,24);
+      ctx.beginPath(); ctx.moveTo(bx+20,by+9); ctx.lineTo(bx+28,by+21); ctx.lineTo(bx+32,by+9); ctx.closePath(); ctx.fill();
+      text(msg,bx,by+2,10,"#05030c");
     }
-    if(walking) walker(jx,jy,S,t); else drawMap(SPRITES.joseWalkA,jx,jy,inRoom?5:S);
     // neon pipes over him
     for(let i=0;i<4;i++){
       const x=pipeX(i);
@@ -723,22 +728,22 @@ const SCENES = [
     drawMap(SPRITES.joseWalkA,120,336,4.4);
 
     /* RIGHT — boxing: punch cycle, bag reacts, POW */
-    // bag chain + bag
+    // bag hangs low enough that the glove line meets it
     const TP=1000, q2=(t%TP)/TP;
     const punching = q2>0.18 && q2<0.40;
     const hitKick = (q2>0.30 && q2<0.85) ? Math.sin((q2-0.30)*9)*(1-q2)*26 : 0;
     ctx.strokeStyle="#2a1a44"; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(640,150); ctx.lineTo(640+hitKick*0.4,200); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(648,150); ctx.lineTo(648+hitKick*0.5,270); ctx.stroke();
     ctx.fillStyle="#a83a5e";
-    ctx.fillRect(612+hitKick,200,56,120);
-    ctx.fillStyle="#8f2e4e"; ctx.fillRect(612+hitKick,200,56,18);
-    // jose in boxing stance, right of bag, jab extends toward it
-    drawMap(SPRITES.joseBox,700,336,S);
+    ctx.fillRect(620+hitKick,270,56,150);
+    ctx.fillStyle="#8f2e4e"; ctx.fillRect(620+hitKick,270,56,18);
+    // jose in boxing stance, jab extends INTO the bag
+    drawMap(SPRITES.joseBox,692,336,S);
     if(punching){
       const ext=(q2-0.18)/0.22;
       glow(PINK,6); ctx.fillStyle="#ff4f6e";
-      ctx.fillRect(700-ext*34,388,34*ext+12,12); noglow();
-      if(q2>0.28) neon("POW",668,300,15,GOLD);
+      ctx.fillRect(704-ext*52,382,52*ext+14,13); noglow();
+      if(q2>0.30) neon("POW",672,250,15,GOLD);
     }
     meterBar(340,140,280,Math.min(1,(t/3500)),"MASK METER — REFILLING");
     glow(GREEN,10); box(300,478,360,40,"#0d0820",GREEN); noglow();

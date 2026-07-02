@@ -310,20 +310,24 @@ const SCENES = [
       const x = pipeX(i)-40;
       ctx.fillStyle="#141824"; ctx.fillRect(x,360,170,140);
       ctx.strokeStyle="#454c60"; ctx.lineWidth=2; ctx.strokeRect(x,360,170,140);
-      text("MTG "+(i+1), x+85, 380, 11, "#8a8fa3");
+      text("MTG "+(i+1), x+36, 384, 10, "#8a8fa3");
       // table + an npc
       ctx.fillStyle="#3a4258"; ctx.fillRect(x+42,452,92,14);
       ctx.fillStyle="#5c6378"; ctx.fillRect(x+126,410,20,42);
       ctx.fillStyle="#8a8fa3"; ctx.fillRect(x+129,396,14,14);
     }
-    // meeting chatter in the active room
-    if(inRoom){
-      const rx = pipeX(seg)-40;
-      if(Math.floor(t/450)%2===0) text('"blah blah blah"', rx+85, 400, 11, "#c8c4ba");
-      else text('"circling back..."', rx+85, 400, 11, "#c8c4ba");
-    }
     // 3) jose
     drawMap(SPRITES.joseWalk, jx, jy, inRoom ? 5 : S);
+    // chat bubble from the attendee, drawn AFTER jose so it stays visible
+    if(inRoom){
+      const rx = pipeX(seg)-40;
+      const msg = Math.floor(t/450)%2===0 ? "blah blah blah" : "circling back...";
+      const bx=rx+112, by=374;
+      ctx.fillStyle="#f4f2ec";
+      ctx.fillRect(bx-54,by-15,108,24);
+      ctx.beginPath(); ctx.moveTo(bx+20,by+9); ctx.lineTo(bx+28,by+21); ctx.lineTo(bx+32,by+9); ctx.closePath(); ctx.fill();
+      text(msg,bx,by+2,10,"#0d0f14");
+    }
     // 4) pipes over him (so he vanishes into them)
     for(let i=0;i<4;i++){
       const x = pipeX(i);
@@ -522,13 +526,14 @@ const SCENES = [
   render(t){
     floorLine(440);
     text("⛨ SAVE POINT ⛨", W/2, 90, 22, "#7ee787");
-    // boxing bag
+    // boxing bag — hangs at glove height, right next to jose
     ctx.strokeStyle="#454c60"; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(620,60); ctx.lineTo(620,160); ctx.stroke();
     const sway = 8*Math.sin(t/280);
-    ctx.fillStyle="#c94f4f"; ctx.fillRect(590+sway,160,60,130);
-    // jose boxing
+    ctx.beginPath(); ctx.moveTo(550,60); ctx.lineTo(550+sway*0.5,280); ctx.stroke();
+    ctx.fillStyle="#c94f4f"; ctx.fillRect(520+sway,280,60,130);
+    // jose boxing — gloves land on the bag
     drawMap(SPRITES.joseBox, 440, 340, S);
+    if(Math.floor(t/350)%2===0) text("POW", 545, 260, 14, "#ffd75e");
     // bowling lane hint
     room(90,340,220,100,"#1c2130");
     ctx.fillStyle="#f4f2ec"; ctx.beginPath(); ctx.arc(160,390,4,0,7); ctx.fill();
