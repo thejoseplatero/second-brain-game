@@ -59,6 +59,7 @@ const PALETTE = {
   c:"#2b3040", x:"#3d4457", p:"#464e63", k:"#1c1f29", // jacket, shirt, pants, shoes
   h:"#d7deed", H:"#8fa2c0", R:"#ff4f6e",           // helmet chrome, chrome shadow, helmet node
   t:"#8a5a2c", T:"#e8c47a",                        // toast crust + bread
+  u:"#2e2118", U:"#6b4a2e", q:"#8a6a48",           // burnt crust, burnt bread, brain folds
   o:"#8ee3ff", O:"#3aa8d8",                        // orb (claude)
   g:"#ffd75e", r:"#ff4f6e", m:"#b44cff",           // gold, red, violet
   ".":null,
@@ -174,6 +175,18 @@ const SPRITES = {
     "tTTeeTTt",
     "tTTTTTTt",
     ".tttttt.",
+  ],
+  /* the verdict, rendered: a brain-shaped slice, charred */
+  brainToast: [
+    "..uuuuuu..",
+    ".uUUUUUUu.",
+    "uUUqqUqqUu",
+    "uUqUUqUUqu",
+    "uUUqqUqqUu",
+    "uUqUUeUUqu",
+    "uUUUeUUUUu",
+    ".uUUUUUUu.",
+    "..uuuuuu..",
   ],
   agent: [
     ".oooo.",
@@ -375,19 +388,43 @@ const SCENES = [
     box(120,140,220,220,"#070a1e","#22305a");
     ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
     ctx.strokeRect(150,170,160,160);
-    // scan line sweeps the reticle
-    const sy=170+((t/9)%160);
-    glow(ICE,10); ctx.strokeStyle=ICE;
-    ctx.beginPath(); ctx.moveTo(150,sy); ctx.lineTo(310,sy); ctx.stroke(); noglow();
-    // the subject: jose's actual brain, pulsing, very much alive.
-    // the machine will still call it toast. machines have no respect.
-    ctx.fillStyle="#e88ab0";
-    ctx.beginPath(); ctx.arc(210,250,34,0,7); ctx.arc(252,250,34,0,7);
-    ctx.arc(231,226,30,0,7); ctx.fill();
-    ctx.strokeStyle="#b45a80"; ctx.lineWidth=2;
-    for(let i=0;i<4;i++){ ctx.beginPath();
-      ctx.arc(206+i*16,240+6*(i%2),9,0.6,3.6); ctx.stroke(); }
-    psyRing(231,248,t,PSY,2);
+    const verdictAt=500+6*430;
+    if(t<verdictAt){
+      // scan line sweeps the reticle
+      const sy=170+((t/9)%160);
+      glow(ICE,10); ctx.strokeStyle=ICE;
+      ctx.beginPath(); ctx.moveTo(150,sy); ctx.lineTo(310,sy); ctx.stroke(); noglow();
+      // the subject: jose's actual brain, pulsing, very much alive.
+      // the machine will still call it toast. machines have no respect.
+      ctx.fillStyle="#e88ab0";
+      ctx.beginPath(); ctx.arc(210,250,34,0,7); ctx.arc(252,250,34,0,7);
+      ctx.arc(231,226,30,0,7); ctx.fill();
+      ctx.strokeStyle="#b45a80"; ctx.lineWidth=2;
+      for(let i=0;i<4;i++){ ctx.beginPath();
+        ctx.arc(206+i*16,240+6*(i%2),9,0.6,3.6); ctx.stroke(); }
+      psyRing(231,248,t,PSY,2);
+    } else {
+      const vt=t-verdictAt;
+      // flash of judgment
+      if(vt<220){ ctx.globalAlpha=1-vt/220; ctx.fillStyle="#f4f2ec";
+        ctx.fillRect(150,170,160,160); ctx.globalAlpha=1; }
+      // the machine has rendered its verdict as an appliance. chrome. smug.
+      ctx.fillStyle="#8fa2c0"; ctx.fillRect(170,300,120,52);
+      ctx.fillStyle="#d7deed"; ctx.fillRect(170,300,120,10);
+      ctx.fillStyle="#131040"; ctx.fillRect(196,296,68,8);      // slot
+      ctx.fillStyle="#ff4f6e"; ctx.fillRect(292,318,8,14);      // lever
+      // the brain pops up as toast. burnt. still radiating signal. tragic.
+      const q=Math.min(1,vt/450);
+      const pop=q<1 ? Math.sin(q*Math.PI/2) : 1+0.06*Math.sin((vt-450)/160)*Math.exp(-(vt-450)/800);
+      const ty=300-72*pop;
+      drawMap(SPRITES.brainToast,196,ty,7);
+      psyRing(231,ty+30,t,PSY,2);
+      // smoke off the char
+      for(let i=0;i<3;i++){ const p=((vt/1400)+i*0.33)%1;
+        ctx.fillStyle=`rgba(160,160,170,${0.3*(1-p)})`;
+        ctx.beginPath(); ctx.arc(216+i*16+5*Math.sin(p*6+i),ty-6-p*46,4+p*7,0,7); ctx.fill(); }
+      if(vt>300 && vt<1500) neon("DING!",322,236,16,GOLD);
+    }
     // terminal runs the findings
     box(430,110,470,290,"#0a0d18","#2a3a58");
     text("> scanning subject...",450,142,13,"#5aa880","left");
@@ -402,8 +439,7 @@ const SCENES = [
     checks.forEach((c2,i)=>{ if(t>500+i*430){
       text("> "+c2[0],450,178+i*30,13,"#8aa4c8","left");
       text(c2[1],700,178+i*30,13,c2[2],"left"); }});
-    if(t>500+6*430){ neon("DIAGNOSIS: TOAST.",665,384,15,PSY);
-      drawMap(SPRITES.toast, 790, 368, 3); }
+    if(t>500+6*430) neon("DIAGNOSIS: TOAST.",665,384,15,PSY);
     if(t>3600) neon("JOSE'S BRAIN IS TOAST",W/2,468,38,GOLD);
     if(t>4400 && Math.floor(t/500)%2===0)
       text("...or is it? press start to enter the chamber",W/2,508,14,"#7e83a6");
