@@ -550,8 +550,8 @@ const SCENES = [
 { world:"WORLD 2", title:"The Danger Room",
   caption:[
     ["q","“Every meeting is a training simulation. The setting changes. The drill doesn't.”"],
-    ["l","Run the conversation. Run the translation underneath it. Nobody sees program two."],
-    ["l","It bills by the hour."]],
+    ["l","Program one runs the conversation. Program two runs the translation."],
+    ["l","Nobody sees program two. It bills by the hour."]],
   render(t){
     box(0,0,W,H,"#06051a");
     // holo-grid room
@@ -560,40 +560,114 @@ const SCENES = [
     for(let y=70;y<470;y+=48){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
     neon("DANGER ROOM · SESSIONS. ALL. DAY.", W/2, 52, 16, PSY);
     clockFace(60,84,16,t);
-    // four simulation pods
-    const sims=[["SIM 1 · QBR"],["SIM 2 · 1:1"],["SIM 3 · STEERCO"],["SIM 4 · TOWNHALL"]];
-    const T=3400, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    /* the four simulations. every line is real. you have heard every line. */
+    const SIMS=[
+      {name:"SIM 1 · QBR", reply:"love that energy", lines:[
+        ["pacing to plan!","we are not"],
+        ["directionally accurate","confidently wrong"],
+        ["flat is the new up","missed the number"]]},
+      {name:"SIM 2 · 1:1", reply:"all good!", lines:[
+        ["got 5 min? quick sync","it's 45 minutes"],
+        ["how's your bandwidth?","incoming work"],
+        ["any blockers?","this meeting"]]},
+      {name:"SIM 3 · STEERCO", reply:"+1 to that", lines:[
+        ["who's the DRI?","not it. not it."],
+        ["align on alignment","no decision today"],
+        ["parking lot it","it dies in the lot"]]},
+      {name:"SIM 4 · TOWNHALL", reply:"so exciting", lines:[
+        ["we're a family","update your linkedin"],
+        ["transformation journey","reorg"],
+        ["do more with less","less means you"]]},
+    ];
+    const T=4600, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    const podX = i => 70+i*225;
+    // phases: approach → door opens → walk in → 3 exchanges → walk out → done
+    const inside   = f>=0.32 && f<0.84;
+    const entering = f>=0.24 && f<0.32;
+    const exiting  = f>=0.84 && f<0.92;
+    const doorOpen = f>=0.16 && f<0.92;
     for(let i=0;i<4;i++){
-      const x=70+i*225;
-      const active = i===seg && f>0.30 && f<0.85;
-      box(x,150,180,270,"#0a0828",active?ICE:"#221046");
-      text(sims[i][0],x+90,142,11,active?ICE:"#5a5580");
-      // wireframe attendees flicker inside the active sim
-      if(active){
-        ctx.globalAlpha=0.5+0.3*Math.sin(t/120);
-        for(let a2=0;a2<3;a2++){
-          const ax=x+34+a2*46, ay=300;
-          ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
-          ctx.strokeRect(ax,ay,20,34);
-          ctx.beginPath(); ctx.arc(ax+10,ay-10,8,0,7); ctx.stroke();
-        }
-        ctx.globalAlpha=1;
-        const msgs=["blah blah blah","circling back...","any blockers?"];
-        const msg=msgs[Math.floor(t/450)%3];
-        ctx.fillStyle="#f4f2ec"; ctx.fillRect(x+22,180,136,22);
-        text(msg,x+90,195,10,"#04030e");
-        // the second program, running underneath
-        ctx.fillStyle="rgba(180,76,255,0.14)"; ctx.fillRect(x+6,376,168,38);
-        text("program 2: translating...",x+90,394,9,VIO);
-        text("[####::::]",x+90,408,9,VIO);
+      const x=podX(i);
+      const isCur = i===seg;
+      const lit = isCur && f>=0.24 && f<0.92;
+      box(x,150,180,270,lit?"#0c0a30":"#0a0828",lit?ICE:"#221046");
+      text(SIMS[i].name,x+90,142,11,lit?ICE:"#5a5580");
+      // interior floor line
+      ctx.strokeStyle="rgba(109,224,255,0.25)";
+      ctx.beginPath(); ctx.moveTo(x+8,408); ctx.lineTo(x+172,408); ctx.stroke();
+      // airlock door at the pod base: slides up to open
+      const doorH=80, dx=x+62, dy=340;
+      let openQ=0;
+      if(isCur){
+        if(f>=0.16&&f<0.24) openQ=(f-0.16)/0.08;
+        else if(doorOpen) openQ=1;
+        else if(f>=0.92) openQ=Math.max(0,1-(f-0.92)/0.06);
+      }
+      ctx.strokeStyle=isCur&&doorOpen?GREEN:"#3a2a66"; ctx.lineWidth=2;
+      ctx.strokeRect(dx,dy,56,doorH);
+      if(openQ<1){
+        ctx.fillStyle="#131040";
+        ctx.fillRect(dx+2,dy+2+openQ*doorH,52,(1-openQ)*doorH-4>0?(1-openQ)*doorH-4:0);
+        ctx.fillStyle=isCur?GREEN:"#5a5580";
+        ctx.fillRect(dx+44,dy+openQ*doorH+doorH*0.45*(1-openQ),4,8);
+      }
+      // sim complete stamp
+      if(isCur && f>=0.92) neon("SIM COMPLETE ✓",x+90,132,11,GREEN);
+      if(i<seg || (seg===0&&f<0.05&&t>T)) {} // history is not rendered. it is repressed.
+    }
+    const x=podX(seg), cx=x+90;
+    // wireframe attendees flank the inside of the active pod
+    if(inside||exiting){
+      ctx.globalAlpha=0.55+0.3*Math.sin(t/120);
+      [[x+24],[x+138]].forEach(([ax])=>{
+        ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
+        ctx.strokeRect(ax,360,20,46);
+        ctx.beginPath(); ctx.arc(ax+10,348,8,0,7); ctx.stroke();
+      });
+      ctx.globalAlpha=1;
+    }
+    // the exchange: attendee buzzword → program 2 translation → jose's reply
+    if(inside){
+      const rf=(f-0.32)/0.52, round=Math.min(2,Math.floor(rf*3)), rq=(rf*3)%1;
+      const [line,truth]=SIMS[seg].lines[round];
+      if(rq<0.62){
+        // attendee speaks. the bubble comes from the left wireframe.
+        ctx.fillStyle="#f4f2ec"; ctx.fillRect(x+8,196,164,26);
+        ctx.beginPath(); ctx.moveTo(x+26,222); ctx.lineTo(x+30,340); ctx.lineTo(x+40,222); ctx.closePath(); ctx.fill();
+        text('"'+line+'"',cx,213,10,"#04030e");
+        // program 2, live translation
+        ctx.fillStyle="rgba(180,76,255,0.16)"; ctx.fillRect(x+6,240,168,34);
+        text("program 2:",cx,254,9,VIO);
+        neon("("+truth+")",cx,268,10,PSY);
+      } else {
+        // jose replies. out loud, program one is doing great.
+        ctx.fillStyle="#f4f2ec"; ctx.fillRect(x+30,196,120,26);
+        ctx.beginPath(); ctx.moveTo(cx+10,222); ctx.lineTo(cx+14,300); ctx.lineTo(cx+24,222); ctx.closePath(); ctx.fill();
+        text('"'+SIMS[seg].reply+'"',cx,213,10,"#04030e");
+        ctx.fillStyle="rgba(180,76,255,0.16)"; ctx.fillRect(x+6,240,168,34);
+        text("program 2:",cx,254,9,VIO);
+        neon("(screaming internally)",cx,268,10,PSY);
       }
     }
-    // jose walks between sims / stands in the active one
-    let jx;
-    if(f<0.30){ const from = seg===0? -60 : 70+(seg-1)*225+60; const to=70+seg*225+60;
-      jx=from+(to-from)*(f/0.30); walker(jx,330,S,t); }
-    else if(f<0.85){ jx=70+seg*225+60; drawMap(SPRITES.joseIdle,jx,330,S); blink(jx,330,S,t); }
-    else { jx=70+seg*225+60; drawMap(SPRITES.joseIdle,jx,330,S); }
+    // jose: approach on the room floor, step up into the sim, do the drill, step out
+    if(f<0.16){
+      const from = seg===0? -70 : podX(seg-1)+54, to=x+54;
+      walker(from+(to-from)*(f/0.16),330,S,t);
+    } else if(f<0.24){
+      drawMap(SPRITES.joseIdle,x+54,330,S); blink(x+54,330,S,t);   // waiting for the airlock
+    } else if(entering){
+      const q=(f-0.24)/0.08;
+      walker(x+54,330-24*q,S,t);                                   // stepping in
+    } else if(inside){
+      drawMap(SPRITES.joseIdle,x+54,306,S); blink(x+54,306,S,t);
+      // polite nodding, program one's finest feature
+      if(Math.floor(t/700)%2===0){ ctx.fillStyle=PALETTE.s; ctx.fillRect(x+54+4*S,306+2*S,4*S,2); }
+    } else if(exiting){
+      const q=(f-0.84)/0.08;
+      walker(x+54,306+24*q,S,t);                                   // stepping out
+    } else {
+      drawMap(SPRITES.joseIdle,x+54,330,S);
+    }
     meterBar(340,90,280,Math.max(0.05,1-((t/T)%4)*0.24),"PSYCHIC SHIELD");
     motes(t);
   }},
