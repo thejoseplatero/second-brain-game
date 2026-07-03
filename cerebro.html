@@ -58,6 +58,7 @@ const PALETTE = {
   b:"#3b2b20", w:"#f4f2ec",                        // hair, whites
   c:"#2b3040", x:"#3d4457", p:"#464e63", k:"#1c1f29", // jacket, shirt, pants, shoes
   h:"#d7deed", H:"#8fa2c0", R:"#ff4f6e",           // helmet chrome, chrome shadow, helmet node
+  t:"#8a5a2c", T:"#e8c47a",                        // toast crust + bread
   o:"#8ee3ff", O:"#3aa8d8",                        // orb (claude)
   g:"#ffd75e", r:"#ff4f6e", m:"#b44cff",           // gold, red, violet
   ".":null,
@@ -164,6 +165,15 @@ const SPRITES = {
     "oooooooo",
     ".OooooO.",
     "..OOOO..",
+  ],
+  toast: [
+    ".tttttt.",
+    "tTTTTTTt",
+    "tTeTTeTt",
+    "tTTTTTTt",
+    "tTTeeTTt",
+    "tTTTTTTt",
+    ".tttttt.",
   ],
   agent: [
     ".oooo.",
@@ -369,14 +379,21 @@ const SCENES = [
     const sy=170+((t/9)%160);
     glow(ICE,10); ctx.strokeStyle=ICE;
     ctx.beginPath(); ctx.moveTo(150,sy); ctx.lineTo(310,sy); ctx.stroke(); noglow();
-    // a pixel brain: two lumpy hemispheres
-    ctx.fillStyle="#e88ab0";
-    ctx.beginPath(); ctx.arc(210,250,34,0,7); ctx.arc(252,250,34,0,7);
-    ctx.arc(231,226,30,0,7); ctx.fill();
-    ctx.strokeStyle="#b45a80"; ctx.lineWidth=2;
-    for(let i=0;i<4;i++){ ctx.beginPath();
-      ctx.arc(206+i*16,240+6*(i%2),9,0.6,3.6); ctx.stroke(); }
-    // it pulses. it is very much alive.
+    // the subject: a pixel brain... until the scanner reaches its verdict,
+    // at which point it flickers into what it always was. toast.
+    const verdictAt=500+6*430;
+    const showToast = t>=verdictAt && (t>verdictAt+720 || Math.floor(t/120)%2===0);
+    if(showToast){
+      drawMap(SPRITES.toast, 182, 200, 14);
+    } else {
+      ctx.fillStyle="#e88ab0";
+      ctx.beginPath(); ctx.arc(210,250,34,0,7); ctx.arc(252,250,34,0,7);
+      ctx.arc(231,226,30,0,7); ctx.fill();
+      ctx.strokeStyle="#b45a80"; ctx.lineWidth=2;
+      for(let i=0;i<4;i++){ ctx.beginPath();
+        ctx.arc(206+i*16,240+6*(i%2),9,0.6,3.6); ctx.stroke(); }
+    }
+    // it pulses either way. toast can radiate signal too.
     psyRing(231,248,t,PSY,2);
     // terminal runs the findings
     box(430,110,470,290,"#0a0d18","#2a3a58");
@@ -392,10 +409,10 @@ const SCENES = [
     checks.forEach((c2,i)=>{ if(t>500+i*430){
       text("> "+c2[0],450,178+i*30,13,"#8aa4c8","left");
       text(c2[1],700,178+i*30,13,c2[2],"left"); }});
-    if(t>500+6*430) neon("NOT BROKEN. UNAMPLIFIED.",665,384,15,VIO);
-    if(t>3600) neon("JOSE'S BRAIN: UNAMPLIFIED",W/2,468,34,GOLD);
+    if(t>500+6*430) neon("DIAGNOSIS: TOAST.",665,384,15,PSY);
+    if(t>3600) neon("JOSE'S BRAIN IS TOAST",W/2,468,38,GOLD);
     if(t>4400 && Math.floor(t/500)%2===0)
-      text("...press start to enter the chamber",W/2,508,14,"#7e83a6");
+      text("...or is it? press start to enter the chamber",W/2,508,14,"#7e83a6");
   }},
 
 /* 1 · TITLE */
