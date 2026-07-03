@@ -170,6 +170,38 @@ const SPRITES = {
     "tTTTTTTt",
     ".tttttt.",
   ],
+  /* the speaker, 24px wide: bald, black cardigan, white collar,
+     red pin, arms crossed, gold bracelet. it's him. */
+  portrait: [
+    "........ssssssss........",
+    "......ssssssssssss......",
+    ".....ssssssssssssss.....",
+    "....ssssssssssssssss....",
+    "....ssssssssssssssss....",
+    "...ssssssssssssssssss...",
+    "...ssssssssssssssssss...",
+    "...ss.eee.ssss.eee.ss...",
+    "...sss.ee.ssss.ee.sss...",
+    "...ssssssssssssssssss...",
+    "...sssssssddddsssssss...",
+    "...ssssssssssssssssss...",
+    "....sssddddddddddsss....",
+    "....ssssssssssssssss....",
+    ".....ssssssssssssss.....",
+    "......ssssssssssss......",
+    "........dssssssd........",
+    "........ssssssss........",
+    "..ccccc.wsssssw.ccccc...",
+    ".ccccccccwwssswwcccccccc",
+    ".cccccccccwwwwcccccccccc",
+    "ccccccccccwwwwcccrcccccc",
+    "cccccccccccwwccccccccccc",
+    "cccccccccccccccccccccccc",
+    "ccccsssssccccccccccccccc",
+    "cccgsssssccccccccccccccc",
+    "cccccccccccccccccccccccc",
+    "cccccccccccccccccccccccc",
+  ],
 };
 
 /* ═══════════ ENGINE + WORLD HELPERS ═══════════ */
@@ -308,7 +340,52 @@ function drawQR(key,x,y,size,url,col){
 const S = 6;
 const SCENES = [
 
-/* 0 · COLD OPEN · THE DIAGNOSTIC */
+/* 0 · PLAYER 1 · WHO IS THIS GUY */
+{ world:"INSERT COIN", title:"Player 1",
+  caption:[
+    ["q","“The people who get the most out of AI aren't the ones with the best prompts. They're the ones with the best context.”"],
+    ["l","Tonight: what happened when one very busy brain got a save file."]],
+  render(t){
+    // scanlines
+    ctx.fillStyle="rgba(255,255,255,0.02)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    // the player card
+    box(96,90,260,380,"#0d0820","#2a1a44");
+    // portrait renders in row by row, like a sprite loading off the cartridge
+    const rows=Math.min(SPRITES.portrait.length, Math.floor(t/60));
+    for(let r=0;r<rows;r++) drawMap([SPRITES.portrait[r]],130,120+r*8,8);
+    // CRT lines over the portrait
+    ctx.fillStyle="rgba(5,3,12,0.25)";
+    for(let y=120;y<344;y+=4) ctx.fillRect(130,y,192,1);
+    if(rows<SPRITES.portrait.length){
+      glow(CYAN,8); ctx.fillStyle=CYAN; ctx.fillRect(130,120+rows*8,192,2); noglow();
+      text("loading player sprite...",226,430,10,"#7d7a99");
+    } else neon("PLAYER 1",226,430,13,GREEN);
+    // name + bio
+    neon("JOSE PLATERO",640,150,34,PINK);
+    text("SPEAKER · READY",640,180,12,"#7d7a99");
+    const bio=[
+      "Director of Product, Design,",
+      "MarTech & AdTech · Air Canada",
+      "Teaches AI & product at BrainStation",
+      "Writes Loops & Letters",
+    ];
+    bio.forEach((l,i)=>{ if(t>600+i*350) text(l,640,220+i*26,14,"#e8e6f2"); });
+    // character sheet: the man and the talk, summarized
+    if(t>2200){
+      box(430,330,420,150,"#0a0714","#2a1a44");
+      text("CHARACTER SHEET",640,354,11,"#7d7a99");
+      meterBar(460,392,150,1,"VISION");
+      meterBar(680,392,150,1,"IDEAS / HOUR");
+      meterBar(460,446,150,0.2,"FOLLOW-THROUGH");
+      meterBar(680,446,150,0.15,"MEMORY");
+      if(t>3200 && Math.floor(t/500)%2===0)
+        text("tonight we patch the bottom row",640,500,12,GOLD);
+    }
+    rain(t);
+  }},
+
+/* 1 · COLD OPEN · THE DIAGNOSTIC */
 { world:"BOOT", title:"Jose's Brain Is Toast",
   caption:[
     ["q","“Quick diagnostic before we start.”"],
@@ -1272,7 +1349,7 @@ addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
   else if(/^[1-9]$/.test(e.key)){
-    const jumps={1:0,2:2,3:4,4:8,5:11,6:12,7:17}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+    const jumps={1:0,2:3,3:5,4:9,5:12,6:13,7:18}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
 setScene(0); requestAnimationFrame(frame);
