@@ -554,15 +554,30 @@ const SCENES = [
     neon("MEETINGS. ALL. DAY.", W/2, 56, 16, PINK);
     clockFace(60,84,16,t);
     const pipeX = i => 100 + i*220;
-    const groundY = 228;
-    const T = 3200, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    const groundY = 228;   // sprite y standing on the floor
+    const railY   = 148;   // sprite y standing on top of the pipe rim
+    const T = 3600, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
     let jx,jy,inRoom=false,walking=false;
-    if(f<0.18){ const to=pipeX(seg)+8, start= seg===0? -90 : pipeX(seg-1)+8;
-      jx=start+(to-start)*(f/0.18); jy=groundY; walking=true; }
-    else if(f<0.33){ jx=pipeX(seg)+8; jy=groundY+((f-0.18)/0.15)*172; }
-    else if(f<0.72){ inRoom=true; jx=pipeX(seg)+10; jy=400; }
-    else if(f<0.87){ jx=pipeX(seg)+8; jy=groundY+(1-((f-0.72)/0.15))*172; }
-    else { jx=pipeX(seg)+8; jy=groundY; }
+    if(f<0.14){                                    // P1 · walk up to the pipe
+      const to=pipeX(seg)+8, start= seg===0? -90 : pipeX(seg-1)+8;
+      jx=start+(to-start)*(f/0.14); jy=groundY; walking=true;
+    } else if(f<0.22){                             // P2 · Mario hop up onto the pipe
+      const q=(f-0.14)/0.08;
+      jx=pipeX(seg)+8; jy=groundY+(railY-groundY)*q - 22*Math.sin(Math.PI*q);
+    } else if(f<0.29){                             // P3 · stand on the rim
+      jx=pipeX(seg)+8; jy=railY - 2*Math.sin((f-0.22)/0.07*Math.PI);
+    } else if(f<0.42){                             // P4 · drop down the pipe
+      const q=(f-0.29)/0.13;
+      jx=pipeX(seg)+8; jy=railY+(400-railY)*q;
+    } else if(f<0.70){                             // P5 · in the meeting
+      inRoom=true; jx=pipeX(seg)+10; jy=400;
+    } else if(f<0.83){                             // P6 · climb back up the pipe
+      const q=(f-0.70)/0.13;
+      jx=pipeX(seg)+8; jy=400+(railY-400)*q;
+    } else if(f<0.91){                             // P7 · hop back down off the rim
+      const q=(f-0.83)/0.08;
+      jx=pipeX(seg)+8; jy=railY+(groundY-railY)*q - 16*Math.sin(Math.PI*q);
+    } else { jx=pipeX(seg)+8; jy=groundY; }        // P8 · back on solid ground
     ctx.strokeStyle="#241436"; ctx.lineWidth=4;
     ctx.beginPath(); ctx.moveTo(0,330); ctx.lineTo(W,330); ctx.stroke();
     ctx.fillStyle="#0e0818"; ctx.fillRect(0,332,W,208);
@@ -581,7 +596,22 @@ const SCENES = [
       ctx.fillStyle="#31445e"; ctx.fillRect(x+18,414,18,38);
       ctx.fillStyle="#6e88ab"; ctx.fillRect(x+20,400,14,14);
     }
-    if(walking) walker(jx,jy,S,t); else drawMap(SPRITES.joseWalkA,jx,jy,inRoom?5:S);
+    if(walking) walker(jx,jy,S,t); else drawMap(SPRITES.joseIdle,jx,jy,inRoom?5:S);
+    // landing dust: rim touchdown after the hop, ground touchdown after the drop-off
+    if(f>=0.215 && f<0.27){
+      const dq=(f-0.215)/0.055; ctx.globalAlpha=Math.max(0,1-dq);
+      ctx.fillStyle="#c8c4ba";
+      ctx.fillRect(pipeX(seg)+8-10-dq*8, railY+96, 4,4);
+      ctx.fillRect(pipeX(seg)+8+50+dq*8, railY+96, 4,4);
+      ctx.globalAlpha=1;
+    }
+    if(f>=0.905 && f<0.96){
+      const dq=(f-0.905)/0.055; ctx.globalAlpha=Math.max(0,1-dq);
+      ctx.fillStyle="#c8c4ba";
+      ctx.fillRect(pipeX(seg)+8-10-dq*8, groundY+96, 4,4);
+      ctx.fillRect(pipeX(seg)+8+50+dq*8, groundY+96, 4,4);
+      ctx.globalAlpha=1;
+    }
     if(inRoom){
       const rx=pipeX(seg)-40;
       const msgs=["blah blah blah","circling back...","any blockers?"];
