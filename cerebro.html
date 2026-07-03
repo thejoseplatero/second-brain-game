@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JOSE-CEREBRO · Second Brain: Mutant Edition</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  JOSE-CEREBRO · the X-Men riff on the second brain talk game.
+  Chrome dome, psychic violet, a world of blinking signals.
+  Cerebro is Spanish for brain. It is also a mutant-finding machine.
+  Both facts are load-bearing.
+  ═══════════════════════════════════════════════════════════════
+  HOW TO TWEAK:
+    1. CONFIG  · URLs, names. Right below.
+    2. SCENES  · every caption string. Search "const SCENES".
+    3. SPRITES · pixel maps, edit like ASCII art. Legend in PALETTE.
+  CONTROLS: click / space / → next. ← back. F fullscreen. 1-7 world jumps.
+  QR PNGs: qr-starter.png, qr-substack.png, qr-linkedin.png (same folder).
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{ --bg:#04030e; --ink:#e9ecf6; --dim:#7e83a6; --vio:#b44cff; --ice:#6de0ff; --gold:#ffd75e; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Courier New',monospace;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;
+       min-height:100vh;gap:14px;padding:20px;user-select:none}
+  canvas{image-rendering:pixelated;border:3px solid #171233;border-radius:4px;
+         box-shadow:0 0 24px rgba(180,76,255,0.25), 0 0 60px rgba(109,224,255,0.12);
+         max-width:92vw;height:auto;cursor:pointer}
+  #cap{max-width:900px;width:92vw;min-height:96px;text-align:center;line-height:1.55}
+  #cap .t{color:var(--vio);font-weight:bold;letter-spacing:.12em;font-size:13px;
+          text-transform:uppercase;display:block;margin-bottom:8px}
+  #cap .l{font-size:16px;display:block;margin:3px 0}
+  #cap .q{font-size:16px;display:block;margin:6px 0;color:var(--ice);font-style:italic}
+  #hud{color:var(--dim);font-size:12px;letter-spacing:.08em}
+</style>
+</head>
+<body>
+<canvas id="cv" width="960" height="540"></canvas>
+<div id="cap"></div>
+<div id="hud"></div>
+
+<script>
+/* ═══════════ CONFIG ═══════════ */
+const CONFIG = {
+  speaker: "JOSE PLATERO",
+  urls: {
+    starter:  "github.com/thejoseplatero/second-brain-starter-kit",
+    substack: "loopsandletters.substack.com",
+    linkedin: "linkedin.com/in/joseplatero",
+  },
+  qrFiles: { starter:"qr-starter.png", substack:"qr-substack.png", linkedin:"qr-linkedin.png" },
+};
+
+/* ═══════════ PALETTE + SPRITES ═══════════ */
+const PALETTE = {
+  s:"#e0aa72", d:"#b8834f", e:"#14110e",           // skin, shade, eyes
+  b:"#3b2b20", w:"#f4f2ec",                        // hair, whites
+  c:"#2b3040", x:"#3d4457", p:"#464e63", k:"#1c1f29", // jacket, shirt, pants, shoes
+  h:"#d7deed", H:"#8fa2c0", R:"#ff4f6e",           // helmet chrome, chrome shadow, helmet node
+  o:"#8ee3ff", O:"#3aa8d8",                        // orb (claude)
+  g:"#ffd75e", r:"#ff4f6e", m:"#b44cff",           // gold, red, violet
+  ".":null,
+};
+const SPRITES = {
+  joseIdle: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..cxxxxxxc..",
+    "..cxxxxxxc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
+  ],
+  joseWalkA: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    ".sccccccccs.",
+    "..cccccccc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "..pp....pp..",
+    ".pp......pp.",
+    ".kk......kk.",
+  ],
+  joseWalkB: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..scccccccs.",
+    "..cccccccc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
+  ],
+  /* jose wearing the cerebro helmet: chrome dome, red side nodes, wires back */
+  joseHelm: [
+    "...hhhhhh...",
+    "..hhhhhhhh..",
+    ".RhhhhhhhhR.",
+    "...sessse...",
+    "...dssssd...",
+    "...ssssss...",
+    "....ssss....",
+    "....ssss....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..cxxxxxxc..",
+    "..cxxxxxxc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
+  ],
+  joseSleep: [
+    "..ssss......",
+    ".ssssss.....",
+    ".sessse.....",
+    ".bssssb.....",
+    ".bbbbbb.....",
+    "cccccccccccc",
+    "cccccccccccc",
+    "xxxxxxxxxxxx",
+  ],
+  helmet: [
+    "..hhhhhh..",
+    ".hhhhhhhh.",
+    "hhhHHHHhhh",
+    "RhhhhhhhhR",
+    "Rh......hR",
+  ],
+  orb: [
+    "..oooo..",
+    ".oooooo.",
+    "oooowooo",
+    "oooooooo",
+    ".OooooO.",
+    "..OOOO..",
+  ],
+  agent: [
+    ".oooo.",
+    "oowwoo",
+    "oooooo",
+    ".o..o.",
+  ],
+};
+
+/* ═══════════ ENGINE + WORLD HELPERS ═══════════ */
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const cap = document.getElementById("cap"), hud = document.getElementById("hud");
+const W = cv.width, H = cv.height;
+const VIO="#b44cff", ICE="#6de0ff", GOLD="#ffd75e", GREEN="#00ff88", PSY="#ff4fd8", CHROME="#d7deed";
+
+function drawMap(map,x,y,sc,tint){
+  for(let r=0;r<map.length;r++) for(let i=0;i<map[r].length;i++){
+    const ch=map[r][i]; const col = tint && ch!=='.' ? tint : PALETTE[ch];
+    if(col){ ctx.fillStyle=col; ctx.fillRect(x+i*sc,y+r*sc,sc,sc); }
+  }
+}
+function walker(x,y,sc,t){ drawMap(Math.floor(t/180)%2 ? SPRITES.joseWalkA : SPRITES.joseWalkB, x, y, sc); }
+function blink(x,y,sc,t){ // idle jose blinks every ~3.4s
+  if((t%3400)<140){ ctx.fillStyle=PALETTE.s;
+    ctx.fillRect(x+4*sc,y+3*sc,sc,sc); ctx.fillRect(x+8*sc,y+3*sc,sc,sc); }
+}
+function text(str,x,y,size,col,align="center",font="bold"){
+  ctx.fillStyle=col; ctx.font=`${font} ${size}px 'Courier New',monospace`;
+  ctx.textAlign=align; ctx.fillText(str,x,y);
+}
+function glow(col,blur){ ctx.shadowColor=col; ctx.shadowBlur=blur; }
+function noglow(){ ctx.shadowBlur=0; }
+function neon(str,x,y,size,col,align="center"){ glow(col,16); text(str,x,y,size,col,align); noglow(); }
+function sign(x,y,w,h,txt,col,size,t){
+  const fl = (t!==undefined && Math.floor(t/90)%41===0) ? 0.3 : 1;
+  ctx.globalAlpha = fl;
+  ctx.fillStyle="rgba(4,3,14,0.88)"; ctx.fillRect(x,y,w,h);
+  glow(col,12); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h); noglow();
+  neon(txt, x+w/2, y+h/2+(size||14)/2.8, size||14, col);
+  ctx.globalAlpha = 1;
+}
+function box(x,y,w,h,fill,stroke){ ctx.fillStyle=fill; ctx.fillRect(x,y,w,h);
+  if(stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h); } }
+function bubbleC(x,y,rad,col,txt){
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,rad,0,7); ctx.fill();
+  if(txt) text(txt,x,y+4,11,"#04030e");
+}
+function meterBar(x,y,w,pct,label){
+  ctx.fillStyle="#120c2c"; ctx.fillRect(x,y,w,16);
+  const col = pct>0.4 ? ICE : PSY;
+  glow(col,8); ctx.fillStyle=col; ctx.fillRect(x+2,y+2,(w-4)*Math.max(0,Math.min(1,pct)),12); noglow();
+  text(label, x+w/2, y-6, 11, "#7e83a6");
+}
+/* psychic dust: slow motes drifting upward. replaces the rain. */
+function motes(t){
+  for(let i=0;i<46;i++){
+    const x=((i*163)+22*Math.sin(t/2400+i))%W;
+    const y=H-(((i*97)+(t/22))%(H+40))+20;
+    const a=0.10+0.14*Math.sin(t/700+i*1.7);
+    ctx.fillStyle=`rgba(180,76,255,${Math.max(0,a)})`;
+    ctx.fillRect(x,y,2,2);
+  }
+}
+/* the cerebro chamber: concentric rings converging on a vanishing point,
+   walls tiled with tiny signal lights, a walkway plunging to the console. */
+function chamber(t,cx,cy){
+  cx=cx??W/2; cy=cy??232;
+  // rings
+  for(let i=6;i>=1;i--){
+    const r=i*86;
+    ctx.strokeStyle=`rgba(109,224,255,${0.05+0.035*(7-i)})`;
+    ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  }
+  // wall lights: little minds out there in the dark
+  for(let i=0;i<130;i++){
+    const seed=(i*2654435761)>>>0;
+    const a=(seed%628)/100, rr=60+(seed>>4)%420;
+    const x=cx+rr*Math.cos(a), y=cy+rr*Math.sin(a)*0.62;
+    if(y>H-70) continue;
+    const tw=0.25+0.55*Math.abs(Math.sin(t/900+i*2.3));
+    const col = i%17===0 ? GOLD : (i%5===0 ? VIO : ICE);
+    ctx.globalAlpha=tw*0.7; ctx.fillStyle=col; ctx.fillRect(x,y,2,2); ctx.globalAlpha=1;
+  }
+  // walkway
+  ctx.fillStyle="#0a0722";
+  ctx.beginPath(); ctx.moveTo(cx-190,H); ctx.lineTo(cx-26,cy+40); ctx.lineTo(cx+26,cy+40); ctx.lineTo(cx+190,H); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="rgba(180,76,255,0.55)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx-190,H); ctx.lineTo(cx-26,cy+40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+190,H); ctx.lineTo(cx+26,cy+40); ctx.stroke();
+  for(let i=1;i<5;i++){ const y=H-i*((H-cy-40)/5);
+    const half=26+(190-26)*((y-cy-40)/(H-cy-40));
+    ctx.strokeStyle="rgba(180,76,255,0.25)";
+    ctx.beginPath(); ctx.moveTo(cx-half,y); ctx.lineTo(cx+half,y); ctx.stroke();
+  }
+}
+/* rotating detection globe with blips */
+function globe(cx,cy,r,t,blipCol){
+  ctx.fillStyle="#070a1e"; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+  glow(ICE,10); ctx.strokeStyle="rgba(109,224,255,0.8)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke(); noglow();
+  ctx.strokeStyle="rgba(109,224,255,0.28)"; ctx.lineWidth=1.5;
+  // latitude
+  for(let i=-2;i<=2;i++){
+    const yy=cy+i*r*0.36, hw=Math.sqrt(Math.max(0,r*r-(i*r*0.36)*(i*r*0.36)));
+    ctx.beginPath(); ctx.ellipse(cx,yy,hw,hw*0.22,0,0,7); ctx.stroke();
+  }
+  // spinning longitude
+  for(let i=0;i<3;i++){
+    const ph=Math.sin(t/1400+i*1.05);
+    ctx.beginPath(); ctx.ellipse(cx,cy,Math.abs(ph)*r,r,0,0,7); ctx.stroke();
+  }
+  // blips: signals surfacing around the world
+  for(let i=0;i<8;i++){
+    const seed=(i*40503+7)%628;
+    const a=seed/100, rr=r*(0.25+((i*53)%50)/100);
+    const bx=cx+rr*Math.cos(a+t/5000), by=cy+rr*Math.sin(a+t/5000)*0.8;
+    const pulse=(t/1100+i*0.37)%1;
+    if(pulse<0.55){
+      const col=blipCol|| (i%3===0?GOLD:PSY);
+      ctx.globalAlpha=1-pulse/0.55;
+      glow(col,8); ctx.fillStyle=col; ctx.fillRect(bx,by,4,4); noglow();
+      ctx.strokeStyle=col; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(bx+2,by+2,4+pulse*16,0,7); ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
+  // sweep line
+  const sa=t/900;
+  ctx.strokeStyle="rgba(255,79,216,0.5)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*Math.cos(sa),cy+r*Math.sin(sa)); ctx.stroke();
+}
+/* expanding psychic rings from a point */
+function psyRing(cx,cy,t,col,n){
+  for(let i=0;i<(n||3);i++){
+    const p=((t/1600)+i/(n||3))%1;
+    ctx.globalAlpha=0.5*(1-p);
+    ctx.strokeStyle=col||VIO; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,8+p*120,0,7); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+/* violet synthwave floor grid */
+function floorGrid(t,floorY){
+  ctx.strokeStyle="#221046"; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(0,floorY); ctx.lineTo(W,floorY); ctx.stroke();
+  ctx.fillStyle="#070516"; ctx.fillRect(0,floorY+2,W,H-floorY);
+  ctx.strokeStyle="rgba(180,76,255,0.30)"; ctx.lineWidth=1.5;
+  for(let i=0;i<11;i++){
+    const x=i*(W/10);
+    ctx.beginPath(); ctx.moveTo(x,H); ctx.lineTo(W/2+(x-W/2)*0.22,floorY+2); ctx.stroke();
+  }
+  const scrollv=(t/28)%40;
+  for(let i=0;i<5;i++){
+    const y=floorY+8+((i*40+scrollv)%(H-floorY));
+    ctx.globalAlpha=0.35;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+function clockFace(cx,cy,r,t){
+  ctx.fillStyle="#0b0724"; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+  ctx.strokeStyle="#7e83a6"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  const a=t/600;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.72*Math.cos(a),cy+r*0.72*Math.sin(a)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.45*Math.cos(a/12),cy+r*0.45*Math.sin(a/12)); ctx.stroke();
+}
+const qrImgs={};
+for(const k in CONFIG.qrFiles){ const im=new Image(); im.src=CONFIG.qrFiles[k]; qrImgs[k]=im; }
+function drawQR(key,x,y,size,url,col){
+  glow(col||VIO,18); ctx.fillStyle="#f4f2ec"; ctx.fillRect(x-8,y-8,size+16,size+16); noglow();
+  const im=qrImgs[key];
+  if(im&&im.complete&&im.naturalWidth>0){ ctx.imageSmoothingEnabled=false; ctx.drawImage(im,x,y,size,size); }
+  else{
+    let seed=0; for(const c of key) seed+=c.charCodeAt(0);
+    const n=13,cell=size/n;
+    for(let r=0;r<n;r++)for(let c2=0;c2<n;c2++){ seed=(seed*73+17)%97;
+      if(seed%2===0){ ctx.fillStyle="#04030e"; ctx.fillRect(x+c2*cell+1,y+r*cell+1,cell-2,cell-2);} }
+    text("PLACEHOLDER", x+size/2, y+size/2+4, 10, VIO);
+  }
+  neon(url, x+size/2, y+size+30, 13, col||VIO);
+}
+
+/* ═══════════ SCENES ═══════════ */
+const S = 6;
+const SCENES = [
+
+/* 0 · COLD OPEN · THE MUTANT SCAN */
+{ world:"BOOT", title:"Subject: Jose's Brain",
+  caption:[
+    ["q","“Quick scan before we start.”"],
+    ["l","This is a true story."]],
+  render(t){
+    ctx.fillStyle="rgba(255,255,255,0.02)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    text("CEREBRO · SUBJECT SCAN · v01",W/2,60,14,"#7e83a6");
+    // the subject: a brain in a scan reticle
+    box(120,140,220,220,"#070a1e","#22305a");
+    ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
+    ctx.strokeRect(150,170,160,160);
+    // scan line sweeps the reticle
+    const sy=170+((t/9)%160);
+    glow(ICE,10); ctx.strokeStyle=ICE;
+    ctx.beginPath(); ctx.moveTo(150,sy); ctx.lineTo(310,sy); ctx.stroke(); noglow();
+    // a pixel brain: two lumpy hemispheres
+    ctx.fillStyle="#e88ab0";
+    ctx.beginPath(); ctx.arc(210,250,34,0,7); ctx.arc(252,250,34,0,7);
+    ctx.arc(231,226,30,0,7); ctx.fill();
+    ctx.strokeStyle="#b45a80"; ctx.lineWidth=2;
+    for(let i=0;i<4;i++){ ctx.beginPath();
+      ctx.arc(206+i*16,240+6*(i%2),9,0.6,3.6); ctx.stroke(); }
+    // it pulses. it is very much alive.
+    psyRing(231,248,t,PSY,2);
+    // terminal runs the findings
+    box(430,110,470,290,"#0a0d18","#2a3a58");
+    text("> scanning subject...",450,142,13,"#5aa880","left");
+    const checks=[
+      ["telepathy ...........","NOT FOUND","#7e83a6"],
+      ["mind in 100 places ..","CONFIRMED","#ffd75e"],
+      ["ideas detected ......","thousands","#00ff88"],
+      ["ideas retained ......","3","#ff4f6e"],
+      ["focus ...............","0% OR 200%","#ffd75e"],
+      ["classification ......","MUTANT (untrained)","#b44cff"],
+    ];
+    checks.forEach((c2,i)=>{ if(t>500+i*430){
+      text("> "+c2[0],450,178+i*30,13,"#8aa4c8","left");
+      text(c2[1],700,178+i*30,13,c2[2],"left"); }});
+    if(t>500+6*430) neon("NOT BROKEN. UNAMPLIFIED.",665,384,15,VIO);
+    if(t>3600) neon("JOSE'S BRAIN: UNAMPLIFIED",W/2,468,34,GOLD);
+    if(t>4400 && Math.floor(t/500)%2===0)
+      text("...press start to enter the chamber",W/2,508,14,"#7e83a6");
+  }},
+
+/* 1 · TITLE */
+{ world:"START", title:"JOSE-CEREBRO",
+  caption:[
+    ["q","“Cerebro is Spanish for brain. It is also a machine that finds minds. Both facts matter here.”"],
+    ["l","PRESS START"]],
+  render(t){
+    chamber(t);
+    // the helmet floats above the console, waiting
+    const hy=300+8*Math.sin(t/500);
+    psyRing(W/2,hy+16,t,VIO,3);
+    glow(CHROME,14); drawMap(SPRITES.helmet,W/2-35,hy,7); noglow();
+    ctx.globalAlpha = 0.8+0.2*Math.sin(t/420);
+    neon("JOSE-CEREBRO", W/2, 170, 56, VIO);
+    ctx.globalAlpha = 1;
+    neon("SECOND BRAIN · MUTANT EDITION", W/2, 214, 18, ICE);
+    drawMap(SPRITES.joseIdle, W/2-36, 388, 5);
+    blink(W/2-36, 388, 5, t);
+    if(Math.floor(t/500)%2===0) neon("PRESS START", W/2, 500, 20, GREEN);
+    text("a talk by "+CONFIG.speaker, W/2, 526, 13, "#7e83a6");
+    motes(t);
+  }},
+
+/* 2 · THE SIGNALS */
+{ world:"WORLD 1", title:"The Signals",
+  caption:[
+    ["q","“How many of you have had a great idea in the shower and lost it by noon?”"],
+    ["l","My mind picks up everything. Holding the signal is the part I never had."],
+    ["l","A hundred blips a day. No receiver."]],
+  render(t){
+    box(60,50,840,400,"#08061a","#221046");
+    neon("SIGNAL MAP · LIVE",W/2,86,15,ICE);
+    globe(W/2,255,150,t);
+    // jose stands at the edge, no helmet, hands empty
+    drawMap(SPRITES.joseIdle,120,320,5);
+    blink(120,320,5,t);
+    text("(no helmet)",150,430,11,"#7e83a6");
+    // signals he notices, then loses: blips arc toward him and fizzle
+    const T2=2600, p=(t%T2)/T2;
+    const sx=620-260*p, sy=210+40*Math.sin(p*3.1);
+    if(p<0.62){
+      glow(GOLD,10); bubbleC(sx,sy,10,GOLD,"!"); noglow();
+    } else if(p<0.9){
+      ctx.globalAlpha=1-(p-0.62)/0.28;
+      text("signal lost",300,214,13,PSY);
+      ctx.strokeStyle=GOLD;
+      for(let i=0;i<4;i++){ const a=i*1.57+0.78;
+        ctx.beginPath(); ctx.moveTo(sx+8*Math.cos(a),sy+8*Math.sin(a));
+        ctx.lineTo(sx+15*Math.cos(a),sy+15*Math.sin(a)); ctx.stroke(); }
+      ctx.globalAlpha=1;
+    }
+    // the counter of the fallen
+    const lost=140+Math.floor(t/T2);
+    text("signals detected today: "+(lost+3),720,430,12,"#7e83a6");
+    text("signals kept: 3",720,450,12,PSY);
+    motes(t);
+  }},
+
+/* 3 · THE PARADOX */
+{ world:"WORLD 1", title:"The Paradox",
+  caption:[
+    ["q","“I think in decades. Then I think: what's the quickest thing I can do today?”"],
+    ["l","Ten-year vision. Five-minute action."],
+    ["l","The middle? Doesn't exist."]],
+  render(t){
+    /* three panels: the decade · the void · right now */
+    // LEFT · THE DECADE
+    box(40,60,340,380,"#0b0724","#221046");
+    neon("THE DECADE",210,96,16,GOLD);
+    for(let i=0;i<8;i++){ const sx=70+(i*41)%290, sy2=112+(i*29)%56;
+      ctx.globalAlpha=0.35+0.4*Math.sin(t/500+i*2); ctx.fillStyle="#e9ecf6";
+      ctx.fillRect(sx,sy2,2,2); ctx.globalAlpha=1; }
+    glow(VIO,20); ctx.fillStyle=VIO;
+    ctx.beginPath(); ctx.arc(210,230,52,Math.PI,0); ctx.fill(); noglow();
+    ctx.fillStyle="#0b0724";
+    for(let i=0;i<4;i++) ctx.fillRect(150,196+i*12,120,5);
+    ctx.strokeStyle="rgba(109,224,255,0.5)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(80,440); ctx.lineTo(210,232); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(340,440); ctx.lineTo(210,232); ctx.stroke();
+    for(let i=1;i<5;i++){ const y=440-i*44;
+      ctx.beginPath(); ctx.moveTo(210-(y-232)*0.63,y); ctx.lineTo(210+(y-232)*0.63,y); ctx.stroke(); }
+    text("2036",210,330,13,"#7e83a6"); text("2046",210,290,12,"#7e83a6");
+    const wp=(t/6000)%1, wsc=3.2-wp*1.9, wy=396-wp*140;
+    drawMap(SPRITES.joseWalkA, 210-6*wsc, wy, wsc);
+    neon("the vision",210,126,11,ICE);
+    // MIDDLE · THE VOID
+    box(400,60,160,380,"#050310","#171233");
+    neon("NEXT MONTH",480,96,16,"#6a5f8f");
+    for(let i=0;i<5;i++){ const dy2=(t/30+i*77)%340;
+      ctx.fillStyle="rgba(126,131,166,0.25)"; ctx.fillRect(420+(i*31)%120, 80+dy2, 2,2); }
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/600);
+    text("?",480,262,46,"#221046"); ctx.globalAlpha=1;
+    // RIGHT · RIGHT NOW
+    box(580,60,340,380,"#0b0724","#221046");
+    neon("RIGHT NOW",750,96,16,GREEN);
+    ctx.fillStyle="#0f0a26"; ctx.fillRect(586,400,328,40);
+    box(660,180,110,260,"#130c2e","#3a2a66");
+    ctx.fillStyle="#04030e"; ctx.fillRect(668,188,94,252);
+    const dc=(t%2600)/2600;
+    let doorW=94;
+    if(dc<0.30) doorW=94;
+    else if(dc<0.42) doorW=94*(1-(dc-0.30)/0.12);
+    else doorW=0;
+    sign(668,150,94,26, doorW>2?"CLOSED":"OPEN", doorW>2?"#7e83a6":GREEN, 11, t);
+    if(doorW>2){
+      ctx.fillStyle="#3a2618"; ctx.fillRect(668,188,doorW,252);
+      ctx.strokeStyle="#241708"; ctx.lineWidth=2;
+      ctx.strokeRect(674,198,Math.max(2,doorW-14),96);
+      ctx.strokeRect(674,308,Math.max(2,doorW-14),118);
+      if(doorW>60){ ctx.fillStyle=GOLD; ctx.beginPath();
+        ctx.arc(668+doorW-12,318,4,0,7); ctx.fill(); }
+    }
+    if(dc>=0.42){
+      const et=dc-0.42;
+      drawMap(SPRITES.joseIdle,686,300,4.5);
+      psyRing(722,306,t,PSY,2);
+      const shout=[
+        ["NOW!",800,214,17,0.00],
+        ["idea!",876,258,13,0.05],
+        ["OMG",790,302,15,0.10],
+        ["opportunity!",848,352,12,0.15],
+        ["outcomes!",788,398,13,0.20],
+      ];
+      shout.forEach(([msg,bx,by,fs,d])=>{
+        if(et>d){
+          const bob=3*Math.sin(t/200+bx);
+          const bw=msg.length*fs*0.62+18;
+          glow(GOLD,6); ctx.fillStyle="#f4f2ec";
+          ctx.fillRect(bx-bw/2,by-fs+bob-6,bw,fs+12); noglow();
+          text(msg,bx,by+bob,fs,"#04030e");
+        }
+      });
+    }
+    text("think in decades",210,468,11,"#7e83a6");
+    text("(nothing here)",480,468,11,"#4a4066");
+    text("*door pop*",750,468,11,"#7e83a6");
+  }},
+
+/* 4 · THE DANGER ROOM */
+{ world:"WORLD 2", title:"The Danger Room",
+  caption:[
+    ["q","“Every meeting is a training simulation. The setting changes. The drill doesn't.”"],
+    ["l","Run the conversation. Run the translation underneath it. Nobody sees program two."],
+    ["l","It bills by the hour."]],
+  render(t){
+    box(0,0,W,H,"#06051a");
+    // holo-grid room
+    ctx.strokeStyle="rgba(109,224,255,0.14)"; ctx.lineWidth=1;
+    for(let x=0;x<W;x+=48){ ctx.beginPath(); ctx.moveTo(x,70); ctx.lineTo(x,470); ctx.stroke(); }
+    for(let y=70;y<470;y+=48){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    neon("DANGER ROOM · SESSIONS. ALL. DAY.", W/2, 52, 16, PSY);
+    clockFace(60,84,16,t);
+    // four simulation pods
+    const sims=[["SIM 1 · QBR"],["SIM 2 · 1:1"],["SIM 3 · STEERCO"],["SIM 4 · TOWNHALL"]];
+    const T=3400, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    for(let i=0;i<4;i++){
+      const x=70+i*225;
+      const active = i===seg && f>0.30 && f<0.85;
+      box(x,150,180,270,"#0a0828",active?ICE:"#221046");
+      text(sims[i][0],x+90,142,11,active?ICE:"#5a5580");
+      // wireframe attendees flicker inside the active sim
+      if(active){
+        ctx.globalAlpha=0.5+0.3*Math.sin(t/120);
+        for(let a2=0;a2<3;a2++){
+          const ax=x+34+a2*46, ay=300;
+          ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
+          ctx.strokeRect(ax,ay,20,34);
+          ctx.beginPath(); ctx.arc(ax+10,ay-10,8,0,7); ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+        const msgs=["blah blah blah","circling back...","any blockers?"];
+        const msg=msgs[Math.floor(t/450)%3];
+        ctx.fillStyle="#f4f2ec"; ctx.fillRect(x+22,180,136,22);
+        text(msg,x+90,195,10,"#04030e");
+        // the second program, running underneath
+        ctx.fillStyle="rgba(180,76,255,0.14)"; ctx.fillRect(x+6,376,168,38);
+        text("program 2: translating...",x+90,394,9,VIO);
+        text("[####::::]",x+90,408,9,VIO);
+      }
+    }
+    // jose walks between sims / stands in the active one
+    let jx;
+    if(f<0.30){ const from = seg===0? -60 : 70+(seg-1)*225+60; const to=70+seg*225+60;
+      jx=from+(to-from)*(f/0.30); walker(jx,330,S,t); }
+    else if(f<0.85){ jx=70+seg*225+60; drawMap(SPRITES.joseIdle,jx,330,S); blink(jx,330,S,t); }
+    else { jx=70+seg*225+60; drawMap(SPRITES.joseIdle,jx,330,S); }
+    meterBar(340,90,280,Math.max(0.05,1-((t/T)%4)*0.24),"PSYCHIC SHIELD");
+    motes(t);
+  }},
+
+/* 5 · FEARED AND MISUNDERSTOOD */
+{ world:"WORLD 2", title:"Feared and Misunderstood",
+  caption:[
+    ["q","“You clearly see the opportunity. Say it out loud, and people back away slowly.”"],
+    ["l","They don't fear the idea. They fear the guy who saw it three years early."],
+    ["l","Every visionary gets the mutant treatment. The bridge is what's missing."]],
+  render(t){
+    floorGrid(t,440);
+    ctx.fillStyle="#04030e"; ctx.fillRect(400,436,180,104);
+    glow(PSY,14); ctx.strokeStyle=PSY; ctx.lineWidth=2; ctx.strokeRect(400,436,180,104); noglow();
+    neon("THE GAP",490,500,13,PSY);
+    const bp=(t%4200)/4200;
+    if(bp>0.68){
+      const a=Math.max(0,0.5*(1-Math.abs(bp-0.84)/0.16));
+      ctx.setLineDash([6,6]); ctx.strokeStyle=`rgba(109,224,255,${a})`; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(400,436); ctx.lineTo(580,436); ctx.stroke(); ctx.setLineDash([]);
+      if(bp>0.78) text("bridge not found",490,424,10,`rgba(109,224,255,${a+0.2})`);
+    }
+    /* pitch cycle: jose presents → the room sees a mutant → torches and
+       pitchforks (tiny, polite, corporate) → respawn, pitch again */
+    const T4=5600, p4=(t%T4)/T4;
+    const prog = p4<0.55 ? Math.min(1,p4/0.32) : 1;
+    glow(ICE,12); ctx.strokeStyle=ICE; ctx.lineWidth=2;
+    ctx.strokeRect(150,180,180*Math.min(1,prog*1.4),110);
+    for(let i=1;i<4;i++){ if(prog > 0.3+i*0.18){
+      ctx.beginPath(); ctx.moveTo(150,180+i*27); ctx.lineTo(330,180+i*27); ctx.stroke(); } }
+    noglow();
+    neon("THE FUTURE (fully formed)",240,168,12,ICE);
+    const thought=(hx,hy,bx,by,r)=>{
+      ctx.fillStyle="#f4f2ec";
+      ctx.beginPath(); ctx.arc(hx+(bx-hx)*0.35, hy+(by-hy)*0.45, 3,0,7); ctx.fill();
+      ctx.beginPath(); ctx.arc(hx+(bx-hx)*0.62, hy+(by-hy)*0.72, 5,0,7); ctx.fill();
+      ctx.beginPath(); ctx.arc(bx-r*0.5,by,r*0.72,0,7); ctx.arc(bx+r*0.5,by,r*0.72,0,7);
+      ctx.arc(bx,by-r*0.45,r*0.8,0,7); ctx.fill();
+    };
+    const skx=[636,722,808], tint=["#4a4066","#5a4a76","#3f3a58"];
+    skx.forEach((x2,i)=>{ drawMap(SPRITES.joseIdle,x2,355,5,tint[i]); });
+    const outed = p4>=0.58;
+    // bubble 1: their scribbled version of the future
+    thought(666,350,655,225,26);
+    ctx.strokeStyle="#7e83a6"; ctx.lineWidth=1.5; ctx.beginPath();
+    for(let i=0;i<18;i++){ ctx.lineTo(643+i*1.4+5*Math.cos(i+t/700), 222+8*Math.sin(i*1.3+t/600)); }
+    ctx.stroke();
+    // bubble 2: pure confusion
+    thought(752,350,740,198,22);
+    text(outed?"!":"?",740,206,18,"#130c2e");
+    // bubble 3: the verdict, a tiny mutant-warning sign
+    thought(838,350,825,230,24);
+    ctx.fillStyle=PSY;
+    ctx.beginPath(); ctx.moveTo(825,214); ctx.lineTo(838,238); ctx.lineTo(812,238); ctx.closePath(); ctx.fill();
+    text("!",825,235,13,"#04030e");
+    // jose: pitching → detected → escorted off the floor by pure vibes
+    if(!outed){
+      drawMap(SPRITES.joseIdle,200,340,S);
+      blink(200,340,S,t);
+      if(p4>0.50) psyRing(236,368,t,VIO,2);   // his aura gives him away
+    } else if(p4<0.94){
+      const q4=(p4-0.58)/0.36;
+      const jx4=200+q4*300, jy4=340-q4*520;
+      ctx.save(); ctx.translate(jx4+36,jy4+50); ctx.rotate(q4*7);
+      drawMap(SPRITES.joseIdle,-36,-50,S,"#cfa6ff");
+      ctx.restore();
+      for(let i=0;i<4;i++){ ctx.fillStyle=[VIO,PSY][i%2];
+        ctx.fillRect(jx4+30-i*10-q4*20, jy4+100+i*8, 4,4); }
+      neon("MUTANT!",480,110,26,PSY);
+      if(q4>0.4) text("(he was right, by the way)",480,140,12,"#7e83a6");
+    }
+    motes(t);
+  }},
+
+/* 6 · GAME OVER? */
+{ world:"WORLD 2", title:"Game Over?",
+  caption:[
+    ["q","“I stopped trying to pass for normal. I built an amplifier.”"]],
+  render(t){
+    ctx.fillStyle="rgba(255,255,255,0.025)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    if(t<1900){
+      if(Math.floor(t/240)%2===0) neon("GAME OVER?",W/2,240,64,PSY);
+      const n=Math.max(0,9-Math.floor(t/200));
+      text("CONTINUE? "+n,W/2,320,18,"#7e83a6");
+      text("(same brain, same mutation)",W/2,352,12,"#4a4066");
+    } else {
+      if(t<2400 && Math.floor(t/70)%2===0) text("GAME OVER?",W/2+(t%13)-6,240,64,"#221046");
+      text("Xavier never fixed his brain either.",W/2,300,22,"#7e83a6");
+      text("I stopped trying to fix mine.",W/2,345,26,"#e9ecf6");
+      neon("I built it an amplifier.",W/2,392,30,GREEN);
+    }
+  }},
+
+/* 7 · WORLD 3 TITLE CARD */
+{ world:"", title:"",
+  caption:[],
+  render(t){
+    chamber(t);
+    text("WORLD 3",W/2,160,24,"#7e83a6");
+    neon("CEREBRO",W/2,230,58,GOLD);
+    text("(the second brain)",W/2,262,15,"#7e83a6");
+    const lp=Math.min(1,t/1600);
+    box(330,300,300,14,"#0b0724","#221046");
+    glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(332,302,296*lp,10); noglow();
+    text(lp<1 ? "calibrating the amplifier..." : "ready.",W/2,342,12,"#7e83a6");
+    if(lp>=1){ const hy=380+8*Math.sin(t/500);
+      glow(CHROME,14); drawMap(SPRITES.helmet,W/2-35,hy,7); noglow();
+      psyRing(W/2,hy+16,t,VIO,3); }
+    motes(t);
+  }},
+
+/* 8 · THE CHAMBER */
+{ world:"WORLD 3", title:"The Chamber",
+  caption:[
+    ["q","“It's embarrassingly simple. Flat folders. Markdown files. That's the whole machine.”"],
+    ["l","Structure stolen from Andrej Karpathy. The push came from a convo with Daniel de Repentigny."],
+    ["l","I'd been offloading my brain into Claude for months with no structure. Ideas went in, nothing came back."],
+    ["l","The convo plus the structure is what made it click."]],
+  render(t){
+    chamber(t,W/2,210);
+    // six panels arc around the chamber wall like control sectors
+    const rooms=[["inbox/",PSY,"✉"],["notes/",ICE,"◆"],["daily/",GOLD,"▤"],
+                 ["projects/",GREEN,"⚑"],["people/",VIO,"☺"],["transcripts/",ICE,"♪"]];
+    rooms.forEach((r,i)=>{
+      const a=Math.PI*(0.14+0.145*i);           // fan across the top arc
+      const x=W/2+330*Math.cos(a+Math.PI), y=340-200*Math.sin(a);
+      sign(x-80,y-26,160,52,r[0],r[1],15,t+i*997);
+      neon(r[2], x-58, y+8, 13, r[1]);
+      // feed line from panel down toward the console
+      ctx.strokeStyle=`rgba(109,224,255,0.18)`; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(x,y+26); ctx.lineTo(W/2,250); ctx.stroke();
+    });
+    // jose walks the platform wearing the helmet, at home
+    const px3=W/2-140+70*Math.sin(t/1700);
+    drawMap(SPRITES.joseHelm, px3, 380, 5);
+    psyRing(px3+30,392,t,VIO,2);
+    motes(t);
+  }},
+
+/* 9 · THE HELMET */
+{ world:"WORLD 3", title:"The Helmet",
+  caption:[
+    ["q","“One file changes everything. CLAUDE.md is the helmet. It programs how the machine reads my world.”"],
+    ["l","Without it: a chatbot. With it: a collaborator who knows the whole system."]],
+  render(t){
+    box(0,0,W,540,"#060412");
+    chamber(t,W/2,190);
+    // the helmet descends onto jose over the loop
+    const T9=5200, p9=(t%T9)/T9;
+    const jx=W/2-36, jy=330;
+    if(p9<0.45){
+      drawMap(SPRITES.joseIdle,jx,jy,S);
+      blink(jx,jy,S,t);
+      const hy=110+ (p9/0.45)*196;
+      glow(CHROME,16); drawMap(SPRITES.helmet,W/2-30,hy,6); noglow();
+      ctx.strokeStyle="rgba(215,222,237,0.3)"; ctx.setLineDash([4,6]);
+      ctx.beginPath(); ctx.moveTo(W/2,hy+34); ctx.lineTo(W/2,jy); ctx.stroke(); ctx.setLineDash([]);
+    } else {
+      drawMap(SPRITES.joseHelm,jx,jy,S);
+      psyRing(W/2,jy+16,t,VIO,4);
+      neon("AMPLIFIER ONLINE",W/2,300,15,GOLD);
+    }
+    // the file itself, glowing like the power source
+    const fy=150+10*Math.sin(t/420);
+    glow(GOLD,20); box(660,fy,170,88,"#130c2e",GOLD);
+    neon("CLAUDE.md",745,fy+38,16,GOLD);
+    neon("★",745,fy+68,20,GOLD); noglow();
+    ctx.strokeStyle="rgba(255,215,94,0.35)"; ctx.lineWidth=2;
+    for(let i=0;i<6;i++){ const a=i*1.05+t/900;
+      ctx.beginPath(); ctx.moveTo(745,fy+44); ctx.lineTo(745+80*Math.cos(a),fy+44+80*Math.sin(a)); ctx.stroke(); }
+    if(p9>0.45){
+      glow(ICE,14); drawMap(SPRITES.orb,180,320+8*Math.sin(t/300),5); noglow();
+      neon("+ COLLABORATOR JOINED",210,296,13,ICE);
+      if(p9>0.6) neon("context loaded ✓",210,270,12,GREEN);
+    }
+    motes(t);
+  }},
+
+/* 10 · THE PROTOCOLS */
+{ world:"WORLD 3", title:"The Protocols (Skills)",
+  caption:[
+    ["q","“Each protocol is just a markdown file. That's the part nobody believes.”"],
+    ["l","No product. No plugin. Text files and context."],
+    ["l","Remember the mutant treatment? COUNCIL and DOSSIERS are the bridge. I built one."]],
+  render(t){
+    floorGrid(t,455);
+    const doors=[["COUNCIL","21 advisors",PSY],["HAT ROOM","six modes",ICE],
+                 ["DOSSIERS","people intel",GOLD],["BROADCAST","content",GREEN]];
+    doors.forEach((d,i)=>{
+      const x=90+i*220;
+      box(x,150,160,305,"#0b0724","#221046");
+      sign(x+10,116,140,28,d[0],d[2],12,t+i*1373);
+      text(d[1],x+80,480,11,"#7e83a6");
+    });
+    // council door open: advisors mid-debate
+    ctx.fillStyle="#060412"; ctx.fillRect(96,156,148,293);
+    for(let i=0;i<12;i++){ const ax=115+(i%4)*32, ay=200+Math.floor(i/4)*60;
+      ctx.fillStyle=[GREEN,GOLD,ICE,PSY][i%4]; ctx.globalAlpha=0.85;
+      ctx.fillRect(ax,ay+3*Math.sin(t/260+i*1.7),14,22); ctx.globalAlpha=1; }
+    // goggins does pushups in any universe
+    const gy = Math.floor(t/380)%2 ? 414 : 424;
+    ctx.fillStyle="#e0aa72";
+    ctx.fillRect(108,gy-8,9,9);
+    ctx.fillRect(117,gy,34,8);
+    ctx.fillRect(120,gy+8,4,440-(gy+8));
+    ctx.fillRect(140,gy+8,4,440-(gy+8));
+    ctx.fillRect(169,gy+2,10,5);
+    ctx.fillStyle="#2b3040"; ctx.fillRect(151,gy+1,18,7);
+    ctx.fillStyle="#1c1f29"; ctx.fillRect(176,gy+3,6,6);
+    if(Math.floor(t/1700)%2===0){
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(118,366,90,20);
+      ctx.beginPath(); ctx.moveTo(128,386); ctx.lineTo(122,398); ctx.lineTo(140,386); ctx.closePath(); ctx.fill();
+      text("STAY HARD.",163,380,10,"#04030e");
+    }
+    // hat room: six hats on pedestals
+    ctx.fillStyle="#060412"; ctx.fillRect(316,156,148,293);
+    const hatCols=["#f4f2ec","#ff4f6e","#5c6378","#ffd75e","#00ff88","#3f8cff"];
+    hatCols.forEach((hc,i)=>{
+      const hx=352+(i%2)*72, hy=216+Math.floor(i/2)*84;
+      ctx.fillStyle="#130c2e"; ctx.fillRect(hx-16,hy+12,32,8);
+      ctx.fillStyle=hc; ctx.beginPath(); ctx.arc(hx,hy+8,12,Math.PI,0); ctx.fill();
+      ctx.fillRect(hx-16,hy+6,32,4);
+    });
+    // dossiers: filing cabinets of minds, one file floating out for reading
+    ctx.fillStyle="#060412"; ctx.fillRect(536,156,148,293);
+    [552,620].forEach((cx2,ci)=>{
+      ctx.fillStyle="#1c2130"; ctx.fillRect(cx2,236,52,168);
+      for(let d2=0;d2<4;d2++){
+        const dy3=242+d2*40;
+        ctx.strokeStyle="#3d4457"; ctx.lineWidth=1.5; ctx.strokeRect(cx2+4,dy3,44,32);
+        ctx.fillStyle=["#e0aa72","#c98f5e","#9a6a44","#e8c48a"][(ci+d2)%4];
+        ctx.fillRect(cx2+9,dy3+6,10,10);
+        ctx.fillStyle="#14110e";
+        ctx.fillRect(cx2+11,dy3+9,2,2); ctx.fillRect(cx2+15,dy3+9,2,2);
+        ctx.fillStyle="#8a92b8"; ctx.fillRect(cx2+26,dy3+13,16,3);
+      }
+    });
+    const fb=4*Math.sin(t/400);
+    glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(596,186+fb,26,34); noglow();
+    ctx.fillStyle="#0b0724"; ctx.fillRect(600,192+fb,18,2);
+    ctx.fillRect(600,198+fb,18,2); ctx.fillRect(600,204+fb,12,2);
+    // broadcast: mic, ON AIR, content flying out the door
+    ctx.fillStyle="#060412"; ctx.fillRect(756,156,148,293);
+    sign(776,176,108,24,"ON AIR",PSY,11,t);
+    ctx.fillStyle="#3d4457"; ctx.fillRect(824,320,6,58);
+    ctx.fillRect(806,378,42,6);
+    glow(ICE,8); ctx.fillStyle="#8ee3ff";
+    ctx.beginPath(); ctx.arc(827,308,14,0,7); ctx.fill(); noglow();
+    ctx.fillStyle="#1c2130";
+    for(let g2=0;g2<3;g2++) ctx.fillRect(816,302+g2*5,22,2);
+    for(let i2=0;i2<3;i2++){
+      const pp=((t/1500)+i2*0.33)%1;
+      ctx.globalAlpha=1-pp;
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(792-pp*70, 252-pp*44+i2*26, 14,18);
+      ctx.globalAlpha=1;
+    }
+    drawMap(SPRITES.joseHelm,700,355,S);
+    glow(ICE,10); drawMap(SPRITES.orb,800,340+6*Math.sin(t/300),4); noglow();
+    motes(t);
+  }},
+
+/* 11 · BOSS FIGHT (LIVE DEMO) */
+{ world:"LIVE", title:"Boss Fight",
+  caption:[
+    ["q","“That was the cartoon. Here's the actual machine, running. Give me a real problem.”"]],
+  render(t){
+    chamber(t,W/2,200);
+    neon("▶ LIVE DEMO",W/2,80,34,GREEN);
+    drawMap(SPRITES.joseHelm,170,200,6);
+    psyRing(206,220,t,VIO,3);
+    glow(ICE,10); drawMap(SPRITES.orb,290,230+6*Math.sin(t/300),4); noglow();
+    if(Math.floor(t/400)%2===0) neon("VS",W/2,280,46,GOLD);
+    ctx.fillStyle="#0a0d20"; ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.fill();
+    glow(PSY,10); ctx.strokeStyle=PSY; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.stroke(); noglow();
+    text("?",720,288,48,"#7e83a6");
+    sign(110,410,200,34,"JOSE + CLAUDE",ICE,12,t);
+    sign(620,410,200,34,"YOUR PROBLEM",PSY,12,t);
+    meterBar(110,390,200,1,"");
+    meterBar(620,390,200,1,"");
+    if(Math.floor(t/500)%2===0) text("EXIT GAME → ENTER REAL WORLD",W/2,510,14,"#7e83a6");
+    motes(t);
+  }},
+
+/* 12 · THE NIGHT SWEEP */
+{ world:"WORLD 4", title:"The Night Sweep",
+  caption:[
+    ["q","“Five telepaths sweep the world before I wake up.”"],
+    ["l","They write to daily/. The archive builds itself whether I show up or not."],
+    ["l","The brief lands two ways: in my inbox to read, and as a podcast to hear."]],
+  render(t){
+    box(0,0,W,540,"#060412");
+    // jose asleep, helmet on the nightstand
+    box(90,330,240,100,"#0b0724","#221046");
+    drawMap(SPRITES.joseSleep,130,350,5);
+    drawMap(SPRITES.helmet,262,344,3);
+    const min=Math.min(60,55+Math.floor(t/900));
+    text(min>=60 ? "7:00 AM" : "6:"+min+" AM",190,316,14,min>=60?GOLD:"#7e83a6");
+    if(min<60) text("z".repeat(1+Math.floor(t/600)%3),300,320,20,"#7e83a6");
+    else neon("!",300,320,20,GOLD);
+    // the globe spins while the agents sweep it
+    globe(690,180,120,t,GREEN);
+    const props=["news","charts","vendors","macro","scan"];
+    for(let i=0;i<5;i++){
+      const a=t/1600+i*1.256;
+      const ax=690+165*Math.cos(a), ay=180+120*Math.sin(a)*0.8;
+      glow([GREEN,GOLD,ICE,PSY,"#c98fff"][i],8);
+      drawMap(SPRITES.agent,ax-15,ay-10,5,[GREEN,GOLD,ICE,PSY,"#c98fff"][i]); noglow();
+      text(props[i],ax,ay+34,10,"#7e83a6");
+      if(t>1200+i*550) neon("✓",ax,ay-22,12,GREEN);
+    }
+    // findings stream into the vault
+    box(410,330,60,110,"#0b0724",GOLD); neon("VAULT",440,318,11,GOLD);
+    text("daily/",440,460,11,"#7e83a6");
+    for(let i=0;i<4;i++){
+      const pp=((t/1300)+i*0.25)%1;
+      const fx=560-(pp*110), fy=250+i*18+pp*80;
+      ctx.globalAlpha=1-pp*0.5;
+      ctx.fillStyle="#e9ecf6"; ctx.fillRect(fx,fy,10,12);
+      ctx.globalAlpha=1;
+    }
+    if(t>1500){ sign(560,380,150,64,"✉ THE BRIEF",GREEN,13,t);
+      sign(740,380,150,64,"🎧 PODCAST",ICE,13,t); }
+    motes(t);
+  }},
+
+/* 13 · I ALREADY READ THE WORLD */
+{ world:"WORLD 4", title:"I Already Read the World",
+  caption:[
+    ["q","“So I can absorb it on the bike without getting hit by a car.”"],
+    ["l","By the time I walk into my first meeting, I've already read the world."],
+    ["l","And it cost me a commute."]],
+  render(t){
+    floorGrid(t,430);
+    const signs=[["SIGNALS",ICE],["NOODLES",PSY],["AI + HUMAN",GOLD],["SYNC",GREEN]];
+    signs.forEach((s2,i)=>{
+      const x=W-((t/4+i*260)%(W+300));
+      ctx.fillStyle="#171233"; ctx.fillRect(x+56,150,6,280);
+      sign(x,120,120,44,s2[0],s2[1],13,t+i*777);
+    });
+    const jx=W/2-40, jy=290, b2=3*Math.sin(t/150);
+    drawMap(SPRITES.joseHelm,jx,jy+b2,5);
+    psyRing(jx+30,jy+b2+10,t,VIO,2);
+    // the bike, faithfully preserved from the neo timeline
+    ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(jx+16,420); ctx.lineTo(jx+40,386);
+    ctx.lineTo(jx+45,408); ctx.lineTo(jx+74,420); ctx.stroke();
+    const pa=t/120;
+    ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45+10*Math.cos(pa),408+10*Math.sin(pa)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45-10*Math.cos(pa),408-10*Math.sin(pa)); ctx.stroke();
+    ctx.strokeStyle="#7e83a6"; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.arc(jx+16,420,24,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(jx+74,420,24,0,7); ctx.stroke();
+    ctx.strokeStyle="rgba(126,131,166,0.5)"; ctx.lineWidth=2;
+    [[jx+16],[jx+74]].forEach(([cx])=>{
+      for(let k=0;k<3;k++){ const a=t/90+k*1.05;
+        ctx.beginPath(); ctx.moveTo(cx-22*Math.cos(a),420-22*Math.sin(a));
+        ctx.lineTo(cx+22*Math.cos(a),420+22*Math.sin(a)); ctx.stroke(); }
+    });
+    // podcast in the ears: floating notes trail behind
+    for(let i=0;i<3;i++){ const np=((t/900)+i*0.33)%1;
+      ctx.globalAlpha=1-np;
+      text("♪",jx-20-np*60,300-np*40+i*16,14,ICE);
+      ctx.globalAlpha=1; }
+    const words=["S&P","AI capex","loyalty","DSP bids","M&A","agents","FX","LTV"];
+    words.forEach((w2,i)=>{ const wx=W-((t/4+i*130)%(W+140));
+      text(w2,wx,80+(i%3)*30,14,"rgba(180,76,255,0.8)","left"); });
+    if(t>1800 && Math.floor(t/400)%2===0) neon("MOST INFORMED PERSON IN THE ROOM.",W/2,60,22,VIO);
+    motes(t);
+  }},
+
+/* 14 · THE QUIET ROOM */
+{ world:"WORLD 4", title:"The Quiet Room",
+  caption:[
+    ["q","“Boxing and bowling are the only places my brain goes quiet. I didn't know why until I wrote it down.”"],
+    ["l","The brain doesn't just store what I know. It stores what I've learned about how I work."],
+    ["l","That insight is a note: notes/flow-as-leverage.md. Now recovery is scheduled, like shipping."]],
+  render(t){
+    box(0,0,W,540,"#060412");
+    ctx.strokeStyle="#221046"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(0,440); ctx.lineTo(W,440); ctx.stroke();
+    neon("THE QUIET ROOM",W/2,64,22,GREEN);
+    text("(even telepaths need one)",W/2,90,12,"#7e83a6");
+    sign(60,110,140,44,"BOWL",PSY,18,t);
+    sign(760,110,140,44,"BOX",ICE,18,t);
+    /* LEFT · bowling */
+    ctx.fillStyle="#2a1c10";
+    ctx.beginPath(); ctx.moveTo(80,436); ctx.lineTo(320,436); ctx.lineTo(282,240); ctx.lineTo(150,240); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="#3d2a18"; ctx.lineWidth=1.5;
+    for(let i=1;i<5;i++){
+      ctx.beginPath(); ctx.moveTo(80+i*48,436); ctx.lineTo(150+i*26.4,240); ctx.stroke(); }
+    const TB=4200, pB=(t%TB)/TB;
+    const rolled = pB>0.55, fallQ = Math.min(1,Math.max(0,(pB-0.55)/0.14));
+    const pinsX=[192,212,232,252];
+    pinsX.forEach((px2,i)=>{
+      ctx.save();
+      const dir = i<2 ? -1 : 1;
+      ctx.translate(px2, 258);
+      if(rolled) ctx.rotate(dir * fallQ * 1.35);
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(-4,-22,8,22);
+      ctx.fillStyle=PSY; ctx.fillRect(-4,-15,8,4);
+      ctx.restore();
+    });
+    if(pB>0.08 && pB<0.58){
+      const q=(pB-0.08)/0.5;
+      const bx2=200+ q*22, by2=420 - q*160, br=13-6*q;
+      glow(ICE,8); ctx.fillStyle="#182848";
+      ctx.beginPath(); ctx.arc(bx2,by2,br,0,7); ctx.fill(); noglow();
+      ctx.fillStyle="#8ee3ff";
+      ctx.fillRect(bx2+(br-5)*Math.cos(t/80), by2+(br-5)*Math.sin(t/80), 2,2);
+    }
+    if(rolled && pB<0.92) neon("STRIKE!",222,205,18,GOLD);
+    drawMap(SPRITES.joseWalkA,120,336,4.4);
+    /* RIGHT · boxing */
+    const TP=1000, q2=(t%TP)/TP;
+    const punching = q2>0.18 && q2<0.40;
+    const hitKick = (q2>0.30 && q2<0.85) ? Math.sin((q2-0.30)*9)*(1-q2)*26 : 0;
+    ctx.strokeStyle="#221046"; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(648,150); ctx.lineTo(648+hitKick*0.5,270); ctx.stroke();
+    ctx.fillStyle="#a83a5e";
+    ctx.fillRect(620+hitKick,270,56,150);
+    ctx.fillStyle="#8f2e4e"; ctx.fillRect(620+hitKick,270,56,18);
+    // boxing jose: reuse idle with gloves painted on
+    drawMap(SPRITES.joseIdle,692,336,S);
+    if(punching){
+      const ext=(q2-0.18)/0.22;
+      glow(PSY,6); ctx.fillStyle="#ff4f6e";
+      ctx.fillRect(704-ext*52,382,52*ext+14,13); noglow();
+      if(q2>0.30) neon(Math.floor(t/2000)%2 ? "POW" : "THWACK",672,250,15,GOLD);
+    }
+    // the helmet rests at ringside. the amplifier can wait.
+    drawMap(SPRITES.helmet,850,412,3);
+    text("(off)",865,452,10,"#7e83a6");
+    meterBar(340,150,280,Math.min(1,(t/3500)),"PSYCHIC SHIELD · REFILLING");
+    glow(GREEN,10); box(300,478,360,40,"#0b0724",GREEN); noglow();
+    neon("notes/flow-as-leverage.md",W/2,503,13,GREEN);
+  }},
+
+/* 15 · EVERY BLIP CAUGHT */
+{ world:"WORLD 4", title:"Every Blip Caught",
+  caption:[
+    ["q","“Same brain. Same hundred signals. Nothing lost. Everything compounds.”"],
+    ["l","inbox/ catches it. notes/ keeps it. The links wire it into everything I already know."]],
+  render(t){
+    box(60,50,840,400,"#08061a","#221046");
+    neon("SIGNAL MAP · AMPLIFIED",W/2,86,15,GREEN);
+    globe(W/2,255,150,t,GREEN);
+    // jose at the console, helmet on, hands on the rails
+    drawMap(SPRITES.joseHelm,120,320,5);
+    psyRing(150,332,t,VIO,3);
+    text("(helmet on)",150,430,11,"#7e83a6");
+    // notes shelf on the right: the permanent collection
+    neon("notes/",790,130,13,GREEN);
+    const names=["team-os","flow","loops","5-dollar"];
+    names.forEach((n,i)=>{ const y=150+i*44;
+      box(740,y,120,32,"#0b0724","#2a4436"); text(n,800,y+20,10,"#5aa880"); });
+    /* the catch cycle: blip appears on the globe → tractor beam →
+       filed into inbox → linked into the graph */
+    const T=5200, p=(t%T)/T;
+    const bx0=W/2-60, by0=210;
+    if(p<0.30){
+      // blip surfaces
+      glow(GOLD,12); bubbleC(bx0,by0,11,GOLD,"!"); noglow();
+      ctx.strokeStyle=GOLD; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(bx0,by0,12+(p/0.3)*18,0,7); ctx.stroke();
+    } else if(p<0.55){
+      // tractor beam from jose's helmet
+      const q=(p-0.30)/0.25;
+      const bx=bx0+(700-bx0)*q, by=by0+(160-by0)*q;
+      ctx.setLineDash([5,5]); ctx.strokeStyle="rgba(180,76,255,0.6)"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(150,330); ctx.lineTo(bx,by); ctx.stroke(); ctx.setLineDash([]);
+      glow(GOLD,10); bubbleC(bx,by,11,GOLD,"!"); noglow();
+    } else if(p<0.68){
+      neon("caught",690,140,12,GOLD);
+      glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(690,150,26,32); noglow();
+      ctx.fillStyle="#0b0724"; ctx.fillRect(694,156,18,2); ctx.fillRect(694,162,18,2);
+    } else {
+      const q=(p-0.68)/0.32;
+      glow(GOLD,10); box(740,326,120,32,"#241c08",GOLD); noglow();
+      text("new-idea",800,346,10,GOLD);
+      glow(GREEN,6); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
+      if(q>0.2){ ctx.beginPath(); ctx.moveTo(740,342); ctx.lineTo(700,342);
+        ctx.lineTo(700,166); ctx.lineTo(740,166); ctx.stroke();
+        ctx.strokeRect(740,150,120,32); }
+      if(q>0.55){ ctx.beginPath(); ctx.moveTo(740,338); ctx.lineTo(688,338);
+        ctx.lineTo(688,210); ctx.lineTo(740,210); ctx.stroke();
+        ctx.strokeRect(740,194,120,32); }
+      noglow();
+      if(q>0.8) neon("linked ✓",690,300,12,GREEN);
+    }
+    // running tally, flipped from scene 2
+    text("signals detected today: 143",280,430,12,"#7e83a6");
+    text("signals kept: 143",510,430,12,GREEN);
+    motes(t);
+  }},
+
+/* 16 · FINAL SCREEN · DAWN */
+{ world:"WORLD 4", title:"Final Screen",
+  caption:[],
+  render(t){
+    // dawn light bleeding into the chamber
+    const g=ctx.createLinearGradient(0,120,0,430);
+    g.addColorStop(0,"#04030e"); g.addColorStop(1,"rgba(255,130,60,0.16)");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,430);
+    chamber(t,W/2,200);
+    glow("#ff9a4a",24); ctx.fillStyle="rgba(255,154,74,0.7)";
+    ctx.beginPath(); ctx.arc(480,432,44,Math.PI,0); ctx.fill(); noglow();
+    drawMap(SPRITES.joseHelm,W/2-36,130,S);
+    psyRing(W/2,150,t,VIO,3);
+    glow(ICE,10); drawMap(SPRITES.orb,W/2+70,160+6*Math.sin(t/300),4); noglow();
+    text("I didn't fix my brain.",W/2,300,30,"#e9ecf6");
+    neon("I amplified it.",W/2,348,34,GOLD);
+    if(t>1400) neon("LEVERAGE, NOT COPE.",W/2,412,26,GREEN);
+  }},
+
+/* 17 · PLAYER 2 START */
+{ world:"ENDING", title:"The School Is Open",
+  caption:[
+    ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
+    ["l","Starter kit: folders, a template CLAUDE.md, one working skill."]],
+  render(t){
+    chamber(t,W/2,190);
+    if(Math.floor(t/450)%2===0) neon("PLAYER 2 START",W/2,110,44,GOLD);
+    text("YOUR BRAIN HERE",W/2,150,18,"#7e83a6");
+    drawQR("starter",W/2-90,190,180,CONFIG.urls.starter,ICE);
+    // player 2: a silhouette waiting to spawn, helmet hovering over them
+    drawMap(SPRITES.joseIdle, W/2+180, 250, 5, "#221046");
+    const hy=200+6*Math.sin(t/400);
+    ctx.globalAlpha=0.6; drawMap(SPRITES.helmet,W/2+186,hy,4); ctx.globalAlpha=1;
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/400);
+    neon("?",W/2+216,296,22,GOLD); ctx.globalAlpha=1;
+    text("P2",W/2+216,358,12,"#7e83a6");
+    motes(t);
+  }},
+
+/* 18 · THE STRATEGY GUIDE */
+{ world:"ENDING", title:"The Strategy Guide",
+  caption:[
+    ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
+    ["l","Full walkthrough. All secret rooms. Weekly patch notes for my brain."]],
+  render(t){
+    chamber(t,W/2,190);
+    const pulse = 10+6*Math.sin(t/400);
+    glow(GOLD,pulse); box(180,90,260,340,"#0b0724",GOLD); noglow();
+    neon("LOOPS",310,180,34,GOLD);
+    text("AND",310,220,22,"#e9ecf6");
+    neon("LETTERS",310,265,34,GOLD);
+    text("· OFFICIAL ·",310,310,13,"#7e83a6");
+    neon("STRATEGY GUIDE",310,338,16,GREEN);
+    ctx.save(); ctx.translate(430,105); ctx.rotate(0.3+0.06*Math.sin(t/300));
+    glow(PSY,10); ctx.fillStyle=PSY; ctx.fillRect(-30,-13,60,26); noglow();
+    text("NEW!",0,5,13,"#04030e"); ctx.restore();
+    drawQR("substack",540,120,200,CONFIG.urls.substack,PSY);
+    text("weekly patch notes for my brain",640,410,13,"#7e83a6");
+    motes(t);
+  }},
+
+/* 19 · CO-OP MODE */
+{ world:"ENDING", title:"Co-op Mode",
+  caption:[
+    ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
+    ["q","They're the ones with the best context.”"]],
+  render(t){
+    chamber(t,W/2,190);
+    neon("CO-OP MODE",W/2,120,40,GREEN);
+    text("This game is better multiplayer.",W/2,162,16,"#e9ecf6");
+    drawQR("linkedin",W/2-90,195,180,CONFIG.urls.linkedin,ICE);
+    // the party, assembled on the walkway
+    drawMap(SPRITES.joseHelm, W/2-230, 250, 5);
+    glow(ICE,10); drawMap(SPRITES.orb, W/2-150, 280+6*Math.sin(t/300), 4); noglow();
+    drawMap(SPRITES.joseIdle, W/2+170, 250, 5, "#3a2a66");
+    text("you?",W/2+206,352,11,"#7e83a6");
+    if(t>1200){
+      for(let i=0;i<18;i++){
+        const cy2=((t/6)+i*97)%560-20, cx2=60+(i*151)%840;
+        ctx.fillStyle=[PSY,ICE,GOLD,GREEN][i%4];
+        ctx.fillRect(cx2+8*Math.sin(t/300+i), cy2, 4, 4);
+      }
+      text("THANKS FOR PLAYING",W/2,510,14,"#7e83a6");
+    }
+  }},
+];
+
+/* ═══════════ NAV + LOOP ═══════════ */
+let idx=0, sceneStart=performance.now();
+function setScene(i){ idx=Math.max(0,Math.min(SCENES.length-1,i)); sceneStart=performance.now(); renderCaption(); }
+function renderCaption(){
+  const s=SCENES[idx];
+  cap.innerHTML=(s.title?`<span class="t">${s.world? s.world+" · ":""}${s.title}</span>`:"")+
+    s.caption.map(([k,l])=>`<span class="${k}">${l}</span>`).join("");
+  hud.textContent=`scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
+}
+function frame(now){
+  ctx.fillStyle="#04030e"; ctx.fillRect(0,0,W,H);
+  SCENES[idx].render(now-sceneStart);
+  requestAnimationFrame(frame);
+}
+cv.addEventListener("click",()=>setScene(idx+1));
+addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key===" ") setScene(idx+1);
+  else if(e.key==="ArrowLeft") setScene(idx-1);
+  else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
+  else if(/^[1-9]$/.test(e.key)){
+    const jumps={1:0,2:2,3:4,4:8,5:11,6:12,7:17}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+  }
+});
+setScene(0); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
