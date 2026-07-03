@@ -15,7 +15,7 @@
     2. SCENES  · every caption string. Search "const SCENES".
     3. SPRITES · pixel maps, edit like ASCII art. Legend in PALETTE.
   CONTROLS: click / space / → next. ← back. F fullscreen. 1-7 world jumps.
-  QR PNGs: qr-starter.png, qr-substack.png, qr-linkedin.png (same folder).
+  QR codes are embedded as data URIs (real, scannable). PNG copies also in folder.
   ═══════════════════════════════════════════════════════════════
 -->
 <style>
@@ -49,7 +49,12 @@ const CONFIG = {
     substack: "loopsandletters.substack.com",
     linkedin: "linkedin.com/in/joseplatero",
   },
-  qrFiles: { starter:"qr-starter.png", substack:"qr-substack.png", linkedin:"qr-linkedin.png" },
+  // real QR codes, embedded as data URIs so they load from any context (file://, preview, hosted)
+  qrFiles: {
+    starter:  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAACUAQAAAABdRz15AAABYUlEQVR4nM2WTWpDMQyERyb70Q1y/2O9G4xOoDJ6pIuWLooCrcHkyZAP62+saHxddb4dAX93FhGZqMzIGgM7HruBhIpAjnEWvAcQhJJgOZTBNc8UISDk7/57fjwTk0roLbwWUBeIyts4C150APw0C+C14aG9KFJsjaEdjxDEpqNIStzy2ttAqs3UjgeQUE8lS+gd7wGBSBYwDeKSObv7EbTH9nRCqR1PbWfVlHdjl98HEu0+C1sKLfv3QIjrSjQTFTT6LHho0pXiDweP3NazI4aWZLniPh+YoqPamRaX+YAps+Ufct+/dO/y5o7rZ3c/tOtvxNRtvI2f5cqeuqDde+v+mMD15NnitdYrt8QE7o7jG/y1q/bUjmufD78fMvI99dJTzaKV1dnW8r2MxOU7BiwI2M0v93yQ6GiEWOB2HprVvmY/kVb8s+O1oCpLVoWe2t3vNR9ciftlglbzafzzefcD3eLygabQ5vUAAAAASUVORK5CYII=",
+    substack: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACEAQAAAAB5P74KAAABI0lEQVR4nM1WQW4EMQgzo97ND+b/z5ofOC9w5ewe2t5KpKocEBNprGAMoYzvtq4fB8DfnlRVV6+F1QnHOLSBBTZf4fiG1ZBuqJXwKNOb6IX+5V9f7WN7let+2Ec4zkXKq7nDGU65AL4/FsBnhgPHKOsVWVMcQlAcTIkHOBQEUhHQFOcChNuQQEilA/08WrgXahGe1guWGbahTc8Bz4a8S28ac54lp1KOCnmAA22SmVpZ07yuQKWvlvpBjfsL1js3hmcc8Cxy00yG6TGOLQVGdkga4nxgdSSN3sOHc35i8Yx8xnW/9nvBRiODVdP+gumMjpeCwvrB3KDAlB5znrFxGBkRmt/n2n5lhGGPjaP3QhsKLHG4JyD7RtLyqzOm/NQ/21s+AS/ov5TGFbyoAAAAAElFTkSuQmCC",
+    linkedin: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACEAQAAAAB5P74KAAABKUlEQVR4nMWWXWrEUAiFP0PedQfZ/7KyA13BKTov7UChNdDKMIhwxfNzvTHxNep4K8DfVswsoiwsJl32QS55g8ucNHd9TjCHvMBf6boPEJBx+49PHd9U6ob7+u2pz3GCCPckctJlH5MNMxMFfm/16nBSiXe61OsgCJtZVGZrXPQc88Mb3tY/B6iu5Mru1obc+zDbiFGNrbZ9ENl3AkdIueWZVksaVHrAz4mR5tyhiHHS+r57+6eh4Z7beZC6VeuvZ/zQ50W7GdbzHKgURBvRpGvPj2hWWv5X9gAXrTo5rO9xMezcHt667f1M39Ckr1cr/+S9yBz7jLOfvBfRgjN76NGeF24Xqf1+Pua/FFkEZQ/mUeKVpHu19ts+1VvZI+iByPW781b45++WD688rI1GomRuAAAAAElFTkSuQmCC",
+  },
 };
 
 /* ═══════════ PALETTE + SPRITES ═══════════ */
@@ -1302,7 +1307,7 @@ const SCENES = [
     glow(ICE,10); drawMap(SPRITES.orb,W/2+70,160+6*Math.sin(t/300),4); noglow();
     text("I didn't fix my brain.",W/2,300,30,"#e9ecf6");
     neon("I amplified it.",W/2,348,34,GOLD);
-    if(t>1400) neon("LEVERAGE, NOT COPE.",W/2,412,26,GREEN);
+    if(t>1400) neon("LEVERAGE, NOT A CRUTCH.",W/2,412,26,GREEN);
   }},
 
 /* 17 · PLAYER 2 START */
