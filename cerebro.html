@@ -704,13 +704,13 @@ const SCENES = [
         ["transformation journey","reorg"],
         ["do more with less","less means you"]]},
     ];
-    const T=6750, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    const T=5600, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
     const podX = i => 70+i*225;
     // phases: approach → door opens → walk in → 3 exchanges → walk out → done
-    const inside   = f>=0.19 && f<0.88;
-    const entering = f>=0.145 && f<0.19;
-    const exiting  = f>=0.88 && f<0.94;
-    const doorOpen = f>=0.09 && f<0.94;
+    const inside   = f>=0.18 && f<0.90;
+    const entering = f>=0.14 && f<0.18;
+    const exiting  = f>=0.90 && f<0.95;
+    const doorOpen = f>=0.10 && f<0.95;
     for(let i=0;i<4;i++){
       const x=podX(i);
       const isCur = i===seg;
@@ -724,9 +724,9 @@ const SCENES = [
       const doorH=80, dx=x+62, dy=340;
       let openQ=0;
       if(isCur){
-        if(f>=0.09&&f<0.145) openQ=(f-0.09)/0.055;
+        if(f>=0.10&&f<0.14) openQ=(f-0.10)/0.04;
         else if(doorOpen) openQ=1;
-        else if(f>=0.94) openQ=Math.max(0,1-(f-0.94)/0.06);
+        else if(f>=0.95) openQ=Math.max(0,1-(f-0.95)/0.05);
       }
       ctx.strokeStyle=isCur&&doorOpen?GREEN:"#3a2a66"; ctx.lineWidth=2;
       ctx.strokeRect(dx,dy,56,doorH);
@@ -737,7 +737,7 @@ const SCENES = [
         ctx.fillRect(dx+44,dy+openQ*doorH+doorH*0.45*(1-openQ),4,8);
       }
       // sim complete stamp
-      if(isCur && f>=0.94) neon("SIM COMPLETE ✓",x+90,132,11,GREEN);
+      if(isCur && f>=0.95) neon("SIM COMPLETE ✓",x+90,132,11,GREEN);
       if(i<seg || (seg===0&&f<0.05&&t>T)) {} // history is not rendered. it is repressed.
     }
     const x=podX(seg), cx=x+90;
@@ -753,7 +753,7 @@ const SCENES = [
     }
     // the exchange: attendee buzzword → program 2 translation → jose's reply
     if(inside){
-      const rf=(f-0.19)/0.69, round=Math.min(2,Math.floor(rf*3)), rq=(rf*3)%1;
+      const rf=(f-0.18)/0.72, round=Math.min(2,Math.floor(rf*3)), rq=(rf*3)%1;
       const [line,truth]=SIMS[seg].lines[round];
       if(rq<0.62){
         // attendee speaks. the bubble comes from the left wireframe.
@@ -775,20 +775,25 @@ const SCENES = [
       }
     }
     // jose: approach on the room floor, step up into the sim, do the drill, step out
-    if(f<0.09){
+    if(f<0.10){
       const from = seg===0? -70 : podX(seg-1)+54, to=x+54;
-      walker(from+(to-from)*(f/0.09),330,S,t);
-    } else if(f<0.145){
+      const wx = from+(to-from)*(f/0.10);
+      // speed lines trailing the dash
+      ctx.strokeStyle="rgba(109,224,255,0.5)"; ctx.lineWidth=2;
+      for(let i=0;i<3;i++){ const ly=344+i*18, trail=26+i*10;
+        ctx.beginPath(); ctx.moveTo(wx-8,ly); ctx.lineTo(wx-8-trail,ly); ctx.stroke(); }
+      walker(wx,330,S,t);
+    } else if(f<0.14){
       drawMap(SPRITES.joseIdle,x+54,330,S); blink(x+54,330,S,t);   // waiting for the airlock
     } else if(entering){
-      const q=(f-0.145)/0.045;
+      const q=(f-0.14)/0.04;
       walker(x+54,330-24*q,S,t);                                   // stepping in
     } else if(inside){
       drawMap(SPRITES.joseIdle,x+54,306,S); blink(x+54,306,S,t);
       // polite nodding, program one's finest feature
       if(Math.floor(t/700)%2===0){ ctx.fillStyle=PALETTE.s; ctx.fillRect(x+54+4*S,306+2*S,4*S,2); }
     } else if(exiting){
-      const q=(f-0.88)/0.06;
+      const q=(f-0.90)/0.05;
       walker(x+54,306+24*q,S,t);                                   // stepping out
     } else {
       drawMap(SPRITES.joseIdle,x+54,330,S);
