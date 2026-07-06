@@ -467,7 +467,7 @@ const SCENES = [
   render(t){
     ctx.fillStyle="rgba(255,255,255,0.02)";
     for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
-    text("CEREBRO · SUBJECT SCAN · v01",W/2,60,14,"#7e83a6");
+    text("JOSE-CEREBRO v1.0 · SUBJECT SCAN",W/2,60,14,"#7e83a6");
     // the subject: a brain in a scan reticle
     box(120,140,220,220,"#070a1e","#22305a");
     ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
@@ -544,6 +544,7 @@ const SCENES = [
     neon("JOSE-CEREBRO", W/2, 170, 56, VIO);
     ctx.globalAlpha = 1;
     neon("SECOND BRAIN · AMPLIFIED", W/2, 214, 18, ICE);
+    text("now running: v1.0 · unamplified", W/2, 242, 13, "#ff4f6e");
     drawMap(SPRITES.joseIdle, W/2-36, 388, 5);
     blink(W/2-36, 388, 5, t);
     if(Math.floor(t/650)%2===0) neon("PRESS START", W/2, 500, 20, GREEN);
@@ -897,7 +898,7 @@ const SCENES = [
     const lp=Math.min(1,t/1600);
     box(330,300,300,14,"#0b0724","#221046");
     glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(332,302,296*lp,10); noglow();
-    text(lp<1 ? "calibrating the amplifier..." : "ready.",W/2,342,12,"#7e83a6");
+    text(lp<1 ? "calibrating the amplifier..." : "v2.0 · amplified · ready.",W/2,342,12,lp<1?"#7e83a6":GREEN);
     if(lp>=1){ const hy=380+8*Math.sin(t/500);
       glow(CHROME,14); drawMap(SPRITES.helmet,W/2-35,hy,7); noglow();
       psyRing(W/2,hy+16,t,VIO,3); }
@@ -1390,6 +1391,9 @@ function renderCaption(){
 function frame(now){
   ctx.fillStyle="#04030e"; ctx.fillRect(0,0,W,H);
   SCENES[idx].render(now-sceneStart);
+  // persistent version badge: v1.0 through the chaos, v2.0 from the World 3 card on
+  const v2 = idx >= 8;
+  text(v2 ? "v2.0" : "v1.0", W-20, 28, 12, v2 ? GREEN : "#ff4f6e", "right");
   requestAnimationFrame(frame);
 }
 cv.addEventListener("click",()=>setScene(idx+1));

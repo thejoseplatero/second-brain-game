@@ -399,7 +399,7 @@ const SCENES = [
     // CRT boot screen
     ctx.fillStyle="rgba(255,255,255,0.02)";
     for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
-    text("JOSE OS · BOOT DIAGNOSTIC · v44",W/2,60,14,"#7d7a99");
+    text("JOSE OS v1.0 · BOOT DIAGNOSTIC · build 44",W/2,60,14,"#7d7a99");
     // the patient: a worried piece of toast
     drawMap(SPRITES.toast, 160, 170, 14);
     steam(216,170,t,0); steam(256,165,t,0.4);
@@ -437,6 +437,7 @@ const SCENES = [
     neon("JOSE OS", W/2, 212, 64, PINK);
     ctx.globalAlpha = 1;
     neon("SECOND BRAIN · THE GAME", W/2, 260, 20, CYAN);
+    text("now running: v1.0 · factory settings", W/2, 288, 13, "#ff4f6e");
     drawMap(SPRITES.joseIdle, W/2-36, 306, S);
     blink(W/2-36, 306, S, t);
     if(Math.floor(t/500)%2===0) neon("PRESS START", W/2, 490, 20, GREEN);
@@ -825,11 +826,11 @@ const SCENES = [
     skyline(t,420,0);
     text("WORLD 3",W/2,190,24,"#7d7a99");
     neon("THE SECOND BRAIN",W/2,260,52,GOLD);
-    // install bar
+    // install bar reboots the OS from v1.0 into v2.0
     const lp=Math.min(1,t/1600);
     box(330,310,300,14,"#0d0820","#2a1a44");
     glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(332,312,296*lp,10); noglow();
-    text(lp<1 ? "installing a better system..." : "ready.",W/2,352,12,"#7d7a99");
+    text(lp<1 ? "installing JOSE OS v2.0..." : "JOSE OS v2.0 · ready.",W/2,352,12,lp<1?"#7d7a99":GREEN);
     rain(t);
   }},
 
@@ -1346,6 +1347,9 @@ function renderCaption(){
 function frame(now){
   ctx.fillStyle="#05030c"; ctx.fillRect(0,0,W,H);
   SCENES[idx].render(now-sceneStart);
+  // persistent version badge: v1.0 through the chaos, v2.0 from the World 3 card on
+  const v2 = idx >= 8;
+  text(v2 ? "OS v2.0" : "OS v1.0", W-20, 28, 12, v2 ? GREEN : "#ff4f6e", "right");
   requestAnimationFrame(frame);
 }
 cv.addEventListener("click",()=>setScene(idx+1));
