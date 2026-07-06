@@ -707,10 +707,10 @@ const SCENES = [
     const T=6750, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
     const podX = i => 70+i*225;
     // phases: approach → door opens → walk in → 3 exchanges → walk out → done
-    const inside   = f>=0.24 && f<0.88;
-    const entering = f>=0.18 && f<0.24;
+    const inside   = f>=0.19 && f<0.88;
+    const entering = f>=0.145 && f<0.19;
     const exiting  = f>=0.88 && f<0.94;
-    const doorOpen = f>=0.12 && f<0.94;
+    const doorOpen = f>=0.09 && f<0.94;
     for(let i=0;i<4;i++){
       const x=podX(i);
       const isCur = i===seg;
@@ -724,7 +724,7 @@ const SCENES = [
       const doorH=80, dx=x+62, dy=340;
       let openQ=0;
       if(isCur){
-        if(f>=0.12&&f<0.18) openQ=(f-0.12)/0.06;
+        if(f>=0.09&&f<0.145) openQ=(f-0.09)/0.055;
         else if(doorOpen) openQ=1;
         else if(f>=0.94) openQ=Math.max(0,1-(f-0.94)/0.06);
       }
@@ -753,7 +753,7 @@ const SCENES = [
     }
     // the exchange: attendee buzzword → program 2 translation → jose's reply
     if(inside){
-      const rf=(f-0.24)/0.64, round=Math.min(2,Math.floor(rf*3)), rq=(rf*3)%1;
+      const rf=(f-0.19)/0.69, round=Math.min(2,Math.floor(rf*3)), rq=(rf*3)%1;
       const [line,truth]=SIMS[seg].lines[round];
       if(rq<0.62){
         // attendee speaks. the bubble comes from the left wireframe.
@@ -775,13 +775,13 @@ const SCENES = [
       }
     }
     // jose: approach on the room floor, step up into the sim, do the drill, step out
-    if(f<0.12){
+    if(f<0.09){
       const from = seg===0? -70 : podX(seg-1)+54, to=x+54;
-      walker(from+(to-from)*(f/0.12),330,S,t);
-    } else if(f<0.18){
+      walker(from+(to-from)*(f/0.09),330,S,t);
+    } else if(f<0.145){
       drawMap(SPRITES.joseIdle,x+54,330,S); blink(x+54,330,S,t);   // waiting for the airlock
     } else if(entering){
-      const q=(f-0.18)/0.06;
+      const q=(f-0.145)/0.045;
       walker(x+54,330-24*q,S,t);                                   // stepping in
     } else if(inside){
       drawMap(SPRITES.joseIdle,x+54,306,S); blink(x+54,306,S,t);
