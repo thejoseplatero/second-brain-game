@@ -1540,44 +1540,68 @@ const SCENES = [
     if(t>2600) text("every issue writes itself at dawn. the archive never misses.",640,462,11,"#7e83a6");
   }},
 
-/* 28 · BOSS FIGHT 1 · IT TEACHES */
-{ world:"BOSS FIGHT", title:"It Teaches",
+/* 28 · BOSS FIGHT 1 · PRODUCT OS */
+{ world:"BOSS FIGHT", title:"Product OS",
   caption:[
-    ["q","“My instructor judgment, running as a skill. My rubric, my voice, my standards.”"],
-    ["l","LIVE DEMO: strategy-audit vs. a synthetic submission."]],
+    ["q","“The enemy in every product org is the seam: PM to design to eng, where handoffs fall and die.”"],
+    ["l","LIVE CUTAWAY: /start routes a real goal through 33 skills and 4 bridges."]],
   render(t){
-    neon("THE UNGRADED STRATEGY",W/2,60,18,"#ff4f6e");
-    text("submission SYNTH-01 · written for this demo, no real student work",W/2,84,10,"#7e83a6");
-    // the enemy: a messy strategy scroll
-    const hp=Math.max(0,1-t/6500);
-    box(330,104,300,150,"#0b0724","#3a2a66");
-    [0,1,2,3,4].forEach(i=>{ box(360,124+i*24,240-((i*67)%90),6,"#2a2545","#2a2545"); });
-    box(330,262,300,10,"#171233","#3a2a66"); box(330,262,300*hp,10,"#ff4f6e","#ff4f6e");
-    // damage numbers as the rubric hits
-    const hits=[["EVIDENCE CHECK",900,1200],["PERSONA AUDIT",850,2300],["SPECIFICITY",990,3400],["MVP SCOPE",720,4500],["OUTCOME OKRs",1100,5600]];
-    hits.forEach(([atk,dmg,t0])=>{ if(t>t0&&t<t0+950){
-      const f=(t-t0)/950;
-      glow(GOLD,10); text("-"+dmg,480+((t0*13)%120)-60,240-f*70,16+6*(1-f),GOLD); noglow();
-    }});
-    // battle menu
+    neon("THE SEAM",W/2,58,18,"#ff4f6e");
+    text("the gap between disciplines, where work goes to die",W/2,82,10,"#7e83a6");
+    const hp=Math.max(0,1-t/6000);
+    box(280,100,190,120,"#0b0724","#3a2a66"); box(500,100,190,120,"#0b0724","#3a2a66");
+    text("PM",375,166,16,"#e9ecf6"); text("ENG",595,166,16,"#e9ecf6");
+    ctx.strokeStyle="#ff4f6e"; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(485,96); ctx.lineTo(472,140); ctx.lineTo(492,170); ctx.lineTo(478,224); ctx.stroke();
+    box(280,232,410,10,"#171233","#3a2a66"); box(280,232,410*hp,10,"#ff4f6e","#ff4f6e");
+    const hits=[["/write-prd",760,900],["story map",680,2000],["/ac-audit",940,3100],["/ui-conformance",810,4200],["/ship",1200,5300]];
+    hits.forEach(([atk,dmg,t0])=>{ if(t>t0&&t<t0+950){ const f=(t-t0)/950;
+      glow(GOLD,10); text(atk+" -"+dmg,485,218-f*70,13+4*(1-f),GOLD); noglow(); }});
     box(70,300,820,180,"#04030e","#3a2a66");
     box(90,320,360,140,"#0b0724","#3a2a66");
-    const menu=[["AUDIT","selected"],["EVIDENCE",""],["VERDICT",""],["MERCY","(never)"]];
-    menu.forEach(([m,st],i)=>{ if(t>400){
-      text((st==="selected"?"▸ ":"  ")+m,120,352+i*26,13,st==="selected"?GOLD:"#e9ecf6","left");
-      if(st&&st!=="selected") text(st,300,352+i*26,10,"#7e83a6","left");
-    }});
+    ["> /start","  /brief-me","  /calibrate","  33 skills · 4 bridges"].forEach((m,i)=>{ if(t>400) text(m,116,352+i*26,12,i===0?GOLD:"#e9ecf6","left"); });
     box(470,320,400,140,"#0b0724","#3a2a66");
-    const party=[["JOSE","LV 41",GOLD],["RUBRIC","LV 38",ICE],["CRITIC","LV 35",PSY]];
-    party.forEach(([p,lv,c],i)=>{ if(t>400){
-      text(p,500,352+i*30,12,c,"left"); text(lv,620,352+i*30,11,"#7e83a6","left");
-      box(680,344+i*30,160,8,"#171233","#171233"); box(680,344+i*30,160*0.9,8,GREEN,GREEN);
+    const party=[["PM","module",ICE],["DESIGN","module",PSY],["ENG","module",GREEN],["LEADER","bridges all",GOLD]];
+    party.forEach(([p,r,c],i)=>{ if(t>400){
+      text(p,500,350+i*27,12,c,"left"); text(r,610,350+i*27,10,"#7e83a6","left");
+      box(720,342+i*27,120,7,"#171233","#171233"); box(720,342+i*27,120*0.85,7,c,c);
     }});
-    if(hp<=0){ neon("AUDIT DELIVERED",W/2,285,16,GREEN); text("kind, but direct",W/2,305,11,"#7e83a6"); }
+    if(hp<=0){ neon("SEAM CLOSED",W/2,272,15,GREEN);
+      text("two apps shipped by the pipeline itself",W/2,292,10,"#7e83a6"); }
   }},
 
-/* 29 · BOSS FIGHT 2 · IT BUILDS */
-{ world:"BOSS FIGHT", title:"It Builds",
+/* 29 · BOSS FIGHT 2 · THE CONTENT PIPELINE */
+{ world:"BOSS FIGHT", title:"The Content Pipeline",
+  caption:[
+    ["q","“One vault in. Carousels, videos, reels out. In my voice, not the machine's.”"],
+    ["l","LIVE CUTAWAY: the real folder. 121 carousels and counting."]],
+  render(t){
+    neon("THE BLANK FEED",W/2,58,18,"#ff4f6e");
+    const hp=Math.max(0,1-t/6200);
+    box(330,78,300,10,"#171233","#3a2a66"); box(330,78,300*hp,10,"#ff4f6e","#ff4f6e");
+    const beltY=290;
+    ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(50,beltY+52); ctx.lineTo(910,beltY+52); ctx.stroke();
+    for(let x=((t/16)%40);x<860;x+=40){ box(50+x,beltY+52,20,4,"#171233","#171233"); }
+    const st=[["VAULT",110,VIO,"ideas"],["VOICE",270,ICE,"sounds like me"],["CAROUSEL",430,GOLD,"6 slides"],["VIDEO",590,GREEN,"safe zones"],["REEL",750,PSY,"9:16 native"]];
+    st.forEach(([s,x,c,sub],i)=>{ if(t>300+i*550){
+      box(x-62,beltY-62,124,102,"#0b0724",c);
+      neon(s,x,beltY-32,12,c);
+      text(sub,x,beltY-10,9,"#7e83a6");
+      if(t>650+i*550){
+        if(i===2){ [0,1,2].forEach(k=>box(x-32+k*23,beltY+12,19,26,"#e9ecf6","#171233")); }
+        else if(i===3){ box(x-27,beltY+10,54,30,"#e9ecf6","#171233"); box(x-19,beltY+16,38,18,"#171233","#171233"); }
+        else if(i===4){ box(x-13,beltY+4,26,40,"#e9ecf6","#171233"); }
+        else box(x-15,beltY+14,30,22,"#e9ecf6","#171233");
+      }
+    }});
+    const facts=[["121 carousels shipped",1900],["every video in two natives: 4:5 feed and 9:16 reel",2900],["splash frame: always the first frame, always the hook",4000],["banned words never make it out the door",5100]];
+    facts.forEach(([f,t0],i)=>{ if(t>t0) text(f,W/2,408+i*20,11,i%2?"#7e83a6":"#e9ecf6"); });
+    if(hp<=0) neon("FEED DEFEATED · IN MY VOICE",W/2,108,14,GREEN);
+  }},
+
+/* 30 · BOSS FIGHT 3 · JOB OS */
+{ world:"BOSS FIGHT", title:"Job OS",
   caption:[
     ["q","“Final boss of every job search: the blank screen. Nobody starts from one anymore.”"],
     ["l","LIVE DEMO: a job-search operating system boots in the terminal."]],
@@ -1599,7 +1623,7 @@ const SCENES = [
       if(Math.floor(t/650)%2===0) text("cut to the real terminal",480,472,11,GOLD); }
   }},
 
-/* 30 · IT KNOWS ME */
+/* 31 · IT KNOWS ME */
 { world:"BRAIN v3.0", title:"It Knows Me",
   caption:[
     ["q","“It knows how I talk. And it knows how I am wrong.”"],
@@ -1625,7 +1649,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 31 · IT SURVIVES */
+/* 32 · IT SURVIVES */
 { world:"BRAIN v3.0", title:"It Survives",
   caption:[
     ["q","“Twice, the pipeline died in silence. No error. No briefs. Just quiet.”"],
@@ -1650,7 +1674,7 @@ const SCENES = [
     }
   }},
 
-/* 32 · THE COMPOUNDING */
+/* 33 · THE COMPOUNDING */
 { world:"BRAIN v3.0", title:"The Compounding",
   caption:[],
   render(t){
@@ -1662,7 +1686,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 33 · PLAYER 2 START */
+/* 34 · PLAYER 2 START */
 { world:"ENDING", title:"The School Is Open",
   caption:[
     ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
@@ -1682,7 +1706,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 34 · THE STRATEGY GUIDE */
+/* 35 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
@@ -1704,7 +1728,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 35 · CO-OP MODE */
+/* 36 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
@@ -1747,7 +1771,7 @@ function frame(now){
   const ver = idx>=21 ? "v3.0" : idx>=9 ? "v2.0" : "v1.0";
   text(ver, W-20, 28, 12, idx>=21 ? PSY : idx>=9 ? GREEN : "#ff4f6e", "right");
   // act III wears its RPG HUD: level = how deep into v3, xp = progress through the scene
-  if(idx>=21 && idx<=32){
+  if(idx>=21 && idx<=34){
     const lv=idx-20, xp=Math.min(1,(now-sceneStart)/9000);
     text("LV "+lv, 24, 28, 12, GREEN, "left");
     box(70,20,90,8,"#171233","#3a2a66"); box(70,20,90*xp,8,GREEN,GREEN);
@@ -1760,7 +1784,7 @@ addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
   else if(/^[1-9]$/.test(e.key)){
-    const jumps={1:0,2:4,3:10,4:14,5:21,6:22,7:28,8:29,9:33}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+    const jumps={1:0,2:4,3:10,4:14,5:21,6:22,7:28,8:30,9:35}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
 setScene(0); requestAnimationFrame(frame);
