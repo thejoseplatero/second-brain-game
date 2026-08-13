@@ -1622,6 +1622,69 @@ const SCENES = [
 
 ];
 
+
+/* ═══════════ ACT III ENGINE UPGRADE ═══════════ */
+/* v1 and v2 render on the original engine. From The Ceiling on, the game
+   itself levels up: depth, juice, and consequence. That is the story. */
+const A3_FIRST = 18, A3_LAST = 27;
+const A3_STARS = Array.from({length:90},(_,i)=>({x:(i*211)%960, y:(i*137)%440+20, z:1+(i%3)}));
+function act3bg(t){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#070515"); g.addColorStop(0.6,"#04030e"); g.addColorStop(1,"#0a0620");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  A3_STARS.forEach(s=>{
+    const x=(s.x + t*0.006*s.z)%W;
+    ctx.globalAlpha=0.10*s.z; ctx.fillStyle = s.z===3?ICE:"#8f83c8";
+    ctx.fillRect(x, s.y, s.z, s.z);
+  });
+  ctx.globalAlpha=1;
+}
+function vignette(){
+  const g=ctx.createRadialGradient(W/2,H/2,H*0.42,W/2,H/2,H*0.78);
+  g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(2,1,10,0.5)");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+function enterFade(t){
+  if(t<320){ ctx.fillStyle="rgba(4,3,14,"+(1-t/320).toFixed(3)+")"; ctx.fillRect(0,0,W,H); }
+}
+const A3_HITS={23:[1900,2900,4000,5100], 25:[900,2000,3100,4200,5300], 26:[3000]};
+function sceneShake(i,t){
+  const hits=A3_HITS[i]; if(!hits) return [0,0];
+  for(const t0 of hits){ const d=t-t0;
+    if(d>0&&d<240){ const a=(1-d/240)*7; return [Math.sin(d/9)*a, Math.cos(d/13)*a]; } }
+  return [0,0];
+}
+const A3_BURSTS={21:[[170,240,2400],[400,180,3900],[620,230,5400],[810,170,6900]]};
+function burst(x,y,age){
+  const f=age/700; if(f>=1) return;
+  for(let k=0;k<12;k++){ const a=k/12*6.283, r=8+f*46;
+    ctx.globalAlpha=1-f; ctx.fillStyle=GOLD;
+    ctx.fillRect(x+Math.cos(a)*r-1.5, y+Math.sin(a)*r-1.5, 3, 3); }
+  ctx.globalAlpha=1;
+}
+const A3_BANNERS={23:"THE BLANK FEED",25:"THE SEAM",26:"THE BLANK SCREEN"};
+function bossBanner(t,label){
+  if(t>1400) return;
+  const f=Math.min(1,t/260), off=(1-f)*W;
+  ctx.fillStyle="rgba(150,16,44,0.82)"; ctx.fillRect(0,206,W,76);
+  if(Math.floor(t/160)%2===0){ ctx.fillStyle="rgba(255,79,110,0.55)"; ctx.fillRect(0,202,W,3); ctx.fillRect(0,283,W,3); }
+  glow("#ff4f6e",18);
+  text("WARNING", W/2 - off*0.4, 240, 26, "#ffdfe6");
+  text(label, W/2 + off*0.4, 268, 15, "#ffdfe6");
+  noglow();
+}
+function levelUpFlash(t){
+  if(t>1300) return;
+  const f=t/1300;
+  ctx.globalAlpha=Math.max(0,0.45-f*0.45); ctx.fillStyle=PSY; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;
+  glow(PSY,24); text("ENTERING v3.0", W/2, 120, Math.round(18+8*(1-f)), PSY); noglow();
+}
+function sceneFX(i,t){
+  (A3_BURSTS[i]||[]).forEach(([x,y,t0])=>{ if(t>t0) burst(x,y,t-t0); });
+  if(A3_BANNERS[i]) bossBanner(t,A3_BANNERS[i]);
+  if(i===A3_FIRST) levelUpFlash(t);
+}
+
 /* ═══════════ NAV + LOOP ═══════════ */
 let idx=0, sceneStart=performance.now();
 function setScene(i){ idx=Math.max(0,Math.min(SCENES.length-1,i)); sceneStart=performance.now(); renderCaption(); }
@@ -1632,16 +1695,24 @@ function renderCaption(){
   hud.textContent=`scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
 }
 function frame(now){
+  const t = now - sceneStart;
+  const A3 = idx >= A3_FIRST && idx <= A3_LAST;
   ctx.fillStyle="#04030e"; ctx.fillRect(0,0,W,H);
-  SCENES[idx].render(now-sceneStart);
-  // persistent version badge: v1.0 for the origin, v2.0 from its changelog, v3.0 from its changelog
-  const ver = idx>=18 ? "v3.0" : idx>=8 ? "v2.0" : "v1.0";
-  text(ver, W-20, 28, 12, idx>=18 ? PSY : idx>=8 ? GREEN : "#ff4f6e", "right");
-  // act III wears its RPG HUD: level = how deep into v3, xp = progress through the scene
-  if(idx>=18 && idx<=27){
-    const lv=idx-17, xp=Math.min(1,(now-sceneStart)/9000);
+  if(A3) act3bg(t);
+  const sh = A3 ? sceneShake(idx,t) : [0,0];
+  ctx.save(); ctx.translate(sh[0],sh[1]);
+  SCENES[idx].render(t);
+  ctx.restore();
+  if(A3){ sceneFX(idx,t); vignette(); enterFade(t); }
+  const ver = idx>=A3_FIRST ? "v3.0" : idx>=8 ? "v2.0" : "v1.0";
+  text(ver, W-20, 28, 12, idx>=A3_FIRST ? PSY : idx>=8 ? GREEN : "#ff4f6e", "right");
+  if(A3){
+    const lv = idx-(A3_FIRST-1), xp = Math.min(1,t/9000);
     text("LV "+lv, 24, 28, 12, GREEN, "left");
     box(70,20,90,8,"#171233","#3a2a66"); box(70,20,90*xp,8,GREEN,GREEN);
+    if(t<900){ const f=t/900;
+      ctx.globalAlpha=1-f; glow(GREEN,8);
+      text("+"+(lv*120)+" EXP", 115, 52-f*22, 12, GREEN); noglow(); ctx.globalAlpha=1; }
   }
   requestAnimationFrame(frame);
 }
