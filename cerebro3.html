@@ -1485,7 +1485,7 @@ const SCENES = [
     ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(90,beltY+52); ctx.lineTo(870,beltY+52); ctx.stroke();
     for(let x=((t/16)%40);x<780;x+=40){ box(90+x,beltY+52,20,4,"#171233","#171233"); }
-    const st=[["VAULT",160,VIO,"ideas"],["VOICE",320,ICE,"sounds like me"],["CAROUSEL",480,GOLD,"6 slides"],["VIDEO",640,GREEN,"safe zones"],["ARTICLES",800,PSY,"long form, my voice"]];
+    const st=[["VAULT",160,VIO,"ideas"],["VOICE",320,ICE,"sounds like me"],["CAROUSEL",480,GOLD,"for social"],["VIDEO",640,GREEN,"for social"],["ARTICLES",800,PSY,"newsletters + social"]];
     st.forEach(([s,x,c,sub],i)=>{ if(t>300+i*550){
       box(x-62,beltY-62,124,102,"#0b0724",c);
       neon(s,x,beltY-32,12,c);
@@ -1498,7 +1498,7 @@ const SCENES = [
         else box(x-15,beltY+14,30,22,"#e9ecf6","#171233");
       }
     }});
-    const facts=[["121 carousels shipped",1900],["every video in two natives: 4:5 feed and 9:16 reel",2900],["splash frame: always the first frame, always the hook",4000],["banned words never make it out the door",5100]];
+    const facts=[["121 carousels shipped",1900],["every piece sized and formatted for its platform, automatically",2900],["always opens on the hook",4000],["banned words never make it out the door",5100]];
     facts.forEach(([f,t0],i)=>{ if(t>t0) text(f,W/2,408+i*20,11,i%2?"#7e83a6":"#e9ecf6"); });
     if(hp<=0) neon("FEED DEFEATED · IN MY VOICE",W/2,108,14,GREEN);
   }},
