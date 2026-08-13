@@ -1317,16 +1317,32 @@ const SCENES = [
     if(t>1400) neon("LEVERAGE, NOT A CRUTCH.",W/2,412,26,GREEN);
   }},
 
-/* 18 · THE CEILING */
-{ world:"BRAIN v2.0", title:"The Ceiling",
+/* 18 · V3 LOADING */
+{ world:"BRAIN v3.0", title:"Loading",
   caption:[
-    ["q","“v2 was a memory prosthetic. Powerful. And patient.”"],
-    ["l","Too patient."]],
+    ["q","“v2 could remember. The next version needed a bigger engine.”"],
+    ["l","No start button on this one. It loads itself."]],
   render(t){
-    chamber(t,W/2,190);
-    text("v2 remembers.",W/2,270,32,"#e9ecf6");
-    if(t>1200) neon("v2 waits.",W/2,330,32,"#ff4f6e");
-    if(t>2400) text("it never once acted on its own. that was the ceiling.",W/2,410,14,"#7e83a6");
+    psyRing(W/2,205,t,VIO,4);
+    // orbs converge on the helmet as the system assembles
+    for(let i=0;i<3;i++){
+      const a=t/600+i*2.094, r=Math.max(58,230-t/38);
+      glow(ICE,10); drawMap(SPRITES.orb,W/2-14+Math.cos(a)*r,195+Math.sin(a)*r*0.5,3); noglow();
+    }
+    glow(CHROME,16); drawMap(SPRITES.helmet,W/2-35,172,7); noglow();
+    ctx.globalAlpha=0.85+0.15*Math.sin(t/300);
+    neon("JOSE-CEREBRO v3.0",W/2,92,36,PSY);
+    ctx.globalAlpha=1;
+    const pct=Math.min(100,Math.floor(t/70));
+    box(230,318,500,18,"#0b0724","#3a2a66");
+    box(234,322,492*(pct/100),10,PSY,PSY);
+    if(pct<100){ text(pct+"%",W/2,366,15,PSY); }
+    else if(Math.floor(t/550)%2===0){ neon("v3.0 ONLINE",W/2,368,20,GREEN); }
+    const stages=[["memory",0],["agents",1200],["connections",2400],["publishing",3600],["judgment",4800]];
+    stages.forEach(([s,t0],i)=>{ if(t>t0){
+      const done=t>t0+1000;
+      text("loading "+s+(done?"  ·  OK":" ..."),W/2,404+i*24,12,done?GREEN:"#7e83a6");
+    }});
     motes(t);
   }},
 
@@ -1668,7 +1684,6 @@ function levelUpFlash(t){
   if(t>1300) return;
   const f=t/1300;
   ctx.globalAlpha=Math.max(0,0.45-f*0.45); ctx.fillStyle=PSY; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;
-  glow(PSY,24); text("ENTERING v3.0", W/2, 120, Math.round(18+8*(1-f)), PSY); noglow();
 }
 function sceneFX(i,t){
   (A3_BURSTS[i]||[]).forEach(([x,y,t0])=>{ if(t>t0) burst(x,y,t-t0); });
