@@ -925,7 +925,103 @@ const SCENES = [
     motes(t);
   }},
 
-/* 14 · PARTY SELECT */
+/* 14 · THE SYNAPSE */
+{ world:"BRAIN v3.0", title:"The Synapse",
+  caption:[
+    ["q","“I kept adding. One day it started connecting. Lines I never drew.”"],
+    ["l","This is the moment v3 actually begins."]],
+  render(t){
+    const notes=[["hiring",180,150],["voice",320,100],["loyalty",470,140],["adhd",620,95],["talks",780,150],
+      ["resumes",140,260],["agents",300,220],["writing",460,250],["martech",630,220],["students",790,265],
+      ["systems",210,370],["briefs",380,340],["design",540,360],["negotiation",700,345],["community",820,380]];
+    notes.forEach(([n,x,y],i)=>{ if(t>200+i*140){
+      ctx.fillStyle="#3a2a66"; ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+      text(n,x,y-12,9,"#7e83a6");
+    }});
+    const links=[[0,5],[0,9],[1,7],[1,9],[2,8],[2,3],[3,10],[4,9],[4,1],[5,6],[6,11],[7,11],[8,12],[9,13],[10,11],[11,12],[12,13],[13,14],[6,10],[7,14]];
+    links.forEach(([a,b],i)=>{ const t0=2400+i*260; if(t>t0){
+      const A=notes[a],B=notes[b];
+      ctx.strokeStyle="rgba(109,224,255,0.35)"; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(A[1],A[2]); ctx.lineTo(B[1],B[2]); ctx.stroke();
+      const f=((t-t0)/1400+i*0.37)%1;
+      const px=A[1]+(B[1]-A[1])*f, py=A[2]+(B[2]-A[2])*f;
+      glow(ICE,10); ctx.fillStyle=ICE; ctx.beginPath(); ctx.arc(px,py,2.5,0,7); ctx.fill(); noglow();
+    }});
+    if(t>2400&&t<8000) neon("connecting...",W/2,470,13,ICE);
+    if(t>8000){ neon("20 connections I never drew",W/2,455,16,PSY);
+      text("a hiring note touched a voice note touched a student's question",W/2,490,12,"#7e83a6"); }
+    motes(t);
+  }},
+
+/* 15 · THE TECH TREE */
+{ world:"BRAIN v3.0", title:"The Tech Tree",
+  caption:[
+    ["q","“Then the connections started building. Not helping me build. Building.”"],
+    ["l","Every unlock below is real and shipped."]],
+  render(t){
+    const rx=W/2, ry=480;
+    psyRing(rx,ry,t,VIO,2);
+    text("the vault",rx,ry+26,11,"#7e83a6");
+    const caps=[["capture",300,390,ICE],["connections",480,380,ICE],["agents",660,390,ICE]];
+    caps.forEach(([n,x,y,c],i)=>{ if(t>200+i*220){
+      ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(x,y); ctx.stroke();
+      glow(c,8); ctx.fillStyle=c; ctx.beginPath(); ctx.arc(x,y,6,0,7); ctx.fill(); noglow();
+      text(n,x,y-14,10,"#e9ecf6");
+    }});
+    const builds=[["CONTENT PIPELINE",170,240,1300],["PLATERO BRIEF",400,180,2800],["PRODUCT OS",620,230,4300],["JOB OS",810,170,5800]];
+    builds.forEach(([name,x,y,t0],i)=>{
+      if(t>t0){
+        const feed=caps[i%3];
+        ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(feed[1],feed[2]); ctx.lineTo(x,y); ctx.stroke();
+        const done=t>t0+1100;
+        box(x-78,y-24,156,48,"#0b0724",done?GOLD:"#3a2a66");
+        if(!done){
+          const pct=Math.min(1,(t-t0)/1100);
+          box(x-70,y+8,140,6,"#171233","#171233"); box(x-70,y+8,140*pct,6,ICE,ICE);
+          text("building...",x,y-2,10,"#7e83a6");
+        } else {
+          neon(name,x,y+4,12,GOLD);
+          if(t<t0+2200){ glow(GOLD,18); text("UNLOCKED",x,y-36,13,GOLD); noglow(); }
+        }
+      }
+    });
+    if(t>7400){ neon("LEVEL UP",W/2,90,26,GREEN);
+      text("I did not build these alone. The connections did.",W/2,124,13,"#e9ecf6"); }
+  }},
+
+/* 16 · OVERWORLD */
+{ world:"BRAIN v3.0", title:"Overworld",
+  caption:[
+    ["q","“The map after one year. Every region used to be fog.”"],
+    ["l","Same save file. Same folder."]],
+  render(t){
+    floorGrid(t,500);
+    const regions=[
+      ["CONTENT FOREST",150,340,GREEN,"121 carousels grow here"],
+      ["PLATERO PRESS",390,250,ICE,"prints itself at dawn"],
+      ["PRODUCT FORGE",620,330,GOLD,"33 skills, two apps"],
+      ["JOB KINGDOM",830,240,"#ff4a1c","an OS for the search"]];
+    const jx=Math.min(120+t/14, 800);
+    regions.forEach(([name,x,y,c,sub],i)=>{
+      const seen=jx>x-90;
+      box(x-85,y-40,170,84,seen?"#0b0724":"#060414",seen?c:"#171233");
+      if(seen){
+        neon(name,x,y-14,12,c);
+        text(sub,x,y+10,9.5,"#7e83a6");
+        box(x-6,y+28,12,10,c,c); // flag planted
+        ctx.strokeStyle=c; ctx.beginPath(); ctx.moveTo(x-6,y+38); ctx.lineTo(x-6,y+22); ctx.stroke();
+      } else text("? ? ?",x,y,12,"#2a2545");
+    });
+    ctx.strokeStyle="#3a2a66"; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(120,470); ctx.lineTo(300,430); ctx.lineTo(450,380);
+    ctx.lineTo(620,420); ctx.lineTo(830,350); ctx.stroke(); ctx.setLineDash([]);
+    walker(jx,430,5,t);
+    motes(t);
+  }},
+
+/* 17 · PARTY SELECT */
 { world:"BRAIN v3.0", title:"Party Select",
   caption:[
     ["q","“v3 is when the brain stopped being a tool and became a party.”"],
@@ -953,7 +1049,7 @@ const SCENES = [
     if(t>2600&&Math.floor(t/650)%2===0) text("ALL SIX AUTO-SELECTED. THEY DO NOT WAIT FOR PLAYER 1.",W/2,505,12,GREEN);
   }},
 
-/* 15 · QUEST LOG */
+/* 18 · QUEST LOG */
 { world:"BRAIN v3.0", title:"Quest Log",
   caption:[
     ["q","“One real morning, exactly as the log recorded it.”"],
@@ -971,7 +1067,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 16 · IT PUBLISHES */
+/* 19 · IT PUBLISHES */
 { world:"BRAIN v3.0", title:"It Publishes",
   caption:[
     ["q","“My brain publishes a newspaper about the world every morning. While I sleep.”"],
@@ -991,51 +1087,66 @@ const SCENES = [
     if(t>2600) text("every issue writes itself at dawn. the archive never misses.",640,462,11,"#7e83a6");
   }},
 
-/* 17 · BOSS FIGHT 1 · IT TEACHES */
+/* 20 · BOSS FIGHT 1 · IT TEACHES */
 { world:"BOSS FIGHT", title:"It Teaches",
   caption:[
-    ["q","“I turned my instructor judgment into a skill. It audits in my voice, with my standards.”"],
+    ["q","“My instructor judgment, running as a skill. My rubric, my voice, my standards.”"],
     ["l","LIVE DEMO: strategy-audit vs. a synthetic submission."]],
   render(t){
-    neon("BOSS: THE UNGRADED STRATEGY",W/2,74,20,"#ff4f6e");
-    box(180,96,600,16,"#171233","#3a2a66");
-    const hp=Math.max(0,1-t/6000);
-    box(180,96,600*hp,16,"#ff4f6e","#ff4f6e");
-    text("submission: SYNTH-01 · written for this demo, no real student work",W/2,138,11,"#7e83a6");
-    const checks=[["problem statement","evidence, not vibes"],["personas","synthetic, credited as such"],["value prop","specific over broad"],["MVP","small enough to ship"],["OKRs","outcomes, not output"]];
-    checks.forEach(([k,v],i)=>{ if(t>600+i*650){
-      box(200,166+i*58,560,46,"#0b0724","#3a2a66");
-      text(k,232,194+i*58,13,"#e9ecf6","left");
-      text(v,728,194+i*58,11,GOLD,"right");
+    neon("THE UNGRADED STRATEGY",W/2,60,18,"#ff4f6e");
+    text("submission SYNTH-01 · written for this demo, no real student work",W/2,84,10,"#7e83a6");
+    // the enemy: a messy strategy scroll
+    const hp=Math.max(0,1-t/6500);
+    box(330,104,300,150,"#0b0724","#3a2a66");
+    [0,1,2,3,4].forEach(i=>{ box(360,124+i*24,240-((i*67)%90),6,"#2a2545","#2a2545"); });
+    box(330,262,300,10,"#171233","#3a2a66"); box(330,262,300*hp,10,"#ff4f6e","#ff4f6e");
+    // damage numbers as the rubric hits
+    const hits=[["EVIDENCE CHECK",900,1200],["PERSONA AUDIT",850,2300],["SPECIFICITY",990,3400],["MVP SCOPE",720,4500],["OUTCOME OKRs",1100,5600]];
+    hits.forEach(([atk,dmg,t0])=>{ if(t>t0&&t<t0+950){
+      const f=(t-t0)/950;
+      glow(GOLD,10); text("-"+dmg,480+((t0*13)%120)-60,240-f*70,16+6*(1-f),GOLD); noglow();
     }});
-    if(hp<=0) neon("AUDIT DELIVERED · KIND, BUT DIRECT",W/2,505,16,GREEN);
+    // battle menu
+    box(70,300,820,180,"#04030e","#3a2a66");
+    box(90,320,360,140,"#0b0724","#3a2a66");
+    const menu=[["AUDIT","selected"],["EVIDENCE",""],["VERDICT",""],["MERCY","(never)"]];
+    menu.forEach(([m,st],i)=>{ if(t>400){
+      text((st==="selected"?"▸ ":"  ")+m,120,352+i*26,13,st==="selected"?GOLD:"#e9ecf6","left");
+      if(st&&st!=="selected") text(st,300,352+i*26,10,"#7e83a6","left");
+    }});
+    box(470,320,400,140,"#0b0724","#3a2a66");
+    const party=[["JOSE","LV 41",GOLD],["RUBRIC","LV 38",ICE],["CRITIC","LV 35",PSY]];
+    party.forEach(([p,lv,c],i)=>{ if(t>400){
+      text(p,500,352+i*30,12,c,"left"); text(lv,620,352+i*30,11,"#7e83a6","left");
+      box(680,344+i*30,160,8,"#171233","#171233"); box(680,344+i*30,160*0.9,8,GREEN,GREEN);
+    }});
+    if(hp<=0){ neon("AUDIT DELIVERED",W/2,285,16,GREEN); text("kind, but direct",W/2,305,11,"#7e83a6"); }
   }},
 
-/* 18 · BOSS FIGHT 2 · IT BUILDS */
+/* 21 · BOSS FIGHT 2 · IT BUILDS */
 { world:"BOSS FIGHT", title:"It Builds",
   caption:[
-    ["q","“The pattern transfers. The same architecture, shipped as systems for other people's lives.”"],
+    ["q","“Final boss of every job search: the blank screen. Nobody starts from one anymore.”"],
     ["l","LIVE DEMO: a job-search operating system boots in the terminal."]],
   render(t){
-    neon("TROPHY ROOM",W/2,64,20,GOLD);
-    const shelf=[["/affirm","pitch page"],["/thomsonreuters","pitch page"],["8 KITS","the toolkit"],["JOB OS","operating system"]];
-    shelf.forEach(([name,kind],i)=>{ if(t>300+i*380){
-      const tx=110+i*190;
-      box(tx,92,160,116,"#0b0724","#3a2a66");
-      box(tx+64,112,32,24,GOLD,GOLD); box(tx+74,136,12,10,GOLD,GOLD); box(tx+56,146,48,6,GOLD,GOLD);
-      text(name,tx+80,180,12,"#e9ecf6");
-      text(kind,tx+80,198,10,"#7e83a6");
-    }});
-    if(t>1900){
-      box(180,240,600,236,"#04030e","#3a2a66");
-      text("$ ./start",212,276,14,GREEN,"left");
-      const boot=[["JOB OS","#ff4a1c",22],["your job search, running as a system","#7e83a6",13],["profile ok · 6 targets · brief fresh","#e9ecf6",13],["next move: /brief","#ff4a1c",14]];
-      boot.forEach(([l,c,fs],i)=>{ if(t>2300+i*450) text(l,212,318+i*36,fs,c,"left"); });
-      if(t>4300&&Math.floor(t/650)%2===0) text("cut to the real terminal",W/2,505,12,"#7e83a6");
-    }
+    neon("THE BLANK SCREEN",W/2,60,18,"#ff4f6e");
+    const hp=Math.max(0,1-t/5200);
+    box(360,84,240,120,"#04030e",hp>0?"#3a2a66":"#171233");
+    if(hp>0&&Math.floor(t/500)%2===0) text("_",380,150,22,"#e9ecf6","left");
+    box(360,212,240,10,"#171233","#3a2a66"); box(360,212,240*hp,10,"#ff4f6e","#ff4f6e");
+    // the attack: the boot sequence
+    box(70,250,820,230,"#04030e","#3a2a66");
+    text("$ ./start",100,284,14,GREEN,"left");
+    const boot=[["JOB OS","#ff4a1c",22],["your job search, running as a system","#7e83a6",12],
+      ["profile ok · 6 targets · brief fresh","#e9ecf6",12],["next move: /brief","#ff4a1c",13]];
+    boot.forEach(([l,c,fs],i)=>{ if(t>800+i*500) text(l,100,324+i*34,fs,c,"left"); });
+    if(t>3000){ glow(GOLD,10); text("-9999",480,180,20,GOLD); noglow(); }
+    if(hp<=0){ neon("BLANK SCREEN DEFEATED",W/2,235,15,GREEN); }
+    if(t>4400){ text("kits: target list · target brief · pitch page · profiler · offer coach",480,452,11,"#7e83a6");
+      if(Math.floor(t/650)%2===0) text("cut to the real terminal",480,472,11,GOLD); }
   }},
 
-/* 19 · IT KNOWS ME */
+/* 22 · IT KNOWS ME */
 { world:"BRAIN v3.0", title:"It Knows Me",
   caption:[
     ["q","“It knows how I talk. And it knows how I am wrong.”"],
@@ -1061,7 +1172,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 20 · IT SURVIVES */
+/* 23 · IT SURVIVES */
 { world:"BRAIN v3.0", title:"It Survives",
   caption:[
     ["q","“Twice, the pipeline died in silence. No error. No briefs. Just quiet.”"],
@@ -1086,34 +1197,7 @@ const SCENES = [
     }
   }},
 
-/* 21 · SKILL TREE */
-{ world:"BRAIN v3.0", title:"Skill Tree",
-  caption:[
-    ["q","“One year of unlocks. Every node is downstream of the same folder of markdown.”"],
-    ["l","Context compounds."]],
-  render(t){
-    const rx=W/2, ry=470;
-    psyRing(rx,ry,t,VIO,2);
-    text("the vault",rx,ry+26,12,"#7e83a6");
-    const nodes=[
-      ["capture",380,390,ICE],["retrieval",580,390,ICE],
-      ["daily briefs",290,310,GREEN],["skills",480,310,GREEN],["watchdog",670,310,GREEN],
-      ["content pipeline",200,230,GOLD],["strategy audit",400,230,GOLD],["product os",600,230,GOLD],["platero brief",790,230,GOLD],
-      ["121 carousels",130,140,PSY],["build with jose",350,140,PSY],["loops + velocity",570,140,PSY],["job os",780,140,PSY]];
-    const links=[[0,-1],[1,-1],[2,0],[3,0],[4,1],[5,2],[6,3],[7,3],[8,2],[9,5],[10,6],[11,7],[12,7]];
-    links.forEach(([a,b],i)=>{ if(t>300+i*260){
-      const A=nodes[a], Bx=b===-1?rx:nodes[b][1], By=b===-1?ry:nodes[b][2];
-      ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(A[1],A[2]); ctx.lineTo(Bx,By); ctx.stroke();
-    }});
-    nodes.forEach((n,i)=>{ if(t>380+i*260){
-      glow(n[3],8); ctx.fillStyle=n[3];
-      ctx.beginPath(); ctx.arc(n[1],n[2],6,0,7); ctx.fill(); noglow();
-      text(n[0],n[1],n[2]-16,10,"#e9ecf6");
-    }});
-  }},
-
-/* 22 · THE COMPOUNDING */
+/* 24 · THE COMPOUNDING */
 { world:"BRAIN v3.0", title:"The Compounding",
   caption:[],
   render(t){
@@ -1125,7 +1209,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 23 · PLAYER 2 START */
+/* 25 · PLAYER 2 START */
 { world:"ENDING", title:"The School Is Open",
   caption:[
     ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
@@ -1145,7 +1229,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 24 · THE STRATEGY GUIDE */
+/* 26 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
@@ -1167,7 +1251,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 25 · CO-OP MODE */
+/* 27 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
@@ -1209,6 +1293,12 @@ function frame(now){
   // persistent version badge: v1.0 for the origin, v2.0 from its changelog, v3.0 from its changelog
   const ver = idx>=13 ? "v3.0" : idx>=6 ? "v2.0" : "v1.0";
   text(ver, W-20, 28, 12, idx>=13 ? PSY : idx>=6 ? GREEN : "#ff4f6e", "right");
+  // act III wears its RPG HUD: level = how deep into v3, xp = progress through the scene
+  if(idx>=13 && idx<=24){
+    const lv=idx-12, xp=Math.min(1,(now-sceneStart)/9000);
+    text("LV "+lv, 24, 28, 12, GREEN, "left");
+    box(70,20,90,8,"#171233","#3a2a66"); box(70,20,90*xp,8,GREEN,GREEN);
+  }
   requestAnimationFrame(frame);
 }
 cv.addEventListener("click",()=>setScene(idx+1));
@@ -1217,7 +1307,7 @@ addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
   else if(/^[1-9]$/.test(e.key)){
-    const jumps={1:0,2:3,3:7,4:14,5:16,6:17,7:18,8:21,9:23}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+    const jumps={1:0,2:3,3:7,4:13,5:14,6:16,7:20,8:21,9:25}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
 setScene(0); requestAnimationFrame(frame);
