@@ -618,13 +618,24 @@ const SCENES = [
     const wp=(t/6000)%1, wsc=3.2-wp*1.9, wy=396-wp*140;
     drawMap(SPRITES.joseWalkA, 210-6*wsc, wy, wsc);
     neon("the vision",210,126,11,ICE);
-    // MIDDLE · THE VOID
+    // MIDDLE · THE VOID: a black hole eating question marks
     box(400,60,160,380,"#050310","#171233");
     neon("NEXT MONTH",480,96,16,"#6a5f8f");
-    for(let i=0;i<5;i++){ const dy2=(t/30+i*77)%340;
-      ctx.fillStyle="rgba(126,131,166,0.25)"; ctx.fillRect(420+(i*31)%120, 80+dy2, 2,2); }
-    ctx.globalAlpha=0.5+0.4*Math.sin(t/600);
-    text("?",480,262,46,"#221046"); ctx.globalAlpha=1;
+    const bhx=480, bhy=258;
+    glow(VIO,22); ctx.strokeStyle=VIO; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.ellipse(bhx,bhy,40,14,-0.5,0,7); ctx.stroke(); noglow();
+    glow(PSY,14); ctx.fillStyle="#04030e";
+    ctx.beginPath(); ctx.arc(bhx,bhy,26,0,7); ctx.fill(); noglow();
+    ctx.strokeStyle="rgba(180,76,255,0.8)"; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(bhx,bhy,27,0,7); ctx.stroke();
+    for(let i=0;i<7;i++){
+      const p=((t/2600)+i/7)%1;
+      const ang=p*9+i*2.4, r=92*(1-p)+8;
+      const qx=bhx+Math.cos(ang)*r*0.8, qy=bhy+Math.sin(ang)*r*0.52;
+      ctx.globalAlpha=Math.min(1,(1-p)+0.15);
+      text("?",qx,qy,Math.max(8,24*(1-p)+6),i%2?"#8f83c8":"#6a5f8f");
+      ctx.globalAlpha=1;
+    }
     // RIGHT · RIGHT NOW
     box(580,60,340,380,"#0b0724","#221046");
     neon("RIGHT NOW",750,96,16,GREEN);
@@ -1346,15 +1357,21 @@ const SCENES = [
     motes(t);
   }},
 
-/* 19 · CHANGELOG v3.0 */
-{ world:"PATCH NOTES", title:"Changelog",
-  caption:[["l","The update that changed what the machine is."]],
+/* 19 · NEW FEATURES */
+{ world:"BRAIN v3.0", title:"New Features",
+  caption:[["l","What the upgrade actually adds."]],
   render(t){
-    box(180,130,600,270,"#0b0724","#3a2a66");
-    neon("CHANGELOG v3.0",W/2,182,24,PSY);
-    const lines=[["+ added: agents",GREEN],["+ added: publishing",GREEN],["+ added: judgment",GREEN],["- removed: waiting","#ff4f6e"]];
-    lines.forEach(([l,c],i)=>{ if(t>500+i*550) text(l,W/2,240+i*34,16,c); });
-    if(t>3000&&Math.floor(t/650)%2===0) text("installing v3.0 ...",W/2,440,12,"#7e83a6");
+    box(150,104,660,330,"#0b0724","#3a2a66");
+    neon("NEW IN v3.0",W/2,152,24,PSY);
+    const feats=[
+      ["research agents run every morning, unprompted",GREEN],
+      ["a public daily brief that publishes itself",ICE],
+      ["connections drawn across everything I add",GOLD],
+      ["and it builds: whole systems ship from those connections",PSY]];
+    feats.forEach(([f,c],i)=>{ if(t>500+i*600){
+      box(192,186+i*54,10,10,c,c);
+      text(f,218,196+i*54,14,"#e9ecf6","left"); }});
+    if(t>3200&&Math.floor(t/650)%2===0) text("free upgrade. mandatory install.",W/2,468,12,"#7e83a6");
     motes(t);
   }},
 
