@@ -1538,25 +1538,34 @@ const SCENES = [
 /* 26 · STOP 4 · JOB OS */
 { world:"STOP 4", title:"Job OS",
   caption:[
-    ["q","“Final boss of every job search: the blank screen. Nobody starts from one anymore.”"],
-    ["l","LIVE DEMO: a job-search operating system boots in the terminal."]],
+    ["q","“A job search that runs as a system. It remembers you, watches your targets, and always knows the next move.”"],
+    ["l","LIVE DEMO: ./start in the real terminal."]],
   render(t){
-    neon("JOB OS",W/2,58,18,"#ff4a1c");
-    text("vs the blank screen",W/2,80,10,"#7e83a6");
-    const hp=Math.max(0,1-t/5200);
-    box(360,84,240,120,"#04030e",hp>0?"#3a2a66":"#171233");
-    if(hp>0&&Math.floor(t/500)%2===0) text("_",380,150,22,"#e9ecf6","left");
-    box(360,212,240,10,"#171233","#3a2a66"); box(360,212,240*hp,10,"#ff4f6e","#ff4f6e");
-    // the attack: the boot sequence
-    box(70,250,820,230,"#04030e","#3a2a66");
-    text("$ ./start",100,284,14,GREEN,"left");
-    const boot=[["JOB OS","#ff4a1c",22],["your job search, running as a system","#7e83a6",12],
-      ["profile ok · 6 targets · brief fresh","#e9ecf6",12],["next move: /brief","#ff4a1c",13]];
-    boot.forEach(([l,c,fs],i)=>{ if(t>800+i*500) text(l,100,324+i*34,fs,c,"left"); });
-    if(t>3000){ glow(GOLD,10); text("-9999",480,180,20,GOLD); noglow(); }
-    if(hp<=0){ neon("BLANK SCREEN DEFEATED",W/2,235,15,GREEN); }
-    if(t>4400){ text("kits: target list · target brief · pitch page · profiler · offer coach",480,452,11,"#7e83a6");
-      if(Math.floor(t/650)%2===0) text("cut to the real terminal",480,472,11,GOLD); }
+    neon("JOB OS",W/2,52,18,"#ff4a1c");
+    text("vs the blank screen",W/2,74,10,"#7e83a6");
+    box(790,40,120,70,"#04030e",t<1600?"#3a2a66":"#171233");
+    if(t<1600){ if(Math.floor(t/500)%2===0) text("_",806,82,16,"#e9ecf6","left"); }
+    else { ctx.strokeStyle=GREEN; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(795,45); ctx.lineTo(905,105);
+      ctx.moveTo(905,45); ctx.lineTo(795,105); ctx.stroke();
+      text("defeated",850,124,9,GREEN); }
+    box(90,96,780,384,"#04030e","#3a2a66");
+    const lines=[
+      [0,   "$ ./start","#e9ecf6"],
+      [300, "JOB OS · profile ok · 6 targets · next: /brief","#ff4a1c"],
+      [1600,"$ /brief","#e9ecf6"],
+      [2100,"  shopify        quiet today","#7e83a6"],
+      [2600,"  wealthsimple   NEW · Senior Product Manager, Platform",GOLD],
+      [3300,"  brief saved · it will notice if this posting closes","#7e83a6"],
+      [4200,"$ /pitch wealthsimple","#e9ecf6"],
+      [4700,"  reading their brand ... building the page in their design ...","#7e83a6"],
+      [5600,"  pitch page live · logged to applications",GREEN],
+      [6500,"$ /start","#e9ecf6"],
+      [7000,"  next move: send it while the posting is fresh.","#ff4a1c"],
+      [7600,"  after that: nothing. the rest is in the system.","#7e83a6"],
+    ];
+    lines.forEach(([t0,s,c],i)=>{ if(t>t0) text(s,116,132+i*28,13,c,"left"); });
+    if(t>8300&&Math.floor(t/650)%2===0) text("/setup interviews you once. you never answer the same question twice.",W/2,505,11,"#7e83a6");
   }},
 
 /* 27 · THE COMPOUNDING */
@@ -1665,7 +1674,7 @@ function vignette(){
 function enterFade(t){
   if(t<320){ ctx.fillStyle="rgba(4,3,14,"+(1-t/320).toFixed(3)+")"; ctx.fillRect(0,0,W,H); }
 }
-const A3_HITS={23:[1900,2900,4000,5100], 25:[900,2000,3100,4200,5300], 26:[3000]};
+const A3_HITS={23:[1900,2900,4000,5100], 25:[900,2000,3100,4200,5300], 26:[2600,5600]};
 function sceneShake(i,t){
   const hits=A3_HITS[i]; if(!hits) return [0,0];
   for(const t0 of hits){ const d=t-t0;
