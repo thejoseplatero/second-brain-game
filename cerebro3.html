@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JOSE-CEREBRO v3.0 · Second Brain: The Operating System</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  JOSE-CEREBRO · the X-Men riff on the second brain talk game.
+  Chrome dome, psychic violet, a world of blinking signals.
+  Cerebro is Spanish for brain. It is also a mutant-finding machine.
+  Both facts are load-bearing.
+  ═══════════════════════════════════════════════════════════════
+  HOW TO TWEAK:
+    1. CONFIG  · URLs, names. Right below.
+    2. SCENES  · every caption string. Search "const SCENES".
+    3. SPRITES · pixel maps, edit like ASCII art. Legend in PALETTE.
+  CONTROLS: click / space / → next. ← back. F fullscreen. 1-7 world jumps.
+  QR codes are embedded as data URIs (real, scannable). PNG copies also in folder.
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{ --bg:#04030e; --ink:#e9ecf6; --dim:#7e83a6; --vio:#b44cff; --ice:#6de0ff; --gold:#ffd75e; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Courier New',monospace;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;
+       min-height:100vh;gap:14px;padding:20px;user-select:none}
+  canvas{image-rendering:pixelated;border:3px solid #171233;border-radius:4px;
+         box-shadow:0 0 24px rgba(180,76,255,0.25), 0 0 60px rgba(109,224,255,0.12);
+         width:min(96vw, calc((100vh - 210px) * 1.7778));height:auto;cursor:pointer}
+  #cap{max-width:900px;width:92vw;min-height:96px;text-align:center;line-height:1.55}
+  #cap .t{color:var(--vio);font-weight:bold;letter-spacing:.12em;font-size:13px;
+          text-transform:uppercase;display:block;margin-bottom:8px}
+  #cap .l{font-size:16px;display:block;margin:3px 0}
+  #cap .q{font-size:16px;display:block;margin:6px 0;color:var(--ice);font-style:italic}
+  #hud{color:var(--dim);font-size:12px;letter-spacing:.08em}
+</style>
+</head>
+<body>
+<canvas id="cv" width="960" height="540"></canvas>
+<div id="cap"></div>
+<div id="hud"></div>
+
+<script>
+/* ═══════════ CONFIG ═══════════ */
+const CONFIG = {
+  speaker: "JOSE PLATERO",
+  urls: {
+    starter:  "github.com/thejoseplatero/second-brain-starter-kit",
+    substack: "loopsandletters.substack.com",
+    linkedin: "linkedin.com/in/joseplatero",
+  },
+  // real QR codes, embedded as data URIs so they load from any context (file://, preview, hosted)
+  qrFiles: {
+    starter:  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAACUAQAAAABdRz15AAABYUlEQVR4nM2WTWpDMQyERyb70Q1y/2O9G4xOoDJ6pIuWLooCrcHkyZAP62+saHxddb4dAX93FhGZqMzIGgM7HruBhIpAjnEWvAcQhJJgOZTBNc8UISDk7/57fjwTk0roLbwWUBeIyts4C150APw0C+C14aG9KFJsjaEdjxDEpqNIStzy2ttAqs3UjgeQUE8lS+gd7wGBSBYwDeKSObv7EbTH9nRCqR1PbWfVlHdjl98HEu0+C1sKLfv3QIjrSjQTFTT6LHho0pXiDweP3NazI4aWZLniPh+YoqPamRaX+YAps+Ufct+/dO/y5o7rZ3c/tOtvxNRtvI2f5cqeuqDde+v+mMD15NnitdYrt8QE7o7jG/y1q/bUjmufD78fMvI99dJTzaKV1dnW8r2MxOU7BiwI2M0v93yQ6GiEWOB2HprVvmY/kVb8s+O1oCpLVoWe2t3vNR9ciftlglbzafzzefcD3eLygabQ5vUAAAAASUVORK5CYII=",
+    substack: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACEAQAAAAB5P74KAAABI0lEQVR4nM1WQW4EMQgzo97ND+b/z5ofOC9w5ewe2t5KpKocEBNprGAMoYzvtq4fB8DfnlRVV6+F1QnHOLSBBTZf4fiG1ZBuqJXwKNOb6IX+5V9f7WN7let+2Ec4zkXKq7nDGU65AL4/FsBnhgPHKOsVWVMcQlAcTIkHOBQEUhHQFOcChNuQQEilA/08WrgXahGe1guWGbahTc8Bz4a8S28ac54lp1KOCnmAA22SmVpZ07yuQKWvlvpBjfsL1js3hmcc8Cxy00yG6TGOLQVGdkga4nxgdSSN3sOHc35i8Yx8xnW/9nvBRiODVdP+gumMjpeCwvrB3KDAlB5znrFxGBkRmt/n2n5lhGGPjaP3QhsKLHG4JyD7RtLyqzOm/NQ/21s+AS/ov5TGFbyoAAAAAElFTkSuQmCC",
+    linkedin: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACEAQAAAAB5P74KAAABKUlEQVR4nMWWXWrEUAiFP0PedQfZ/7KyA13BKTov7UChNdDKMIhwxfNzvTHxNep4K8DfVswsoiwsJl32QS55g8ucNHd9TjCHvMBf6boPEJBx+49PHd9U6ob7+u2pz3GCCPckctJlH5MNMxMFfm/16nBSiXe61OsgCJtZVGZrXPQc88Mb3tY/B6iu5Mru1obc+zDbiFGNrbZ9ENl3AkdIueWZVksaVHrAz4mR5tyhiHHS+r57+6eh4Z7beZC6VeuvZ/zQ50W7GdbzHKgURBvRpGvPj2hWWv5X9gAXrTo5rO9xMezcHt667f1M39Ckr1cr/+S9yBz7jLOfvBfRgjN76NGeF24Xqf1+Pua/FFkEZQ/mUeKVpHu19ts+1VvZI+iByPW781b45++WD688rI1GomRuAAAAAElFTkSuQmCC",
+  },
+};
+
+/* ═══════════ PALETTE + SPRITES ═══════════ */
+const PALETTE = {
+  s:"#e0aa72", d:"#b8834f", e:"#14110e",           // skin, shade, eyes
+  b:"#3b2b20", w:"#f4f2ec",                        // hair, whites
+  c:"#2b3040", x:"#3d4457", p:"#464e63", k:"#1c1f29", // jacket, shirt, pants, shoes
+  h:"#d7deed", H:"#8fa2c0", R:"#ff4f6e",           // helmet chrome, chrome shadow, helmet node
+  t:"#8a5a2c", T:"#e8c47a",                        // toast crust + bread
+  u:"#2e2118", U:"#6b4a2e", q:"#8a6a48",           // burnt crust, burnt bread, brain folds
+  o:"#8ee3ff", O:"#3aa8d8",                        // orb (claude)
+  g:"#ffd75e", r:"#ff4f6e", m:"#b44cff",           // gold, red, violet
+  ".":null,
+};
+const SPRITES = {
+  joseIdle: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..cxxxxxxc..",
+    "..cxxxxxxc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
+  ],
+  joseWalkA: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    ".sccccccccs.",
+    "..cccccccc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "..pp....pp..",
+    ".pp......pp.",
+    ".kk......kk.",
+  ],
+  joseWalkB: [
+    "....ssss....",
+    "...ssssss...",
+    "...ssssss...",
+    "...sessse...",
+    "...dssssd...",
+    "...bssssb...",
+    "...bbbbbb...",
+    "....bbbb....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..scccccccs.",
+    "..cccccccc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
+  ],
+  /* jose wearing the cerebro helmet: chrome dome, red side nodes, wires back */
+  joseHelm: [
+    "...hhhhhh...",
+    "..hhhhhhhh..",
+    ".RhhhhhhhhR.",
+    "...sessse...",
+    "...dssssd...",
+    "...ssssss...",
+    "....ssss....",
+    "....ssss....",
+    "...w.cc.w...",
+    "..cccccccc..",
+    "..cxxxxxxc..",
+    "..cxxxxxxc..",
+    "..cccccccc..",
+    "...pppppp...",
+    "...pp..pp...",
+    "...pp..pp...",
+    "...kk..kk...",
+  ],
+  joseSleep: [
+    "..ssss......",
+    ".ssssss.....",
+    ".sessse.....",
+    ".bssssb.....",
+    ".bbbbbb.....",
+    "cccccccccccc",
+    "cccccccccccc",
+    "xxxxxxxxxxxx",
+  ],
+  helmet: [
+    "..hhhhhh..",
+    ".hhhhhhhh.",
+    "hhhHHHHhhh",
+    "RhhhhhhhhR",
+    "Rh......hR",
+  ],
+  orb: [
+    "..oooo..",
+    ".oooooo.",
+    "oooowooo",
+    "oooooooo",
+    ".OooooO.",
+    "..OOOO..",
+  ],
+  toast: [
+    ".tttttt.",
+    "tTTTTTTt",
+    "tTeTTeTt",
+    "tTTTTTTt",
+    "tTTeeTTt",
+    "tTTTTTTt",
+    ".tttttt.",
+  ],
+  /* the speaker, 24px wide: bald, black cardigan, white collar,
+     red pin, arms crossed, gold bracelet. it's him. */
+  portrait: [
+    "........ssssssss........",
+    "......ssssssssssss......",
+    ".....ssssssssssssss.....",
+    "....ssssssssssssssss....",
+    "....ssssssssssssssss....",
+    "...ssssssssssssssssss...",
+    "...ssssssssssssssssss...",
+    "...ss.eee.ssss.eee.ss...",
+    "...sss.ee.ssss.ee.sss...",
+    "...ssssssssssssssssss...",
+    "...sssssssddddsssssss...",
+    "...ssssssssssssssssss...",
+    "....sssddddddddddsss....",
+    "....ssssssssssssssss....",
+    ".....ssssssssssssss.....",
+    "......ssssssssssss......",
+    "........dssssssd........",
+    "........ssssssss........",
+    "..ccccc.wsssssw.ccccc...",
+    ".ccccccccwwssswwcccccccc",
+    ".cccccccccwwwwcccccccccc",
+    "ccccccccccwwwwcccrcccccc",
+    "cccccccccccwwccccccccccc",
+    "cccccccccccccccccccccccc",
+    "ccccsssssccccccccccccccc",
+    "cccgsssssccccccccccccccc",
+    "cccccccccccccccccccccccc",
+    "cccccccccccccccccccccccc",
+  ],
+  /* the verdict, rendered: a brain-shaped slice, charred */
+  brainToast: [
+    "..uuuuuu..",
+    ".uUUUUUUu.",
+    "uUUqqUqqUu",
+    "uUqUUqUUqu",
+    "uUUqqUqqUu",
+    "uUqUUeUUqu",
+    "uUUUeUUUUu",
+    ".uUUUUUUu.",
+    "..uuuuuu..",
+  ],
+  agent: [
+    ".oooo.",
+    "oowwoo",
+    "oooooo",
+    ".o..o.",
+  ],
+};
+
+/* ═══════════ ENGINE + WORLD HELPERS ═══════════ */
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const cap = document.getElementById("cap"), hud = document.getElementById("hud");
+const W = cv.width, H = cv.height;
+const VIO="#b44cff", ICE="#6de0ff", GOLD="#ffd75e", GREEN="#00ff88", PSY="#ff4fd8", CHROME="#d7deed";
+
+function drawMap(map,x,y,sc,tint){
+  for(let r=0;r<map.length;r++) for(let i=0;i<map[r].length;i++){
+    const ch=map[r][i]; const col = tint && ch!=='.' ? tint : PALETTE[ch];
+    if(col){ ctx.fillStyle=col; ctx.fillRect(x+i*sc,y+r*sc,sc,sc); }
+  }
+}
+function walker(x,y,sc,t){ drawMap(Math.floor(t/180)%2 ? SPRITES.joseWalkA : SPRITES.joseWalkB, x, y, sc); }
+function blink(x,y,sc,t){ // idle jose blinks every ~3.4s
+  if((t%3400)<140){ ctx.fillStyle=PALETTE.s;
+    ctx.fillRect(x+4*sc,y+3*sc,sc,sc); ctx.fillRect(x+8*sc,y+3*sc,sc,sc); }
+}
+function text(str,x,y,size,col,align="center",font="bold"){
+  ctx.fillStyle=col; ctx.font=`${font} ${size}px 'Courier New',monospace`;
+  ctx.textAlign=align; ctx.fillText(str,x,y);
+}
+function glow(col,blur){ ctx.shadowColor=col; ctx.shadowBlur=blur; }
+function noglow(){ ctx.shadowBlur=0; }
+function neon(str,x,y,size,col,align="center"){ glow(col,16); text(str,x,y,size,col,align); noglow(); }
+function sign(x,y,w,h,txt,col,size,t){
+  const fl = (t!==undefined && Math.floor(t/90)%41===0) ? 0.3 : 1;
+  ctx.globalAlpha = fl;
+  ctx.fillStyle="rgba(4,3,14,0.88)"; ctx.fillRect(x,y,w,h);
+  glow(col,12); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h); noglow();
+  neon(txt, x+w/2, y+h/2+(size||14)/2.8, size||14, col);
+  ctx.globalAlpha = 1;
+}
+function box(x,y,w,h,fill,stroke){ ctx.fillStyle=fill; ctx.fillRect(x,y,w,h);
+  if(stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h); } }
+function bubbleC(x,y,rad,col,txt){
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,rad,0,7); ctx.fill();
+  if(txt) text(txt,x,y+4,11,"#04030e");
+}
+function meterBar(x,y,w,pct,label){
+  ctx.fillStyle="#120c2c"; ctx.fillRect(x,y,w,16);
+  const col = pct>0.4 ? ICE : PSY;
+  glow(col,8); ctx.fillStyle=col; ctx.fillRect(x+2,y+2,(w-4)*Math.max(0,Math.min(1,pct)),12); noglow();
+  text(label, x+w/2, y-6, 11, "#7e83a6");
+}
+/* psychic dust: slow motes drifting upward. replaces the rain. */
+function motes(t){
+  for(let i=0;i<46;i++){
+    const x=((i*163)+22*Math.sin(t/2400+i))%W;
+    const y=H-(((i*97)+(t/22))%(H+40))+20;
+    const a=0.10+0.14*Math.sin(t/700+i*1.7);
+    ctx.fillStyle=`rgba(180,76,255,${Math.max(0,a)})`;
+    ctx.fillRect(x,y,2,2);
+  }
+}
+/* the cerebro chamber: concentric rings converging on a vanishing point,
+   walls tiled with tiny signal lights, a walkway plunging to the console. */
+function chamber(t,cx,cy){
+  cx=cx??W/2; cy=cy??232;
+  // rings
+  for(let i=6;i>=1;i--){
+    const r=i*86;
+    ctx.strokeStyle=`rgba(109,224,255,${0.05+0.035*(7-i)})`;
+    ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  }
+  // wall lights: little minds out there in the dark
+  for(let i=0;i<130;i++){
+    const seed=(i*2654435761)>>>0;
+    const a=(seed%628)/100, rr=60+(seed>>4)%420;
+    const x=cx+rr*Math.cos(a), y=cy+rr*Math.sin(a)*0.62;
+    if(y>H-70) continue;
+    const tw=0.25+0.55*Math.abs(Math.sin(t/900+i*2.3));
+    const col = i%17===0 ? GOLD : (i%5===0 ? VIO : ICE);
+    ctx.globalAlpha=tw*0.7; ctx.fillStyle=col; ctx.fillRect(x,y,2,2); ctx.globalAlpha=1;
+  }
+  // walkway
+  ctx.fillStyle="#0a0722";
+  ctx.beginPath(); ctx.moveTo(cx-190,H); ctx.lineTo(cx-26,cy+40); ctx.lineTo(cx+26,cy+40); ctx.lineTo(cx+190,H); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="rgba(180,76,255,0.55)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx-190,H); ctx.lineTo(cx-26,cy+40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+190,H); ctx.lineTo(cx+26,cy+40); ctx.stroke();
+  for(let i=1;i<5;i++){ const y=H-i*((H-cy-40)/5);
+    const half=26+(190-26)*((y-cy-40)/(H-cy-40));
+    ctx.strokeStyle="rgba(180,76,255,0.25)";
+    ctx.beginPath(); ctx.moveTo(cx-half,y); ctx.lineTo(cx+half,y); ctx.stroke();
+  }
+}
+/* rotating detection globe with blips */
+function globe(cx,cy,r,t,blipCol){
+  ctx.fillStyle="#070a1e"; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+  glow(ICE,10); ctx.strokeStyle="rgba(109,224,255,0.8)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke(); noglow();
+  ctx.strokeStyle="rgba(109,224,255,0.28)"; ctx.lineWidth=1.5;
+  // latitude
+  for(let i=-2;i<=2;i++){
+    const yy=cy+i*r*0.36, hw=Math.sqrt(Math.max(0,r*r-(i*r*0.36)*(i*r*0.36)));
+    ctx.beginPath(); ctx.ellipse(cx,yy,hw,hw*0.22,0,0,7); ctx.stroke();
+  }
+  // spinning longitude
+  for(let i=0;i<3;i++){
+    const ph=Math.sin(t/1400+i*1.05);
+    ctx.beginPath(); ctx.ellipse(cx,cy,Math.abs(ph)*r,r,0,0,7); ctx.stroke();
+  }
+  // blips: signals surfacing around the world
+  for(let i=0;i<8;i++){
+    const seed=(i*40503+7)%628;
+    const a=seed/100, rr=r*(0.25+((i*53)%50)/100);
+    const bx=cx+rr*Math.cos(a+t/5000), by=cy+rr*Math.sin(a+t/5000)*0.8;
+    const pulse=(t/1100+i*0.37)%1;
+    if(pulse<0.55){
+      const col=blipCol|| (i%3===0?GOLD:PSY);
+      ctx.globalAlpha=1-pulse/0.55;
+      glow(col,8); ctx.fillStyle=col; ctx.fillRect(bx,by,4,4); noglow();
+      ctx.strokeStyle=col; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(bx+2,by+2,4+pulse*16,0,7); ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
+  // sweep line
+  const sa=t/900;
+  ctx.strokeStyle="rgba(255,79,216,0.5)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*Math.cos(sa),cy+r*Math.sin(sa)); ctx.stroke();
+}
+/* expanding psychic rings from a point */
+function psyRing(cx,cy,t,col,n){
+  for(let i=0;i<(n||3);i++){
+    const p=((t/1600)+i/(n||3))%1;
+    ctx.globalAlpha=0.5*(1-p);
+    ctx.strokeStyle=col||VIO; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,8+p*120,0,7); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+/* violet synthwave floor grid */
+function floorGrid(t,floorY){
+  ctx.strokeStyle="#221046"; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(0,floorY); ctx.lineTo(W,floorY); ctx.stroke();
+  ctx.fillStyle="#070516"; ctx.fillRect(0,floorY+2,W,H-floorY);
+  ctx.strokeStyle="rgba(180,76,255,0.30)"; ctx.lineWidth=1.5;
+  for(let i=0;i<11;i++){
+    const x=i*(W/10);
+    ctx.beginPath(); ctx.moveTo(x,H); ctx.lineTo(W/2+(x-W/2)*0.22,floorY+2); ctx.stroke();
+  }
+  const scrollv=(t/28)%40;
+  for(let i=0;i<5;i++){
+    const y=floorY+8+((i*40+scrollv)%(H-floorY));
+    ctx.globalAlpha=0.35;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+function clockFace(cx,cy,r,t){
+  ctx.fillStyle="#0b0724"; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+  ctx.strokeStyle="#7e83a6"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  const a=t/600;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.72*Math.cos(a),cy+r*0.72*Math.sin(a)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*0.45*Math.cos(a/12),cy+r*0.45*Math.sin(a/12)); ctx.stroke();
+}
+const qrImgs={};
+for(const k in CONFIG.qrFiles){ const im=new Image(); im.src=CONFIG.qrFiles[k]; qrImgs[k]=im; }
+function drawQR(key,x,y,size,url,col){
+  glow(col||VIO,18); ctx.fillStyle="#f4f2ec"; ctx.fillRect(x-8,y-8,size+16,size+16); noglow();
+  const im=qrImgs[key];
+  if(im&&im.complete&&im.naturalWidth>0){ ctx.imageSmoothingEnabled=false; ctx.drawImage(im,x,y,size,size); }
+  else{
+    let seed=0; for(const c of key) seed+=c.charCodeAt(0);
+    const n=13,cell=size/n;
+    for(let r=0;r<n;r++)for(let c2=0;c2<n;c2++){ seed=(seed*73+17)%97;
+      if(seed%2===0){ ctx.fillStyle="#04030e"; ctx.fillRect(x+c2*cell+1,y+r*cell+1,cell-2,cell-2);} }
+    text("PLACEHOLDER", x+size/2, y+size/2+4, 10, VIO);
+  }
+  neon(url, x+size/2, y+size+30, 13, col||VIO);
+}
+
+/* ═══════════ SCENES ═══════════ */
+const S = 6;
+const SCENES = [
+
+/* 0 · SUBJECT FILE · WHO IS THIS GUY */
+{ world:"CEREBRO", title:"Subject File",
+  caption:[
+    ["q","“The people who get the most out of AI aren't the ones with the best prompts. They're the ones with the best context.”"],
+    ["l","Tonight: what happened when one very busy brain got an amplifier."]],
+  render(t){
+    chamber(t,W/2,190);
+    // the dossier card
+    box(96,90,260,380,"#0b0724","#3a2a66");
+    // portrait decrypts row by row
+    const rows=Math.min(SPRITES.portrait.length, Math.floor(t/60));
+    for(let r=0;r<rows;r++) drawMap([SPRITES.portrait[r]],130,120+r*8,8);
+    // CRT lines over the portrait
+    ctx.fillStyle="rgba(4,3,14,0.25)";
+    for(let y=120;y<344;y+=4) ctx.fillRect(130,y,192,1);
+    if(rows<SPRITES.portrait.length){
+      // decrypt cursor on the current row
+      glow(ICE,8); ctx.fillStyle=ICE; ctx.fillRect(130,120+rows*8,192,2); noglow();
+      text("decrypting subject file...",226,430,10,"#7e83a6");
+    } else neon("SUBJECT 001",226,430,13,GREEN);
+    // name + bio
+    neon("JOSE PLATERO",640,150,34,VIO);
+    text("CEREBRO FILE · CLASSIFIED",640,180,12,"#7e83a6");
+    const bio=[
+      "Director of Product, Design,",
+      "MarTech & AdTech · Air Canada",
+      "Teaches AI & product at BrainStation",
+      "Writes Loops & Letters",
+      "Publishes The Platero Brief, daily",
+    ];
+    bio.forEach((l,i)=>{ if(t>600+i*350) text(l,640,220+i*26,14,"#e9ecf6"); });
+    // mutation profile: the man and the talk, summarized
+    if(t>2200){
+      box(430,330,420,150,"#0a0722","#3a2a66");
+      text("MUTATION PROFILE",640,354,11,"#7e83a6");
+      const profile=[
+        ["ability:","sees it years early",GREEN],
+        ["side effect:","a hundred open loops",GOLD],
+        ["status:","unamplified. for now.",PSY],
+      ];
+      profile.forEach(([k,v,c2],i)=>{ if(t>2400+i*350){
+        text(k,545,388+i*28,12,"#7e83a6","right");
+        text(v,560,388+i*28,13,c2,"left"); }});
+    }
+    if(t>3600 && Math.floor(t/650)%2===0) text("proceed to scan →",640,505,12,"#7e83a6");
+    motes(t);
+  }},
+
+/* 1 · COLD OPEN · THE MUTANT SCAN */
+{ world:"BOOT", title:"Subject: Jose's Brain",
+  caption:[
+    ["q","“Quick scan before we start.”"],
+    ["l","This is a true story."]],
+  render(t){
+    ctx.fillStyle="rgba(255,255,255,0.02)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    text("JOSE-CEREBRO v3.0 · SUBJECT SCAN",W/2,60,14,"#7e83a6");
+    // the subject: a brain in a scan reticle
+    box(120,140,220,220,"#070a1e","#22305a");
+    ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
+    ctx.strokeRect(150,170,160,160);
+    const verdictAt=500+6*430;
+    if(t<verdictAt){
+      // scan line sweeps the reticle
+      const sy=170+((t/9)%160);
+      glow(ICE,10); ctx.strokeStyle=ICE;
+      ctx.beginPath(); ctx.moveTo(150,sy); ctx.lineTo(310,sy); ctx.stroke(); noglow();
+      // the subject: jose's actual brain, pulsing, very much alive.
+      // the machine will still call it toast. machines have no respect.
+      ctx.fillStyle="#e88ab0";
+      ctx.beginPath(); ctx.arc(210,250,34,0,7); ctx.arc(252,250,34,0,7);
+      ctx.arc(231,226,30,0,7); ctx.fill();
+      ctx.strokeStyle="#b45a80"; ctx.lineWidth=2;
+      for(let i=0;i<4;i++){ ctx.beginPath();
+        ctx.arc(206+i*16,240+6*(i%2),9,0.6,3.6); ctx.stroke(); }
+      psyRing(231,248,t,PSY,2);
+    } else {
+      const vt=t-verdictAt;
+      // flash of judgment
+      if(vt<220){ ctx.globalAlpha=1-vt/220; ctx.fillStyle="#f4f2ec";
+        ctx.fillRect(150,170,160,160); ctx.globalAlpha=1; }
+      // the machine has rendered its verdict as an appliance. chrome. smug.
+      ctx.fillStyle="#8fa2c0"; ctx.fillRect(170,300,120,52);
+      ctx.fillStyle="#d7deed"; ctx.fillRect(170,300,120,10);
+      ctx.fillStyle="#131040"; ctx.fillRect(196,296,68,8);      // slot
+      ctx.fillStyle="#ff4f6e"; ctx.fillRect(292,318,8,14);      // lever
+      // the brain pops up as toast. burnt. still radiating signal. tragic.
+      const q=Math.min(1,vt/450);
+      const pop=q<1 ? Math.sin(q*Math.PI/2) : 1+0.06*Math.sin((vt-450)/160)*Math.exp(-(vt-450)/800);
+      const ty=300-72*pop;
+      drawMap(SPRITES.brainToast,196,ty,7);
+      psyRing(231,ty+30,t,PSY,2);
+      // smoke off the char
+      for(let i=0;i<3;i++){ const p=((vt/1400)+i*0.33)%1;
+        ctx.fillStyle=`rgba(160,160,170,${0.3*(1-p)})`;
+        ctx.beginPath(); ctx.arc(216+i*16+5*Math.sin(p*6+i),ty-6-p*46,4+p*7,0,7); ctx.fill(); }
+      if(vt>300 && vt<1500) neon("DING!",322,236,16,GOLD);
+    }
+    // terminal runs the findings
+    box(430,110,470,290,"#0a0d18","#2a3a58");
+    text("> scanning subject...",450,142,13,"#5aa880","left");
+    const checks=[
+      ["telepathy ...........","NOT FOUND","#7e83a6"],
+      ["mind in 100 places ..","CONFIRMED","#ffd75e"],
+      ["ideas detected ......","thousands","#00ff88"],
+      ["ideas retained ......","3","#ff4f6e"],
+      ["focus ...............","0% OR 200%","#ffd75e"],
+      ["classification ......","MUTANT (untrained)","#b44cff"],
+    ];
+    checks.forEach((c2,i)=>{ if(t>500+i*430){
+      text("> "+c2[0],450,178+i*30,13,"#8aa4c8","left");
+      text(c2[1],700,178+i*30,13,c2[2],"left"); }});
+    if(t>500+6*430) neon("DIAGNOSIS: TOAST.",665,384,15,PSY);
+    if(t>3600) neon("JOSE'S BRAIN IS TOAST",W/2,468,38,GOLD);
+    if(t>4400 && Math.floor(t/650)%2===0)
+      text("...or is it? press start to enter the chamber",W/2,508,14,"#7e83a6");
+  }},
+
+/* 2 · TITLE */
+{ world:"START", title:"JOSE-CEREBRO",
+  caption:[
+    ["q","“Cerebro is Spanish for brain. It is also a machine that finds minds. Both facts matter here.”"],
+    ["l","PRESS START"]],
+  render(t){
+    chamber(t);
+    // the helmet floats above the console, waiting
+    const hy=300+8*Math.sin(t/500);
+    psyRing(W/2,hy+16,t,VIO,3);
+    glow(CHROME,14); drawMap(SPRITES.helmet,W/2-35,hy,7); noglow();
+    ctx.globalAlpha = 0.8+0.2*Math.sin(t/420);
+    neon("JOSE-CEREBRO", W/2, 170, 56, VIO);
+    ctx.globalAlpha = 1;
+    neon("SECOND BRAIN · THE OPERATING SYSTEM", W/2, 214, 18, ICE);
+    text("now running: v1.0 · unamplified", W/2, 242, 13, "#ff4f6e");
+    drawMap(SPRITES.joseIdle, W/2-36, 388, 5);
+    blink(W/2-36, 388, 5, t);
+    if(Math.floor(t/650)%2===0) neon("PRESS START", W/2, 500, 20, GREEN);
+    text("a talk by "+CONFIG.speaker, W/2, 526, 13, "#7e83a6");
+    motes(t);
+  }},
+
+/* 3 · THE COPING GRAVEYARD */
+{ world:"BRAIN v1.0", title:"The Coping Graveyard",
+  caption:[
+    ["q","“Every system lasted two weeks. Then my brain found the exit.”"],
+    ["l","Tools were never the problem."]],
+  render(t){
+    floorGrid(t,470);
+    neon("THE COPING GRAVEYARD",W/2,80,22,"#ff4f6e");
+    const graves=[["NOTION","2019"],["BULLET JRNL","6 WEEKS"],["TODOIST","2020"],["PAPER GTD","2 WEEKS"],["EVERNOTE","2016-17"],["REMINDERS","YEARLY"]];
+    graves.forEach(([name,dates],i)=>{
+      if(t>300+i*420){
+        const gx=110+i*128, gy=330;
+        box(gx,gy,104,120,"#0b0724","#3a2a66");
+        box(gx+12,gy-24,80,24,"#0b0724","#3a2a66");
+        text("R.I.P.",gx+52,gy-7,10,"#7e83a6");
+        text(name,gx+52,gy+38,11,"#e9ecf6");
+        text(dates,gx+52,gy+66,10,"#7e83a6");
+      }
+    });
+    walker(24,398,5,t);
+    if(t>3200){ neon("leverage, not cope.",W/2,170,26,GOLD);
+      text("the brain was never broken. it was unamplified.",W/2,208,14,"#e9ecf6"); }
+    motes(t);
+  }},
+
+/* 4 · THE PARADOX */
+{ world:"WORLD 1", title:"The Paradox",
+  caption:[
+    ["q","“I think in decades. Then I think: what's the quickest thing I can do today?”"],
+    ["l","Ten-year vision. Five-minute action."],
+    ["l","The middle? Doesn't exist."]],
+  render(t){
+    /* three panels: the decade · the void · right now */
+    // LEFT · THE DECADE
+    box(40,60,340,380,"#0b0724","#221046");
+    neon("THE DECADE",210,96,16,GOLD);
+    for(let i=0;i<8;i++){ const sx=70+(i*41)%290, sy2=112+(i*29)%56;
+      ctx.globalAlpha=0.35+0.4*Math.sin(t/500+i*2); ctx.fillStyle="#e9ecf6";
+      ctx.fillRect(sx,sy2,2,2); ctx.globalAlpha=1; }
+    glow(VIO,20); ctx.fillStyle=VIO;
+    ctx.beginPath(); ctx.arc(210,230,52,Math.PI,0); ctx.fill(); noglow();
+    ctx.fillStyle="#0b0724";
+    for(let i=0;i<4;i++) ctx.fillRect(150,196+i*12,120,5);
+    ctx.strokeStyle="rgba(109,224,255,0.5)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(80,440); ctx.lineTo(210,232); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(340,440); ctx.lineTo(210,232); ctx.stroke();
+    for(let i=1;i<5;i++){ const y=440-i*44;
+      ctx.beginPath(); ctx.moveTo(210-(y-232)*0.63,y); ctx.lineTo(210+(y-232)*0.63,y); ctx.stroke(); }
+    text("2036",210,330,13,"#7e83a6"); text("2046",210,290,12,"#7e83a6");
+    const wp=(t/6000)%1, wsc=3.2-wp*1.9, wy=396-wp*140;
+    drawMap(SPRITES.joseWalkA, 210-6*wsc, wy, wsc);
+    neon("the vision",210,126,11,ICE);
+    // MIDDLE · THE VOID
+    box(400,60,160,380,"#050310","#171233");
+    neon("NEXT MONTH",480,96,16,"#6a5f8f");
+    for(let i=0;i<5;i++){ const dy2=(t/30+i*77)%340;
+      ctx.fillStyle="rgba(126,131,166,0.25)"; ctx.fillRect(420+(i*31)%120, 80+dy2, 2,2); }
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/600);
+    text("?",480,262,46,"#221046"); ctx.globalAlpha=1;
+    // RIGHT · RIGHT NOW
+    box(580,60,340,380,"#0b0724","#221046");
+    neon("RIGHT NOW",750,96,16,GREEN);
+    ctx.fillStyle="#0f0a26"; ctx.fillRect(586,400,328,40);
+    box(660,180,110,260,"#130c2e","#3a2a66");
+    ctx.fillStyle="#04030e"; ctx.fillRect(668,188,94,252);
+    const dc=(t%3600)/3600;
+    let doorW=94;
+    if(dc<0.30) doorW=94;
+    else if(dc<0.42) doorW=94*(1-(dc-0.30)/0.12);
+    else doorW=0;
+    sign(668,150,94,26, doorW>2?"CLOSED":"OPEN", doorW>2?"#7e83a6":GREEN, 11, t);
+    if(doorW>2){
+      ctx.fillStyle="#3a2618"; ctx.fillRect(668,188,doorW,252);
+      ctx.strokeStyle="#241708"; ctx.lineWidth=2;
+      ctx.strokeRect(674,198,Math.max(2,doorW-14),96);
+      ctx.strokeRect(674,308,Math.max(2,doorW-14),118);
+      if(doorW>60){ ctx.fillStyle=GOLD; ctx.beginPath();
+        ctx.arc(668+doorW-12,318,4,0,7); ctx.fill(); }
+    }
+    if(dc>=0.42){
+      const et=dc-0.42;
+      drawMap(SPRITES.joseIdle,686,300,4.5);
+      psyRing(722,306,t,PSY,2);
+      const shout=[
+        ["NOW!",800,214,17,0.00],
+        ["idea!",876,258,13,0.05],
+        ["OMG",790,302,15,0.10],
+        ["opportunity!",848,352,12,0.15],
+        ["outcomes!",788,398,13,0.20],
+      ];
+      shout.forEach(([msg,bx,by,fs,d])=>{
+        if(et>d){
+          const bob=3*Math.sin(t/200+bx);
+          const bw=msg.length*fs*0.62+18;
+          glow(GOLD,6); ctx.fillStyle="#f4f2ec";
+          ctx.fillRect(bx-bw/2,by-fs+bob-6,bw,fs+12); noglow();
+          text(msg,bx,by+bob,fs,"#04030e");
+        }
+      });
+    }
+    text("think in decades",210,468,11,"#7e83a6");
+    text("(nothing here)",480,468,11,"#4a4066");
+    text("*door pop*",750,468,11,"#7e83a6");
+  }},
+
+/* 5 · GAME OVER? */
+{ world:"WORLD 2", title:"Game Over?",
+  caption:[
+    ["q","“I stopped trying to pass for normal. I built an amplifier.”"]],
+  render(t){
+    ctx.fillStyle="rgba(255,255,255,0.025)";
+    for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+    if(t<1900){
+      if(Math.floor(t/400)%2===0) neon("GAME OVER?",W/2,240,64,PSY);
+      const n=Math.max(0,9-Math.floor(t/200));
+      text("CONTINUE? "+n,W/2,320,18,"#7e83a6");
+      text("(same brain, same mutation)",W/2,352,12,"#4a4066");
+    } else {
+      if(t<2400 && Math.floor(t/70)%2===0) text("GAME OVER?",W/2+(t%13)-6,240,64,"#221046");
+      text("I stopped trying to fix my brain.",W/2,330,26,"#e9ecf6");
+      neon("I built it an amplifier.",W/2,375,30,GREEN);
+    }
+  }},
+
+/* 6 · CHANGELOG v2.0 */
+{ world:"PATCH NOTES", title:"Changelog",
+  caption:[["l","Every good system ships patch notes."]],
+  render(t){
+    box(180,130,600,270,"#0b0724","#3a2a66");
+    neon("CHANGELOG v2.0",W/2,182,24,GREEN);
+    const lines=[["+ added: memory",GREEN],["+ added: capture",GREEN],["+ added: retrieval",GREEN],["- removed: panic","#ff4f6e"]];
+    lines.forEach(([l,c],i)=>{ if(t>500+i*550) text(l,W/2,240+i*34,16,c); });
+    if(t>3000&&Math.floor(t/650)%2===0) text("installing v2.0 ...",W/2,440,12,"#7e83a6");
+    motes(t);
+  }},
+
+/* 7 · THE CHAMBER */
+{ world:"WORLD 3", title:"The Chamber",
+  caption:[
+    ["q","“It's embarrassingly simple. Flat folders. Markdown files. That's the whole machine.”"],
+    ["l","Structure stolen from Andrej Karpathy. The push came from a convo with Daniel de Repentigny."],
+    ["l","I'd been offloading my brain into Claude for months with no structure. Ideas went in, nothing came back."],
+    ["l","The convo plus the structure is what made it click."]],
+  render(t){
+    chamber(t,W/2,210);
+    // six panels arc around the chamber wall like control sectors
+    const rooms=[["inbox/",PSY,"✉"],["notes/",ICE,"◆"],["daily/",GOLD,"▤"],
+                 ["projects/",GREEN,"⚑"],["people/",VIO,"☺"],["transcripts/",ICE,"♪"]];
+    rooms.forEach((r,i)=>{
+      const a=Math.PI*(0.14+0.145*i);           // fan across the top arc
+      const x=W/2+330*Math.cos(a+Math.PI), y=340-200*Math.sin(a);
+      sign(x-80,y-26,160,52,r[0],r[1],15,t+i*997);
+      neon(r[2], x-58, y+8, 13, r[1]);
+      // feed line from panel down toward the console
+      ctx.strokeStyle=`rgba(109,224,255,0.18)`; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(x,y+26); ctx.lineTo(W/2,250); ctx.stroke();
+    });
+    // jose walks the platform wearing the helmet, at home
+    const px3=W/2-140+70*Math.sin(t/1700);
+    drawMap(SPRITES.joseHelm, px3, 380, 5);
+    psyRing(px3+30,392,t,VIO,2);
+    motes(t);
+  }},
+
+/* 8 · THE HELMET */
+{ world:"WORLD 3", title:"The Helmet",
+  caption:[
+    ["q","“One file changes everything. CLAUDE.md is the helmet. It programs how the machine reads my world.”"],
+    ["l","Without it: a chatbot. With it: a collaborator who knows the whole system."]],
+  render(t){
+    box(0,0,W,540,"#060412");
+    chamber(t,W/2,190);
+    // the helmet descends onto jose over the loop
+    const T9=5200, p9=(t%T9)/T9;
+    const jx=W/2-36, jy=330;
+    if(p9<0.45){
+      drawMap(SPRITES.joseIdle,jx,jy,S);
+      blink(jx,jy,S,t);
+      const hy=110+ (p9/0.45)*196;
+      glow(CHROME,16); drawMap(SPRITES.helmet,W/2-30,hy,6); noglow();
+      ctx.strokeStyle="rgba(215,222,237,0.3)"; ctx.setLineDash([4,6]);
+      ctx.beginPath(); ctx.moveTo(W/2,hy+34); ctx.lineTo(W/2,jy); ctx.stroke(); ctx.setLineDash([]);
+    } else {
+      drawMap(SPRITES.joseHelm,jx,jy,S);
+      psyRing(W/2,jy+16,t,VIO,4);
+      neon("AMPLIFIER ONLINE",W/2,300,15,GOLD);
+    }
+    // the file itself, glowing like the power source
+    const fy=150+10*Math.sin(t/420);
+    glow(GOLD,20); box(660,fy,170,88,"#130c2e",GOLD);
+    neon("CLAUDE.md",745,fy+38,16,GOLD);
+    neon("★",745,fy+68,20,GOLD); noglow();
+    ctx.strokeStyle="rgba(255,215,94,0.35)"; ctx.lineWidth=2;
+    for(let i=0;i<6;i++){ const a=i*1.05+t/900;
+      ctx.beginPath(); ctx.moveTo(745,fy+44); ctx.lineTo(745+80*Math.cos(a),fy+44+80*Math.sin(a)); ctx.stroke(); }
+    if(p9>0.45){
+      glow(ICE,14); drawMap(SPRITES.orb,180,320+8*Math.sin(t/300),5); noglow();
+      neon("+ COLLABORATOR JOINED",210,296,13,ICE);
+      if(p9>0.6) neon("context loaded ✓",210,270,12,GREEN);
+    }
+    motes(t);
+  }},
+
+/* 9 · THE PROTOCOLS */
+{ world:"WORLD 3", title:"The Protocols (Skills)",
+  caption:[
+    ["q","“Each protocol is just a markdown file. That's the part nobody believes.”"],
+    ["l","No product. No plugin. Text files and context."],
+    ["l","Remember the mutant treatment? COUNCIL and DOSSIERS are the bridge. I built one."]],
+  render(t){
+    floorGrid(t,455);
+    const doors=[["COUNCIL","21 advisors",PSY],["HAT ROOM","six modes",ICE],
+                 ["DOSSIERS","people intel",GOLD],["BROADCAST","content",GREEN]];
+    doors.forEach((d,i)=>{
+      const x=90+i*220;
+      box(x,150,160,305,"#0b0724","#221046");
+      sign(x+10,116,140,28,d[0],d[2],12,t+i*1373);
+      text(d[1],x+80,480,11,"#7e83a6");
+    });
+    // council door open: advisors mid-debate
+    ctx.fillStyle="#060412"; ctx.fillRect(96,156,148,293);
+    for(let i=0;i<12;i++){ const ax=115+(i%4)*32, ay=200+Math.floor(i/4)*60;
+      ctx.fillStyle=[GREEN,GOLD,ICE,PSY][i%4]; ctx.globalAlpha=0.85;
+      ctx.fillRect(ax,ay+3*Math.sin(t/260+i*1.7),14,22); ctx.globalAlpha=1; }
+    // goggins does pushups in any universe
+    const gy = Math.floor(t/380)%2 ? 414 : 424;
+    ctx.fillStyle="#e0aa72";
+    ctx.fillRect(108,gy-8,9,9);
+    ctx.fillRect(117,gy,34,8);
+    ctx.fillRect(120,gy+8,4,440-(gy+8));
+    ctx.fillRect(140,gy+8,4,440-(gy+8));
+    ctx.fillRect(169,gy+2,10,5);
+    ctx.fillStyle="#2b3040"; ctx.fillRect(151,gy+1,18,7);
+    ctx.fillStyle="#1c1f29"; ctx.fillRect(176,gy+3,6,6);
+    if(Math.floor(t/1700)%2===0){
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(118,366,90,20);
+      ctx.beginPath(); ctx.moveTo(128,386); ctx.lineTo(122,398); ctx.lineTo(140,386); ctx.closePath(); ctx.fill();
+      text("STAY HARD.",163,380,10,"#04030e");
+    }
+    // hat room: six hats on pedestals
+    ctx.fillStyle="#060412"; ctx.fillRect(316,156,148,293);
+    const hatCols=["#f4f2ec","#ff4f6e","#5c6378","#ffd75e","#00ff88","#3f8cff"];
+    hatCols.forEach((hc,i)=>{
+      const hx=352+(i%2)*72, hy=216+Math.floor(i/2)*84;
+      ctx.fillStyle="#130c2e"; ctx.fillRect(hx-16,hy+12,32,8);
+      ctx.fillStyle=hc; ctx.beginPath(); ctx.arc(hx,hy+8,12,Math.PI,0); ctx.fill();
+      ctx.fillRect(hx-16,hy+6,32,4);
+    });
+    // dossiers: filing cabinets of minds, one file floating out for reading
+    ctx.fillStyle="#060412"; ctx.fillRect(536,156,148,293);
+    [552,620].forEach((cx2,ci)=>{
+      ctx.fillStyle="#1c2130"; ctx.fillRect(cx2,236,52,168);
+      for(let d2=0;d2<4;d2++){
+        const dy3=242+d2*40;
+        ctx.strokeStyle="#3d4457"; ctx.lineWidth=1.5; ctx.strokeRect(cx2+4,dy3,44,32);
+        ctx.fillStyle=["#e0aa72","#c98f5e","#9a6a44","#e8c48a"][(ci+d2)%4];
+        ctx.fillRect(cx2+9,dy3+6,10,10);
+        ctx.fillStyle="#14110e";
+        ctx.fillRect(cx2+11,dy3+9,2,2); ctx.fillRect(cx2+15,dy3+9,2,2);
+        ctx.fillStyle="#8a92b8"; ctx.fillRect(cx2+26,dy3+13,16,3);
+      }
+    });
+    const fb=4*Math.sin(t/400);
+    glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(596,186+fb,26,34); noglow();
+    ctx.fillStyle="#0b0724"; ctx.fillRect(600,192+fb,18,2);
+    ctx.fillRect(600,198+fb,18,2); ctx.fillRect(600,204+fb,12,2);
+    // broadcast: mic, ON AIR, content flying out the door
+    ctx.fillStyle="#060412"; ctx.fillRect(756,156,148,293);
+    sign(776,176,108,24,"ON AIR",PSY,11,t);
+    ctx.fillStyle="#3d4457"; ctx.fillRect(824,320,6,58);
+    ctx.fillRect(806,378,42,6);
+    glow(ICE,8); ctx.fillStyle="#8ee3ff";
+    ctx.beginPath(); ctx.arc(827,308,14,0,7); ctx.fill(); noglow();
+    ctx.fillStyle="#1c2130";
+    for(let g2=0;g2<3;g2++) ctx.fillRect(816,302+g2*5,22,2);
+    for(let i2=0;i2<3;i2++){
+      const pp=((t/1500)+i2*0.33)%1;
+      ctx.globalAlpha=1-pp;
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(792-pp*70, 252-pp*44+i2*26, 14,18);
+      ctx.globalAlpha=1;
+    }
+    drawMap(SPRITES.joseHelm,700,355,S);
+    glow(ICE,10); drawMap(SPRITES.orb,800,340+6*Math.sin(t/300),4); noglow();
+    motes(t);
+  }},
+
+/* 10 · THE NIGHT SWEEP */
+{ world:"WORLD 4", title:"The Night Sweep",
+  caption:[
+    ["q","“Five telepaths sweep the world before I wake up.”"],
+    ["l","They write to daily/. The archive builds itself whether I show up or not."],
+    ["l","The brief lands two ways: in my inbox to read, and as a podcast to hear."]],
+  render(t){
+    box(0,0,W,540,"#060412");
+    // jose asleep, helmet on the nightstand
+    box(90,330,240,100,"#0b0724","#221046");
+    drawMap(SPRITES.joseSleep,130,350,5);
+    drawMap(SPRITES.helmet,262,344,3);
+    const min=Math.min(60,55+Math.floor(t/900));
+    text(min>=60 ? "7:00 AM" : "6:"+min+" AM",190,316,14,min>=60?GOLD:"#7e83a6");
+    if(min<60) text("z".repeat(1+Math.floor(t/600)%3),300,320,20,"#7e83a6");
+    else neon("!",300,320,20,GOLD);
+    // the globe spins while the agents sweep it
+    globe(690,180,120,t,GREEN);
+    const props=["news","charts","vendors","macro","scan"];
+    for(let i=0;i<5;i++){
+      const a=t/1600+i*1.256;
+      const ax=690+165*Math.cos(a), ay=180+120*Math.sin(a)*0.8;
+      glow([GREEN,GOLD,ICE,PSY,"#c98fff"][i],8);
+      drawMap(SPRITES.agent,ax-15,ay-10,5,[GREEN,GOLD,ICE,PSY,"#c98fff"][i]); noglow();
+      text(props[i],ax,ay+34,10,"#7e83a6");
+      if(t>1200+i*550) neon("✓",ax,ay-22,12,GREEN);
+    }
+    // findings stream into the vault
+    box(410,330,60,110,"#0b0724",GOLD); neon("VAULT",440,318,11,GOLD);
+    text("daily/",440,460,11,"#7e83a6");
+    for(let i=0;i<4;i++){
+      const pp=((t/1300)+i*0.25)%1;
+      const fx=560-(pp*110), fy=250+i*18+pp*80;
+      ctx.globalAlpha=1-pp*0.5;
+      ctx.fillStyle="#e9ecf6"; ctx.fillRect(fx,fy,10,12);
+      ctx.globalAlpha=1;
+    }
+    if(t>1500){ sign(560,380,150,64,"✉ THE BRIEF",GREEN,13,t);
+      sign(740,380,150,64,"🎧 PODCAST",ICE,13,t); }
+    motes(t);
+  }},
+
+/* 11 · DAWN */
+{ world:"BRAIN v2.0", title:"Dawn",
+  caption:[],
+  render(t){
+    // dawn light bleeding into the chamber
+    const g=ctx.createLinearGradient(0,120,0,430);
+    g.addColorStop(0,"#04030e"); g.addColorStop(1,"rgba(255,130,60,0.16)");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,430);
+    chamber(t,W/2,200);
+    glow("#ff9a4a",24); ctx.fillStyle="rgba(255,154,74,0.7)";
+    ctx.beginPath(); ctx.arc(480,432,44,Math.PI,0); ctx.fill(); noglow();
+    drawMap(SPRITES.joseHelm,W/2-36,130,S);
+    psyRing(W/2,150,t,VIO,3);
+    glow(ICE,10); drawMap(SPRITES.orb,W/2+70,160+6*Math.sin(t/300),4); noglow();
+    text("I didn't fix my brain.",W/2,300,30,"#e9ecf6");
+    neon("I amplified it.",W/2,348,34,GOLD);
+    if(t>1400) neon("LEVERAGE, NOT A CRUTCH.",W/2,412,26,GREEN);
+  }},
+
+/* 12 · THE CEILING */
+{ world:"BRAIN v2.0", title:"The Ceiling",
+  caption:[
+    ["q","“v2 was a memory prosthetic. Powerful. And patient.”"],
+    ["l","Too patient."]],
+  render(t){
+    chamber(t,W/2,190);
+    text("v2 remembers.",W/2,270,32,"#e9ecf6");
+    if(t>1200) neon("v2 waits.",W/2,330,32,"#ff4f6e");
+    if(t>2400) text("it never once acted on its own. that was the ceiling.",W/2,410,14,"#7e83a6");
+    motes(t);
+  }},
+
+/* 13 · CHANGELOG v3.0 */
+{ world:"PATCH NOTES", title:"Changelog",
+  caption:[["l","The update that changed what the machine is."]],
+  render(t){
+    box(180,130,600,270,"#0b0724","#3a2a66");
+    neon("CHANGELOG v3.0",W/2,182,24,PSY);
+    const lines=[["+ added: agents",GREEN],["+ added: publishing",GREEN],["+ added: judgment",GREEN],["- removed: waiting","#ff4f6e"]];
+    lines.forEach(([l,c],i)=>{ if(t>500+i*550) text(l,W/2,240+i*34,16,c); });
+    if(t>3000&&Math.floor(t/650)%2===0) text("installing v3.0 ...",W/2,440,12,"#7e83a6");
+    motes(t);
+  }},
+
+/* 14 · PARTY SELECT */
+{ world:"BRAIN v3.0", title:"Party Select",
+  caption:[
+    ["q","“v3 is when the brain stopped being a tool and became a party.”"],
+    ["l","Six members. They work the night shift."]],
+  render(t){
+    neon("CHOOSE YOUR PARTY",W/2,66,22,PSY);
+    const party=[
+      ["PRACTITIONER","scout","spots tactics",ICE],
+      ["AI STACK","scholar","reads releases",GREEN],
+      ["EXECUTIVE","strategist","reads power",GOLD],
+      ["MARKETS","oracle","reads money","#ff4f6e"],
+      ["WATCHDOG","paladin","guards the run",VIO],
+      ["CRITIC","rogue","breaks drafts",PSY]];
+    party.forEach(([name,cls,job,c],i)=>{
+      const px=90+(i%3)*270, py=100+Math.floor(i/3)*180;
+      if(t>300+i*350){
+        box(px,py,240,146,"#0b0724","#3a2a66");
+        neon(name,px+120,py+34,14,c);
+        text("class: "+cls,px+120,py+64,12,"#e9ecf6");
+        text(job,px+120,py+90,11,"#7e83a6");
+        box(px+40,py+112,160,8,"#171233","#3a2a66");
+        box(px+40,py+112,160*(0.55+0.45*((i*37)%10)/10),8,c,c);
+      }
+    });
+    if(t>2600&&Math.floor(t/650)%2===0) text("ALL SIX AUTO-SELECTED. THEY DO NOT WAIT FOR PLAYER 1.",W/2,505,12,GREEN);
+  }},
+
+/* 15 · QUEST LOG */
+{ world:"BRAIN v3.0", title:"Quest Log",
+  caption:[
+    ["q","“One real morning, exactly as the log recorded it.”"],
+    ["l","All of this happens before I wake up."]],
+  render(t){
+    clockFace(150,180,64,t);
+    box(290,90,580,390,"#0b0724","#3a2a66");
+    neon("QUEST LOG · TODAY",580,128,16,GOLD);
+    const q=[["07:00","four briefs researched and written"],["07:05","brief email sent"],["07:10","the public issue published itself"],["07:12","watchdog swept the pipeline"],["07:30","jose wakes up"],["07:45","reads his own newspaper with coffee"]];
+    q.forEach(([tm,txt],i)=>{ if(t>400+i*480){
+      text(tm,336,176+i*46,12,ICE,"left");
+      text(txt,406,176+i*46,13,"#e9ecf6","left");
+      neon("DONE",842,176+i*46,11,GREEN,"right");
+    }});
+    motes(t);
+  }},
+
+/* 16 · IT PUBLISHES */
+{ world:"BRAIN v3.0", title:"It Publishes",
+  caption:[
+    ["q","“My brain publishes a newspaper about the world every morning. While I sleep.”"],
+    ["l","LIVE CUTAWAY: open today's issue."]],
+  render(t){
+    globe(210,250,120,t,ICE);
+    box(420,80,440,400,"#0b0724","#3a2a66");
+    neon("THE PLATERO BRIEF",640,132,22,"#e9ecf6");
+    text("daily · signal, not noise",640,160,11,"#7e83a6");
+    box(455,182,370,2,"#3a2a66","#3a2a66");
+    const rows=[["EXECUTIVE PULSE",GOLD],["PRACTITIONER PULSE",ICE],["AI STACK DAILY",GREEN],["MARKETS SIGNAL","#ff4f6e"]];
+    rows.forEach(([r,c],i)=>{ if(t>500+i*420){
+      neon(r,495,222+i*60,12,c,"left");
+      box(495,234+i*60,300,4,"#171233","#171233");
+      box(495,242+i*60,236,4,"#171233","#171233");
+    }});
+    if(t>2600) text("every issue writes itself at dawn. the archive never misses.",640,462,11,"#7e83a6");
+  }},
+
+/* 17 · BOSS FIGHT 1 · IT TEACHES */
+{ world:"BOSS FIGHT", title:"It Teaches",
+  caption:[
+    ["q","“I turned my instructor judgment into a skill. It audits in my voice, with my standards.”"],
+    ["l","LIVE DEMO: strategy-audit vs. a synthetic submission."]],
+  render(t){
+    neon("BOSS: THE UNGRADED STRATEGY",W/2,74,20,"#ff4f6e");
+    box(180,96,600,16,"#171233","#3a2a66");
+    const hp=Math.max(0,1-t/6000);
+    box(180,96,600*hp,16,"#ff4f6e","#ff4f6e");
+    text("submission: SYNTH-01 · written for this demo, no real student work",W/2,138,11,"#7e83a6");
+    const checks=[["problem statement","evidence, not vibes"],["personas","synthetic, credited as such"],["value prop","specific over broad"],["MVP","small enough to ship"],["OKRs","outcomes, not output"]];
+    checks.forEach(([k,v],i)=>{ if(t>600+i*650){
+      box(200,166+i*58,560,46,"#0b0724","#3a2a66");
+      text(k,232,194+i*58,13,"#e9ecf6","left");
+      text(v,728,194+i*58,11,GOLD,"right");
+    }});
+    if(hp<=0) neon("AUDIT DELIVERED · KIND, BUT DIRECT",W/2,505,16,GREEN);
+  }},
+
+/* 18 · BOSS FIGHT 2 · IT BUILDS */
+{ world:"BOSS FIGHT", title:"It Builds",
+  caption:[
+    ["q","“The pattern transfers. The same architecture, shipped as systems for other people's lives.”"],
+    ["l","LIVE DEMO: a job-search operating system boots in the terminal."]],
+  render(t){
+    neon("TROPHY ROOM",W/2,64,20,GOLD);
+    const shelf=[["/affirm","pitch page"],["/thomsonreuters","pitch page"],["8 KITS","the toolkit"],["JOB OS","operating system"]];
+    shelf.forEach(([name,kind],i)=>{ if(t>300+i*380){
+      const tx=110+i*190;
+      box(tx,92,160,116,"#0b0724","#3a2a66");
+      box(tx+64,112,32,24,GOLD,GOLD); box(tx+74,136,12,10,GOLD,GOLD); box(tx+56,146,48,6,GOLD,GOLD);
+      text(name,tx+80,180,12,"#e9ecf6");
+      text(kind,tx+80,198,10,"#7e83a6");
+    }});
+    if(t>1900){
+      box(180,240,600,236,"#04030e","#3a2a66");
+      text("$ ./start",212,276,14,GREEN,"left");
+      const boot=[["JOB OS","#ff4a1c",22],["your job search, running as a system","#7e83a6",13],["profile ok · 6 targets · brief fresh","#e9ecf6",13],["next move: /brief","#ff4a1c",14]];
+      boot.forEach(([l,c,fs],i)=>{ if(t>2300+i*450) text(l,212,318+i*36,fs,c,"left"); });
+      if(t>4300&&Math.floor(t/650)%2===0) text("cut to the real terminal",W/2,505,12,"#7e83a6");
+    }
+  }},
+
+/* 19 · IT KNOWS ME */
+{ world:"BRAIN v3.0", title:"It Knows Me",
+  caption:[
+    ["q","“It knows how I talk. And it knows how I am wrong.”"],
+    ["l","The voice file catches AI pretending to be me. The ledger scores my calls."]],
+  render(t){
+    box(90,96,370,370,"#0b0724","#3a2a66");
+    neon("VOICE FIREWALL",275,136,15,ICE);
+    const banned=["in today's rapidly evolving...","game-changer","let's dive in","surfaces (as a verb)","em dashes"];
+    banned.forEach((b,i)=>{ if(t>400+i*420){
+      text(b,275,182+i*44,13,"#7e83a6");
+      box(150,182+i*44-5,250,2,"#ff4f6e","#ff4f6e");
+    }});
+    if(t>2600) text("BLOCKED: not how jose talks",275,430,11,"#ff4f6e");
+    box(500,96,370,370,"#0b0724","#3a2a66");
+    neon("CALIBRATION LEDGER",685,136,15,PSY);
+    if(t>400) text("every prediction logged at birth",685,184,12,"#e9ecf6");
+    if(t>900) text("scored later. every one.",685,210,12,"#7e83a6");
+    if(t>1500){ box(560,246,250,12,"#171233","#3a2a66"); box(560,246,250*0.3,12,GOLD,GOLD);
+      text("hit rate: maybe 30%",685,286,13,GOLD); }
+    if(t>2200) text("bias profile: optimism, wrong-mechanism",685,326,11,"#7e83a6");
+    if(t>2900) text("every judgment skill reads the profile",685,366,11,"#e9ecf6");
+    if(t>3300) text("before it rates anything",685,388,11,"#e9ecf6");
+    motes(t);
+  }},
+
+/* 20 · IT SURVIVES */
+{ world:"BRAIN v3.0", title:"It Survives",
+  caption:[
+    ["q","“Twice, the pipeline died in silence. No error. No briefs. Just quiet.”"],
+    ["l","Systems fail quietly. Amplifiers need immune systems."]],
+  render(t){
+    neon("INCIDENT LOG",W/2,70,18,"#ff4f6e");
+    const y0=210, alive=t>2400;
+    ctx.strokeStyle=alive?GREEN:"#ff4f6e"; ctx.lineWidth=2; ctx.beginPath();
+    for(let x=90;x<870;x+=6){
+      let y=y0;
+      if(alive && (x%150)<18) y=y0-40*Math.abs(Math.sin(x/6+t/240));
+      if(x===90) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(!alive){
+      text("july: the GUI died and took the briefs with it",W/2,270,13,"#e9ecf6");
+      if(t>1100) text("days of silence, caught only by a human noticing",W/2,300,12,"#7e83a6");
+    } else {
+      neon("WATCHDOG ONLINE",W/2,290,18,GREEN);
+      if(t>3200) text("headless runs · idempotent markers · a bark when the morning goes quiet",W/2,328,11,"#7e83a6");
+      if(t>3900) text("august: auth expired silently. the logs are why it was found fast.",W/2,364,12,GOLD);
+    }
+  }},
+
+/* 21 · SKILL TREE */
+{ world:"BRAIN v3.0", title:"Skill Tree",
+  caption:[
+    ["q","“One year of unlocks. Every node is downstream of the same folder of markdown.”"],
+    ["l","Context compounds."]],
+  render(t){
+    const rx=W/2, ry=470;
+    psyRing(rx,ry,t,VIO,2);
+    text("the vault",rx,ry+26,12,"#7e83a6");
+    const nodes=[
+      ["capture",380,390,ICE],["retrieval",580,390,ICE],
+      ["daily briefs",290,310,GREEN],["skills",480,310,GREEN],["watchdog",670,310,GREEN],
+      ["content pipeline",200,230,GOLD],["strategy audit",400,230,GOLD],["product os",600,230,GOLD],["platero brief",790,230,GOLD],
+      ["121 carousels",130,140,PSY],["build with jose",350,140,PSY],["loops + velocity",570,140,PSY],["job os",780,140,PSY]];
+    const links=[[0,-1],[1,-1],[2,0],[3,0],[4,1],[5,2],[6,3],[7,3],[8,2],[9,5],[10,6],[11,7],[12,7]];
+    links.forEach(([a,b],i)=>{ if(t>300+i*260){
+      const A=nodes[a], Bx=b===-1?rx:nodes[b][1], By=b===-1?ry:nodes[b][2];
+      ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(A[1],A[2]); ctx.lineTo(Bx,By); ctx.stroke();
+    }});
+    nodes.forEach((n,i)=>{ if(t>380+i*260){
+      glow(n[3],8); ctx.fillStyle=n[3];
+      ctx.beginPath(); ctx.arc(n[1],n[2],6,0,7); ctx.fill(); noglow();
+      text(n[0],n[1],n[2]-16,10,"#e9ecf6");
+    }});
+  }},
+
+/* 22 · THE COMPOUNDING */
+{ world:"BRAIN v3.0", title:"The Compounding",
+  caption:[],
+  render(t){
+    chamber(t,W/2,190);
+    text("last year: a brain that remembers.",W/2,270,20,"#e9ecf6");
+    if(t>900) neon("this year: a brain that builds.",W/2,318,26,GOLD);
+    if(t>2100){ neon("CONTEXT COMPOUNDS.",W/2,398,32,PSY);
+      text("same folder.",W/2,438,16,ICE); }
+    motes(t);
+  }},
+
+/* 23 · PLAYER 2 START */
+{ world:"ENDING", title:"The School Is Open",
+  caption:[
+    ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
+    ["l","Starter kit: folders, a template CLAUDE.md, one working skill."]],
+  render(t){
+    chamber(t,W/2,190);
+    if(Math.floor(t/600)%2===0) neon("PLAYER 2 START",W/2,110,44,GOLD);
+    text("YOUR BRAIN HERE",W/2,150,18,"#7e83a6");
+    drawQR("starter",W/2-90,190,180,CONFIG.urls.starter,ICE);
+    // player 2: a silhouette waiting to spawn, helmet hovering over them
+    drawMap(SPRITES.joseIdle, W/2+180, 250, 5, "#221046");
+    const hy=200+6*Math.sin(t/400);
+    ctx.globalAlpha=0.6; drawMap(SPRITES.helmet,W/2+186,hy,4); ctx.globalAlpha=1;
+    ctx.globalAlpha=0.5+0.4*Math.sin(t/400);
+    neon("?",W/2+216,296,22,GOLD); ctx.globalAlpha=1;
+    text("P2",W/2+216,358,12,"#7e83a6");
+    motes(t);
+  }},
+
+/* 24 · THE STRATEGY GUIDE */
+{ world:"ENDING", title:"The Strategy Guide",
+  caption:[
+    ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
+    ["l","Full walkthrough. All secret rooms. Weekly patch notes for my brain."]],
+  render(t){
+    chamber(t,W/2,190);
+    const pulse = 10+6*Math.sin(t/400);
+    glow(GOLD,pulse); box(180,90,260,340,"#0b0724",GOLD); noglow();
+    neon("LOOPS",310,180,34,GOLD);
+    text("AND",310,220,22,"#e9ecf6");
+    neon("LETTERS",310,265,34,GOLD);
+    text("· OFFICIAL ·",310,310,13,"#7e83a6");
+    neon("STRATEGY GUIDE",310,338,16,GREEN);
+    ctx.save(); ctx.translate(430,105); ctx.rotate(0.3+0.06*Math.sin(t/300));
+    glow(PSY,10); ctx.fillStyle=PSY; ctx.fillRect(-30,-13,60,26); noglow();
+    text("NEW!",0,5,13,"#04030e"); ctx.restore();
+    drawQR("substack",540,120,200,CONFIG.urls.substack,PSY);
+    text("weekly patch notes for my brain",640,410,13,"#7e83a6");
+    motes(t);
+  }},
+
+/* 25 · CO-OP MODE */
+{ world:"ENDING", title:"Co-op Mode",
+  caption:[
+    ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
+    ["q","They're the ones with the best context.”"]],
+  render(t){
+    chamber(t,W/2,190);
+    neon("CO-OP MODE",W/2,120,40,GREEN);
+    text("This game is better multiplayer.",W/2,162,16,"#e9ecf6");
+    drawQR("linkedin",W/2-90,195,180,CONFIG.urls.linkedin,ICE);
+    // the party, assembled on the walkway
+    drawMap(SPRITES.joseHelm, W/2-230, 250, 5);
+    glow(ICE,10); drawMap(SPRITES.orb, W/2-150, 280+6*Math.sin(t/300), 4); noglow();
+    drawMap(SPRITES.joseIdle, W/2+170, 250, 5, "#3a2a66");
+    text("you?",W/2+206,352,11,"#7e83a6");
+    if(t>1200){
+      for(let i=0;i<18;i++){
+        const cy2=((t/6)+i*97)%560-20, cx2=60+(i*151)%840;
+        ctx.fillStyle=[PSY,ICE,GOLD,GREEN][i%4];
+        ctx.fillRect(cx2+8*Math.sin(t/300+i), cy2, 4, 4);
+      }
+      text("THANKS FOR PLAYING",W/2,510,14,"#7e83a6");
+    }
+  }},
+
+];
+
+/* ═══════════ NAV + LOOP ═══════════ */
+let idx=0, sceneStart=performance.now();
+function setScene(i){ idx=Math.max(0,Math.min(SCENES.length-1,i)); sceneStart=performance.now(); renderCaption(); }
+function renderCaption(){
+  const s=SCENES[idx];
+  cap.innerHTML=(s.title?`<span class="t">${s.world? s.world+" · ":""}${s.title}</span>`:"")+
+    s.caption.map(([k,l])=>`<span class="${k}">${l}</span>`).join("");
+  hud.textContent=`scene ${idx+1} / ${SCENES.length}   ·   ←→ navigate · F fullscreen`;
+}
+function frame(now){
+  ctx.fillStyle="#04030e"; ctx.fillRect(0,0,W,H);
+  SCENES[idx].render(now-sceneStart);
+  // persistent version badge: v1.0 for the origin, v2.0 from its changelog, v3.0 from its changelog
+  const ver = idx>=13 ? "v3.0" : idx>=6 ? "v2.0" : "v1.0";
+  text(ver, W-20, 28, 12, idx>=13 ? PSY : idx>=6 ? GREEN : "#ff4f6e", "right");
+  requestAnimationFrame(frame);
+}
+cv.addEventListener("click",()=>setScene(idx+1));
+addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key===" ") setScene(idx+1);
+  else if(e.key==="ArrowLeft") setScene(idx-1);
+  else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
+  else if(/^[1-9]$/.test(e.key)){
+    const jumps={1:0,2:3,3:7,4:14,5:16,6:17,7:18,8:21,9:23}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+  }
+});
+setScene(0); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
