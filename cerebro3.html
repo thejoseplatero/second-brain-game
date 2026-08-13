@@ -1416,10 +1416,10 @@ const SCENES = [
   render(t){
     floorGrid(t,500);
     const regions=[
-      ["CONTENT FOREST",150,340,GREEN,"121 carousels grow here"],
-      ["PLATERO PRESS",390,250,ICE,"prints itself at dawn"],
-      ["PRODUCT FORGE",620,330,GOLD,"33 skills, two apps"],
-      ["JOB KINGDOM",830,240,"#ff4a1c","an OS for the search"]];
+      ["CONTENT PIPELINE",150,340,GREEN,"121 carousels and counting"],
+      ["THE PLATERO BRIEF",390,250,ICE,"prints itself at dawn"],
+      ["PRODUCT OS",620,330,GOLD,"33 skills, two apps"],
+      ["JOB OS",830,240,"#ff4a1c","an OS for the search"]];
     const jx=Math.min(120+t/14, 800);
     regions.forEach(([name,x,y,c,sub],i)=>{
       const seen=jx>x-90;
@@ -1439,19 +1439,20 @@ const SCENES = [
   }},
 
 /* 23 · STOP 1 · CONTENT FOREST */
-{ world:"CONTENT FOREST", title:"The Content Pipeline",
+{ world:"STOP 1", title:"The Content Pipeline",
   caption:[
     ["q","“One vault in. Carousels, videos, reels out. In my voice, not the machine's.”"],
     ["l","LIVE CUTAWAY: the real folder. 121 carousels and counting."]],
   render(t){
-    neon("THE BLANK FEED",W/2,58,18,"#ff4f6e");
+    neon("CONTENT PIPELINE",W/2,50,18,GREEN);
+    text("vs the blank feed",W/2,72,10,"#7e83a6");
     const hp=Math.max(0,1-t/6200);
-    box(330,78,300,10,"#171233","#3a2a66"); box(330,78,300*hp,10,"#ff4f6e","#ff4f6e");
+    box(330,84,300,10,"#171233","#3a2a66"); box(330,84,300*hp,10,"#ff4f6e","#ff4f6e");
     const beltY=290;
     ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(50,beltY+52); ctx.lineTo(910,beltY+52); ctx.stroke();
-    for(let x=((t/16)%40);x<860;x+=40){ box(50+x,beltY+52,20,4,"#171233","#171233"); }
-    const st=[["VAULT",110,VIO,"ideas"],["VOICE",270,ICE,"sounds like me"],["CAROUSEL",430,GOLD,"6 slides"],["VIDEO",590,GREEN,"safe zones"],["REEL",750,PSY,"9:16 native"]];
+    ctx.beginPath(); ctx.moveTo(90,beltY+52); ctx.lineTo(870,beltY+52); ctx.stroke();
+    for(let x=((t/16)%40);x<780;x+=40){ box(90+x,beltY+52,20,4,"#171233","#171233"); }
+    const st=[["VAULT",160,VIO,"ideas"],["VOICE",320,ICE,"sounds like me"],["CAROUSEL",480,GOLD,"6 slides"],["VIDEO",640,GREEN,"safe zones"],["REEL",800,PSY,"9:16 native"]];
     st.forEach(([s,x,c,sub],i)=>{ if(t>300+i*550){
       box(x-62,beltY-62,124,102,"#0b0724",c);
       neon(s,x,beltY-32,12,c);
@@ -1469,7 +1470,7 @@ const SCENES = [
   }},
 
 /* 24 · STOP 2 · PLATERO PRESS */
-{ world:"PLATERO PRESS", title:"It Publishes",
+{ world:"STOP 2", title:"The Platero Brief",
   caption:[
     ["q","“My brain publishes a newspaper about the world every morning. While I sleep.”"],
     ["l","LIVE CUTAWAY: open today's issue."]],
@@ -1489,13 +1490,13 @@ const SCENES = [
   }},
 
 /* 25 · STOP 3 · PRODUCT FORGE */
-{ world:"PRODUCT FORGE", title:"Product OS",
+{ world:"STOP 3", title:"Product OS",
   caption:[
     ["q","“The enemy in every product org is the seam: PM to design to eng, where handoffs fall and die.”"],
     ["l","LIVE CUTAWAY: /start routes a real goal through 33 skills and 4 bridges."]],
   render(t){
-    neon("THE SEAM",W/2,58,18,"#ff4f6e");
-    text("the gap between disciplines, where work goes to die",W/2,82,10,"#7e83a6");
+    neon("PRODUCT OS",W/2,58,18,GOLD);
+    text("vs the seam: the gap between disciplines, where work goes to die",W/2,82,10,"#7e83a6");
     const hp=Math.max(0,1-t/6000);
     box(280,100,190,120,"#0b0724","#3a2a66"); box(500,100,190,120,"#0b0724","#3a2a66");
     text("PM",375,166,16,"#e9ecf6"); text("ENG",595,166,16,"#e9ecf6");
@@ -1519,12 +1520,13 @@ const SCENES = [
   }},
 
 /* 26 · STOP 4 · JOB KINGDOM */
-{ world:"JOB KINGDOM", title:"Job OS",
+{ world:"STOP 4", title:"Job OS",
   caption:[
     ["q","“Final boss of every job search: the blank screen. Nobody starts from one anymore.”"],
     ["l","LIVE DEMO: a job-search operating system boots in the terminal."]],
   render(t){
-    neon("THE BLANK SCREEN",W/2,60,18,"#ff4f6e");
+    neon("JOB OS",W/2,58,18,"#ff4a1c");
+    text("vs the blank screen",W/2,80,10,"#7e83a6");
     const hp=Math.max(0,1-t/5200);
     box(360,84,240,120,"#04030e",hp>0?"#3a2a66":"#171233");
     if(hp>0&&Math.floor(t/500)%2===0) text("_",380,150,22,"#e9ecf6","left");
@@ -1662,17 +1664,6 @@ function burst(x,y,age){
     ctx.fillRect(x+Math.cos(a)*r-1.5, y+Math.sin(a)*r-1.5, 3, 3); }
   ctx.globalAlpha=1;
 }
-const A3_BANNERS={23:"THE BLANK FEED",25:"THE SEAM",26:"THE BLANK SCREEN"};
-function bossBanner(t,label){
-  if(t>1400) return;
-  const f=Math.min(1,t/260), off=(1-f)*W;
-  ctx.fillStyle="rgba(150,16,44,0.82)"; ctx.fillRect(0,206,W,76);
-  if(Math.floor(t/160)%2===0){ ctx.fillStyle="rgba(255,79,110,0.55)"; ctx.fillRect(0,202,W,3); ctx.fillRect(0,283,W,3); }
-  glow("#ff4f6e",18);
-  text("WARNING", W/2 - off*0.4, 240, 26, "#ffdfe6");
-  text(label, W/2 + off*0.4, 268, 15, "#ffdfe6");
-  noglow();
-}
 function levelUpFlash(t){
   if(t>1300) return;
   const f=t/1300;
@@ -1681,7 +1672,6 @@ function levelUpFlash(t){
 }
 function sceneFX(i,t){
   (A3_BURSTS[i]||[]).forEach(([x,y,t0])=>{ if(t>t0) burst(x,y,t-t0); });
-  if(A3_BANNERS[i]) bossBanner(t,A3_BANNERS[i]);
   if(i===A3_FIRST) levelUpFlash(t);
 }
 
