@@ -1543,29 +1543,26 @@ const SCENES = [
   render(t){
     neon("JOB OS",W/2,52,18,"#ff4a1c");
     text("vs the blank screen",W/2,74,10,"#7e83a6");
-    box(790,40,120,70,"#04030e",t<1600?"#3a2a66":"#171233");
-    if(t<1600){ if(Math.floor(t/500)%2===0) text("_",806,82,16,"#e9ecf6","left"); }
-    else { ctx.strokeStyle=GREEN; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(795,45); ctx.lineTo(905,105);
-      ctx.moveTo(905,45); ctx.lineTo(795,105); ctx.stroke();
-      text("defeated",850,124,9,GREEN); }
-    box(90,96,780,384,"#04030e","#3a2a66");
+    box(70,92,820,392,"#04030e","#3a2a66");
     const lines=[
-      [0,   "$ ./start","#e9ecf6"],
-      [300, "JOB OS · profile ok · 6 targets · next: /brief","#ff4a1c"],
-      [1600,"$ /brief","#e9ecf6"],
-      [2100,"  shopify        quiet today","#7e83a6"],
-      [2600,"  wealthsimple   NEW · Senior Product Manager, Platform",GOLD],
-      [3300,"  brief saved · it will notice if this posting closes","#7e83a6"],
-      [4200,"$ /pitch wealthsimple","#e9ecf6"],
-      [4700,"  reading their brand ... building the page in their design ...","#7e83a6"],
-      [5600,"  pitch page live · logged to applications",GREEN],
-      [6500,"$ /start","#e9ecf6"],
-      [7000,"  next move: send it while the posting is fresh.","#ff4a1c"],
-      [7600,"  after that: nothing. the rest is in the system.","#7e83a6"],
+      [0,   "$ ./start","#e9ecf6",13],
+      [350, "  JOB OS","#ff4a1c",16],
+      [650, "  your job search, running as a system","#7e83a6",12],
+      [950, "  profile ok · 6 targets · last brief yesterday","#e9ecf6",12],
+      [1250,"  next move: /brief","#ff4a1c",12],
+      [2100,"$ /brief","#e9ecf6",13],
+      [2600,"  shopify         quiet today","#7e83a6",12],
+      [3100,"  wealthsimple    NEW · Senior Product Manager, Platform",GOLD,12],
+      [3800,"  bottom line: one live match. run /pitch while it is fresh.","#e9ecf6",12],
+      [4700,"$ /pitch wealthsimple","#e9ecf6",13],
+      [5200,"  scanning their real site ... building the page in their brand ...","#7e83a6",12],
+      [6100,"  pitch page live · logged to memory/applications.md",GREEN,12],
+      [7000,"$ /start","#e9ecf6",13],
+      [7500,"  next move: send it. after that, nothing. the rest is in the system.","#ff4a1c",12],
     ];
-    lines.forEach(([t0,s,c],i)=>{ if(t>t0) text(s,116,132+i*28,13,c,"left"); });
-    if(t>8300&&Math.floor(t/650)%2===0) text("/setup interviews you once. you never answer the same question twice.",W/2,505,11,"#7e83a6");
+    lines.forEach(([t0,s,c,fs],i)=>{ if(t>t0) text(s,96,126+i*25,fs,c,"left"); });
+    if(t>8300&&Math.floor(t/650)%2===0)
+      text("/setup interviews you once · /prep, /circle and /offer ship this fall, and they say so honestly",W/2,505,11,"#7e83a6");
   }},
 
 /* 26 · THE COMPOUNDING */
