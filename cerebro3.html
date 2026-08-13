@@ -578,7 +578,46 @@ const SCENES = [
     motes(t);
   }},
 
-/* 4 · THE PARADOX */
+/* 4 · THE SIGNALS */
+{ world:"WORLD 1", title:"The Signals",
+  caption:[
+    ["q","“How many of you have had a great idea in the shower and lost it by noon?”"],
+    ["l","My mind picks up everything. Holding the signal is the part I never had."],
+    ["l","A hundred blips a day. No receiver."]],
+  render(t){
+    box(60,50,840,400,"#08061a","#221046");
+    neon("SIGNAL MAP · LIVE",W/2,86,15,ICE);
+    globe(W/2,255,150,t);
+    // jose stands at the edge, no helmet, hands empty
+    drawMap(SPRITES.joseIdle,120,320,5);
+    blink(120,320,5,t);
+    text("(no helmet)",150,430,11,"#7e83a6");
+    // signals he notices, then loses: blips arc toward him and fizzle.
+    // slow cycle: the loss should sting, not strobe.
+    const T2=4200, p=(t%T2)/T2;
+    const sx=620-260*p, sy=210+40*Math.sin(p*3.1);
+    if(p<0.62){
+      glow(GOLD,10); bubbleC(sx,sy,10,GOLD,"!"); noglow();
+    } else if(p<0.96){
+      const fade=Math.min(1,(0.96-p)/0.10);
+      ctx.globalAlpha=fade;
+      neon("signal lost",316,220,17,PSY);
+      ctx.strokeStyle=GOLD;
+      for(let i=0;i<4;i++){ const a=i*1.57+0.78;
+        ctx.beginPath(); ctx.moveTo(sx+8*Math.cos(a),sy+8*Math.sin(a));
+        ctx.lineTo(sx+15*Math.cos(a),sy+15*Math.sin(a)); ctx.stroke(); }
+      ctx.globalAlpha=1;
+    }
+    // the receiver log: prominent, well inside the frame
+    const lost=140+Math.floor(t/T2);
+    box(648,104,232,92,"#0a0722","#22305a");
+    text("RECEIVER LOG",764,126,10,"#7e83a6");
+    neon("detected: "+(lost+3),764,156,15,ICE);
+    neon("kept: 3",764,184,17,PSY);
+    motes(t);
+  }},
+
+/* 5 · THE PARADOX */
 { world:"WORLD 1", title:"The Paradox",
   caption:[
     ["q","“I think in decades. Then I think: what's the quickest thing I can do today?”"],
@@ -658,7 +697,208 @@ const SCENES = [
     text("*door pop*",750,468,11,"#7e83a6");
   }},
 
-/* 5 · GAME OVER? */
+/* 6 · THE DANGER ROOM */
+{ world:"WORLD 2", title:"The Danger Room",
+  caption:[
+    ["q","“Every meeting is a training simulation. The setting changes. The drill doesn't.”"],
+    ["l","Program one runs the conversation. Program two runs the translation."],
+    ["l","Nobody sees program two. It bills by the hour."]],
+  render(t){
+    box(0,0,W,H,"#06051a");
+    // holo-grid room
+    ctx.strokeStyle="rgba(109,224,255,0.14)"; ctx.lineWidth=1;
+    for(let x=0;x<W;x+=48){ ctx.beginPath(); ctx.moveTo(x,70); ctx.lineTo(x,470); ctx.stroke(); }
+    for(let y=70;y<470;y+=48){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    neon("DANGER ROOM · SESSIONS. ALL. DAY.", W/2, 52, 16, PSY);
+    clockFace(60,84,16,t);
+    /* the four simulations. every line is real. you have heard every line. */
+    const SIMS=[
+      {name:"SIM 1 · QBR", reply:"love that energy", lines:[
+        ["pacing to plan!","we are not"],
+        ["directionally accurate","confidently wrong"],
+        ["flat is the new up","missed the number"]]},
+      {name:"SIM 2 · 1:1", reply:"all good!", lines:[
+        ["got 5 min? quick sync","it's 45 minutes"],
+        ["how's your bandwidth?","incoming work"],
+        ["any blockers?","this meeting"]]},
+      {name:"SIM 3 · STEERCO", reply:"+1 to that", lines:[
+        ["who's the DRI?","not it. not it."],
+        ["align on alignment","no decision today"],
+        ["parking lot it","it dies in the lot"]]},
+      {name:"SIM 4 · TOWNHALL", reply:"so exciting", lines:[
+        ["we're a family","update your linkedin"],
+        ["transformation journey","reorg"],
+        ["do more with less","less means you"]]},
+    ];
+    const T=5600, ph=(t/T)%4, seg=Math.floor(ph), f=ph-seg;
+    const podX = i => 70+i*225;
+    // phases: approach → door opens → walk in → 3 exchanges → walk out → done
+    const inside   = f>=0.18 && f<0.90;
+    const entering = f>=0.14 && f<0.18;
+    const exiting  = f>=0.90 && f<0.95;
+    const doorOpen = f>=0.10 && f<0.95;
+    for(let i=0;i<4;i++){
+      const x=podX(i);
+      const isCur = i===seg;
+      const lit = isCur && f>=0.18 && f<0.94;
+      box(x,150,180,270,lit?"#0c0a30":"#0a0828",lit?ICE:"#221046");
+      text(SIMS[i].name,x+90,142,11,lit?ICE:"#5a5580");
+      // interior floor line
+      ctx.strokeStyle="rgba(109,224,255,0.25)";
+      ctx.beginPath(); ctx.moveTo(x+8,408); ctx.lineTo(x+172,408); ctx.stroke();
+      // airlock door at the pod base: slides up to open
+      const doorH=80, dx=x+62, dy=340;
+      let openQ=0;
+      if(isCur){
+        if(f>=0.10&&f<0.14) openQ=(f-0.10)/0.04;
+        else if(doorOpen) openQ=1;
+        else if(f>=0.95) openQ=Math.max(0,1-(f-0.95)/0.05);
+      }
+      ctx.strokeStyle=isCur&&doorOpen?GREEN:"#3a2a66"; ctx.lineWidth=2;
+      ctx.strokeRect(dx,dy,56,doorH);
+      if(openQ<1){
+        ctx.fillStyle="#131040";
+        ctx.fillRect(dx+2,dy+2+openQ*doorH,52,(1-openQ)*doorH-4>0?(1-openQ)*doorH-4:0);
+        ctx.fillStyle=isCur?GREEN:"#5a5580";
+        ctx.fillRect(dx+44,dy+openQ*doorH+doorH*0.45*(1-openQ),4,8);
+      }
+      // sim complete stamp
+      if(isCur && f>=0.95) neon("SIM COMPLETE ✓",x+90,132,11,GREEN);
+      if(i<seg || (seg===0&&f<0.05&&t>T)) {} // history is not rendered. it is repressed.
+    }
+    const x=podX(seg), cx=x+90;
+    // wireframe attendees flank the inside of the active pod
+    if(inside||exiting){
+      ctx.globalAlpha=0.55+0.3*Math.sin(t/260);
+      [[x+24],[x+138]].forEach(([ax])=>{
+        ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
+        ctx.strokeRect(ax,360,20,46);
+        ctx.beginPath(); ctx.arc(ax+10,348,8,0,7); ctx.stroke();
+      });
+      ctx.globalAlpha=1;
+    }
+    // the exchange: attendee buzzword → program 2 translation → jose's reply
+    if(inside){
+      const rf=(f-0.18)/0.72, round=Math.min(2,Math.floor(rf*3)), rq=(rf*3)%1;
+      const [line,truth]=SIMS[seg].lines[round];
+      if(rq<0.62){
+        // attendee speaks. the bubble comes from the left wireframe.
+        ctx.fillStyle="#f4f2ec"; ctx.fillRect(x+8,196,164,26);
+        ctx.beginPath(); ctx.moveTo(x+26,222); ctx.lineTo(x+30,340); ctx.lineTo(x+40,222); ctx.closePath(); ctx.fill();
+        text('"'+line+'"',cx,213,10,"#04030e");
+        // program 2, live translation
+        ctx.fillStyle="rgba(180,76,255,0.16)"; ctx.fillRect(x+6,240,168,34);
+        text("program 2:",cx,254,9,VIO);
+        neon("("+truth+")",cx,268,10,PSY);
+      } else {
+        // jose replies. out loud, program one is doing great.
+        ctx.fillStyle="#f4f2ec"; ctx.fillRect(x+30,196,120,26);
+        ctx.beginPath(); ctx.moveTo(cx+10,222); ctx.lineTo(cx+14,300); ctx.lineTo(cx+24,222); ctx.closePath(); ctx.fill();
+        text('"'+SIMS[seg].reply+'"',cx,213,10,"#04030e");
+        ctx.fillStyle="rgba(180,76,255,0.16)"; ctx.fillRect(x+6,240,168,34);
+        text("program 2:",cx,254,9,VIO);
+        neon("(screaming internally)",cx,268,10,PSY);
+      }
+    }
+    // jose: approach on the room floor, step up into the sim, do the drill, step out
+    if(f<0.10){
+      const from = seg===0? -70 : podX(seg-1)+54, to=x+54;
+      const wx = from+(to-from)*(f/0.10);
+      // speed lines trailing the dash
+      ctx.strokeStyle="rgba(109,224,255,0.5)"; ctx.lineWidth=2;
+      for(let i=0;i<3;i++){ const ly=344+i*18, trail=26+i*10;
+        ctx.beginPath(); ctx.moveTo(wx-8,ly); ctx.lineTo(wx-8-trail,ly); ctx.stroke(); }
+      walker(wx,330,S,t);
+    } else if(f<0.14){
+      drawMap(SPRITES.joseIdle,x+54,330,S); blink(x+54,330,S,t);   // waiting for the airlock
+    } else if(entering){
+      const q=(f-0.14)/0.04;
+      walker(x+54,330-24*q,S,t);                                   // stepping in
+    } else if(inside){
+      drawMap(SPRITES.joseIdle,x+54,306,S); blink(x+54,306,S,t);
+      // polite nodding, program one's finest feature
+      if(Math.floor(t/700)%2===0){ ctx.fillStyle=PALETTE.s; ctx.fillRect(x+54+4*S,306+2*S,4*S,2); }
+    } else if(exiting){
+      const q=(f-0.90)/0.05;
+      walker(x+54,306+24*q,S,t);                                   // stepping out
+    } else {
+      drawMap(SPRITES.joseIdle,x+54,330,S);
+    }
+    meterBar(340,90,280,Math.max(0.05,1-((t/T)%4)*0.24),"PSYCHIC SHIELD");
+    motes(t);
+  }},
+
+/* 7 · FEARED AND MISUNDERSTOOD */
+{ world:"WORLD 2", title:"Feared and Misunderstood",
+  caption:[
+    ["q","“You clearly see the opportunity. Say it out loud, and people back away slowly.”"],
+    ["l","They don't fear the idea. They fear the guy who saw it three years early."],
+    ["l","Every visionary gets the mutant treatment. The bridge is what's missing."]],
+  render(t){
+    floorGrid(t,440);
+    ctx.fillStyle="#04030e"; ctx.fillRect(400,436,180,104);
+    glow(PSY,14); ctx.strokeStyle=PSY; ctx.lineWidth=2; ctx.strokeRect(400,436,180,104); noglow();
+    neon("THE GAP",490,500,13,PSY);
+    const bp=(t%4200)/4200;
+    if(bp>0.68){
+      const a=Math.max(0,0.5*(1-Math.abs(bp-0.84)/0.16));
+      ctx.setLineDash([6,6]); ctx.strokeStyle=`rgba(109,224,255,${a})`; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(400,436); ctx.lineTo(580,436); ctx.stroke(); ctx.setLineDash([]);
+      if(bp>0.78) text("bridge not found",490,424,10,`rgba(109,224,255,${a+0.2})`);
+    }
+    /* pitch cycle: jose presents → the room sees a mutant → torches and
+       pitchforks (tiny, polite, corporate) → respawn, pitch again */
+    const T4=5600, p4=(t%T4)/T4;
+    const prog = p4<0.55 ? Math.min(1,p4/0.32) : 1;
+    glow(ICE,12); ctx.strokeStyle=ICE; ctx.lineWidth=2;
+    ctx.strokeRect(150,180,180*Math.min(1,prog*1.4),110);
+    for(let i=1;i<4;i++){ if(prog > 0.3+i*0.18){
+      ctx.beginPath(); ctx.moveTo(150,180+i*27); ctx.lineTo(330,180+i*27); ctx.stroke(); } }
+    noglow();
+    neon("THE FUTURE (fully formed)",240,168,12,ICE);
+    const thought=(hx,hy,bx,by,r)=>{
+      ctx.fillStyle="#f4f2ec";
+      ctx.beginPath(); ctx.arc(hx+(bx-hx)*0.35, hy+(by-hy)*0.45, 3,0,7); ctx.fill();
+      ctx.beginPath(); ctx.arc(hx+(bx-hx)*0.62, hy+(by-hy)*0.72, 5,0,7); ctx.fill();
+      ctx.beginPath(); ctx.arc(bx-r*0.5,by,r*0.72,0,7); ctx.arc(bx+r*0.5,by,r*0.72,0,7);
+      ctx.arc(bx,by-r*0.45,r*0.8,0,7); ctx.fill();
+    };
+    const skx=[636,722,808], tint=["#4a4066","#5a4a76","#3f3a58"];
+    skx.forEach((x2,i)=>{ drawMap(SPRITES.joseIdle,x2,355,5,tint[i]); });
+    const outed = p4>=0.58;
+    // bubble 1: their scribbled version of the future
+    thought(666,350,655,225,26);
+    ctx.strokeStyle="#7e83a6"; ctx.lineWidth=1.5; ctx.beginPath();
+    for(let i=0;i<18;i++){ ctx.lineTo(643+i*1.4+5*Math.cos(i+t/700), 222+8*Math.sin(i*1.3+t/600)); }
+    ctx.stroke();
+    // bubble 2: pure confusion
+    thought(752,350,740,198,22);
+    text(outed?"!":"?",740,206,18,"#130c2e");
+    // bubble 3: the verdict, a tiny mutant-warning sign
+    thought(838,350,825,230,24);
+    ctx.fillStyle=PSY;
+    ctx.beginPath(); ctx.moveTo(825,214); ctx.lineTo(838,238); ctx.lineTo(812,238); ctx.closePath(); ctx.fill();
+    text("!",825,235,13,"#04030e");
+    // jose: pitching → detected → escorted off the floor by pure vibes
+    if(!outed){
+      drawMap(SPRITES.joseIdle,200,340,S);
+      blink(200,340,S,t);
+      if(p4>0.50) psyRing(236,368,t,VIO,2);   // his aura gives him away
+    } else if(p4<0.94){
+      const q4=(p4-0.58)/0.36;
+      const jx4=200+q4*300, jy4=340-q4*520;
+      ctx.save(); ctx.translate(jx4+36,jy4+50); ctx.rotate(q4*7);
+      drawMap(SPRITES.joseIdle,-36,-50,S,"#cfa6ff");
+      ctx.restore();
+      for(let i=0;i<4;i++){ ctx.fillStyle=[VIO,PSY][i%2];
+        ctx.fillRect(jx4+30-i*10-q4*20, jy4+100+i*8, 4,4); }
+      neon("MUTANT!",480,110,26,PSY);
+      if(q4>0.4) text("(he was right, by the way)",480,140,12,"#7e83a6");
+    }
+    motes(t);
+  }},
+
+/* 8 · GAME OVER? */
 { world:"WORLD 2", title:"Game Over?",
   caption:[
     ["q","“I stopped trying to pass for normal. I built an amplifier.”"]],
@@ -677,7 +917,7 @@ const SCENES = [
     }
   }},
 
-/* 6 · CHANGELOG v2.0 */
+/* 9 · CHANGELOG v2.0 */
 { world:"PATCH NOTES", title:"Changelog",
   caption:[["l","Every good system ships patch notes."]],
   render(t){
@@ -689,7 +929,25 @@ const SCENES = [
     motes(t);
   }},
 
-/* 7 · THE CHAMBER */
+/* 10 · WORLD 3 TITLE CARD */
+{ world:"", title:"",
+  caption:[],
+  render(t){
+    chamber(t);
+    text("WORLD 3",W/2,160,24,"#7e83a6");
+    neon("CEREBRO",W/2,230,58,GOLD);
+    text("(the second brain)",W/2,262,15,"#7e83a6");
+    const lp=Math.min(1,t/1600);
+    box(330,300,300,14,"#0b0724","#221046");
+    glow(GOLD,8); ctx.fillStyle=GOLD; ctx.fillRect(332,302,296*lp,10); noglow();
+    text(lp<1 ? "calibrating the amplifier..." : "v2.0 · amplified · ready.",W/2,342,12,lp<1?"#7e83a6":GREEN);
+    if(lp>=1){ const hy=380+8*Math.sin(t/500);
+      glow(CHROME,14); drawMap(SPRITES.helmet,W/2-35,hy,7); noglow();
+      psyRing(W/2,hy+16,t,VIO,3); }
+    motes(t);
+  }},
+
+/* 11 · THE CHAMBER */
 { world:"WORLD 3", title:"The Chamber",
   caption:[
     ["q","“It's embarrassingly simple. Flat folders. Markdown files. That's the whole machine.”"],
@@ -717,7 +975,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 8 · THE HELMET */
+/* 12 · THE HELMET */
 { world:"WORLD 3", title:"The Helmet",
   caption:[
     ["q","“One file changes everything. CLAUDE.md is the helmet. It programs how the machine reads my world.”"],
@@ -756,7 +1014,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 9 · THE PROTOCOLS */
+/* 13 · THE PROTOCOLS */
 { world:"WORLD 3", title:"The Protocols (Skills)",
   caption:[
     ["q","“Each protocol is just a markdown file. That's the part nobody believes.”"],
@@ -839,7 +1097,30 @@ const SCENES = [
     motes(t);
   }},
 
-/* 10 · THE NIGHT SWEEP */
+/* 14 · BOSS FIGHT · THE FIRST DEMO */
+{ world:"LIVE", title:"Boss Fight",
+  caption:[
+    ["q","“That was the cartoon. Here's the actual machine, running. Give me a real problem.”"]],
+  render(t){
+    chamber(t,W/2,200);
+    neon("▶ LIVE DEMO",W/2,80,34,GREEN);
+    drawMap(SPRITES.joseHelm,170,200,6);
+    psyRing(206,220,t,VIO,3);
+    glow(ICE,10); drawMap(SPRITES.orb,290,230+6*Math.sin(t/300),4); noglow();
+    if(Math.floor(t/550)%2===0) neon("VS",W/2,280,46,GOLD);
+    ctx.fillStyle="#0a0d20"; ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.fill();
+    glow(PSY,10); ctx.strokeStyle=PSY; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(720,270,80,0,7); ctx.stroke(); noglow();
+    text("?",720,288,48,"#7e83a6");
+    sign(110,410,200,34,"JOSE + CLAUDE",ICE,12,t);
+    sign(620,410,200,34,"YOUR PROBLEM",PSY,12,t);
+    meterBar(110,390,200,1,"");
+    meterBar(620,390,200,1,"");
+    if(Math.floor(t/650)%2===0) text("EXIT GAME → ENTER REAL WORLD",W/2,510,14,"#7e83a6");
+    motes(t);
+  }},
+
+/* 15 · THE NIGHT SWEEP */
 { world:"WORLD 4", title:"The Night Sweep",
   caption:[
     ["q","“Five telepaths sweep the world before I wake up.”"],
@@ -881,7 +1162,179 @@ const SCENES = [
     motes(t);
   }},
 
-/* 11 · DAWN */
+/* 16 · I ALREADY READ THE WORLD */
+{ world:"WORLD 4", title:"I Already Read the World",
+  caption:[
+    ["q","“So I can absorb it on the bike without getting hit by a car.”"],
+    ["l","By the time I walk into my first meeting, I've already read the world."],
+    ["l","And it cost me a commute."]],
+  render(t){
+    floorGrid(t,430);
+    const signs=[["SIGNALS",ICE],["NOODLES",PSY],["AI + HUMAN",GOLD],["SYNC",GREEN]];
+    signs.forEach((s2,i)=>{
+      const x=W-((t/4+i*260)%(W+300));
+      ctx.fillStyle="#171233"; ctx.fillRect(x+56,150,6,280);
+      sign(x,120,120,44,s2[0],s2[1],13,t+i*777);
+    });
+    const jx=W/2-40, jy=290, b2=3*Math.sin(t/150);
+    drawMap(SPRITES.joseHelm,jx,jy+b2,5);
+    psyRing(jx+30,jy+b2+10,t,VIO,2);
+    // the bike, faithfully preserved from the neo timeline
+    ctx.strokeStyle="#464e63"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(jx+16,420); ctx.lineTo(jx+40,386);
+    ctx.lineTo(jx+45,408); ctx.lineTo(jx+74,420); ctx.stroke();
+    const pa=t/120;
+    ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45+10*Math.cos(pa),408+10*Math.sin(pa)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(jx+45,408); ctx.lineTo(jx+45-10*Math.cos(pa),408-10*Math.sin(pa)); ctx.stroke();
+    ctx.strokeStyle="#7e83a6"; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.arc(jx+16,420,24,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(jx+74,420,24,0,7); ctx.stroke();
+    ctx.strokeStyle="rgba(126,131,166,0.5)"; ctx.lineWidth=2;
+    [[jx+16],[jx+74]].forEach(([cx])=>{
+      for(let k=0;k<3;k++){ const a=t/90+k*1.05;
+        ctx.beginPath(); ctx.moveTo(cx-22*Math.cos(a),420-22*Math.sin(a));
+        ctx.lineTo(cx+22*Math.cos(a),420+22*Math.sin(a)); ctx.stroke(); }
+    });
+    // podcast in the ears: floating notes trail behind
+    for(let i=0;i<3;i++){ const np=((t/900)+i*0.33)%1;
+      ctx.globalAlpha=1-np;
+      text("♪",jx-20-np*60,300-np*40+i*16,14,ICE);
+      ctx.globalAlpha=1; }
+    const words=["S&P","AI capex","loyalty","DSP bids","M&A","agents","FX","LTV"];
+    words.forEach((w2,i)=>{ const wx=W-((t/4+i*130)%(W+140));
+      text(w2,wx,80+(i%3)*30,14,"rgba(180,76,255,0.8)","left"); });
+    if(t>1800 && Math.floor(t/600)%2===0) neon("MOST INFORMED PERSON IN THE ROOM.",W/2,60,22,VIO);
+    motes(t);
+  }},
+
+/* 17 · THE QUIET ROOM */
+{ world:"WORLD 4", title:"The Quiet Room",
+  caption:[
+    ["q","“Boxing and bowling are the only places my brain goes quiet. I didn't know why until I wrote it down.”"],
+    ["l","The brain doesn't just store what I know. It stores what I've learned about how I work."],
+    ["l","That insight is a note: notes/flow-as-leverage.md. Now recovery is scheduled, like shipping."]],
+  render(t){
+    box(0,0,W,540,"#060412");
+    ctx.strokeStyle="#221046"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(0,440); ctx.lineTo(W,440); ctx.stroke();
+    neon("THE QUIET ROOM",W/2,64,22,GREEN);
+    text("(even telepaths need one)",W/2,90,12,"#7e83a6");
+    sign(60,110,140,44,"BOWL",PSY,18,t);
+    sign(760,110,140,44,"BOX",ICE,18,t);
+    /* LEFT · bowling */
+    ctx.fillStyle="#2a1c10";
+    ctx.beginPath(); ctx.moveTo(80,436); ctx.lineTo(320,436); ctx.lineTo(282,240); ctx.lineTo(150,240); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="#3d2a18"; ctx.lineWidth=1.5;
+    for(let i=1;i<5;i++){
+      ctx.beginPath(); ctx.moveTo(80+i*48,436); ctx.lineTo(150+i*26.4,240); ctx.stroke(); }
+    const TB=4200, pB=(t%TB)/TB;
+    const rolled = pB>0.55, fallQ = Math.min(1,Math.max(0,(pB-0.55)/0.14));
+    const pinsX=[192,212,232,252];
+    pinsX.forEach((px2,i)=>{
+      ctx.save();
+      const dir = i<2 ? -1 : 1;
+      ctx.translate(px2, 258);
+      if(rolled) ctx.rotate(dir * fallQ * 1.35);
+      ctx.fillStyle="#f4f2ec"; ctx.fillRect(-4,-22,8,22);
+      ctx.fillStyle=PSY; ctx.fillRect(-4,-15,8,4);
+      ctx.restore();
+    });
+    if(pB>0.08 && pB<0.58){
+      const q=(pB-0.08)/0.5;
+      const bx2=200+ q*22, by2=420 - q*160, br=13-6*q;
+      glow(ICE,8); ctx.fillStyle="#182848";
+      ctx.beginPath(); ctx.arc(bx2,by2,br,0,7); ctx.fill(); noglow();
+      ctx.fillStyle="#8ee3ff";
+      ctx.fillRect(bx2+(br-5)*Math.cos(t/80), by2+(br-5)*Math.sin(t/80), 2,2);
+    }
+    if(rolled && pB<0.92) neon("STRIKE!",222,205,18,GOLD);
+    drawMap(SPRITES.joseWalkA,120,336,4.4);
+    /* RIGHT · boxing */
+    const TP=1000, q2=(t%TP)/TP;
+    const punching = q2>0.18 && q2<0.40;
+    const hitKick = (q2>0.30 && q2<0.85) ? Math.sin((q2-0.30)*9)*(1-q2)*26 : 0;
+    ctx.strokeStyle="#221046"; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(648,150); ctx.lineTo(648+hitKick*0.5,270); ctx.stroke();
+    ctx.fillStyle="#a83a5e";
+    ctx.fillRect(620+hitKick,270,56,150);
+    ctx.fillStyle="#8f2e4e"; ctx.fillRect(620+hitKick,270,56,18);
+    // boxing jose: reuse idle with gloves painted on
+    drawMap(SPRITES.joseIdle,692,336,S);
+    if(punching){
+      const ext=(q2-0.18)/0.22;
+      glow(PSY,6); ctx.fillStyle="#ff4f6e";
+      ctx.fillRect(704-ext*52,382,52*ext+14,13); noglow();
+      if(q2>0.30) neon(Math.floor(t/2000)%2 ? "POW" : "THWACK",672,250,15,GOLD);
+    }
+    // the helmet rests at ringside. the amplifier can wait.
+    drawMap(SPRITES.helmet,850,412,3);
+    text("(off)",865,452,10,"#7e83a6");
+    meterBar(340,150,280,Math.min(1,(t/3500)),"PSYCHIC SHIELD · REFILLING");
+    glow(GREEN,10); box(300,478,360,40,"#0b0724",GREEN); noglow();
+    neon("notes/flow-as-leverage.md",W/2,503,13,GREEN);
+  }},
+
+/* 18 · EVERY BLIP CAUGHT */
+{ world:"WORLD 4", title:"Every Blip Caught",
+  caption:[
+    ["q","“Same brain. Same hundred signals. Nothing lost. Everything compounds.”"],
+    ["l","inbox/ catches it. notes/ keeps it. The links wire it into everything I already know."]],
+  render(t){
+    box(60,50,840,400,"#08061a","#221046");
+    neon("SIGNAL MAP · AMPLIFIED",W/2,86,15,GREEN);
+    globe(W/2,255,150,t,GREEN);
+    // jose at the console, helmet on, hands on the rails
+    drawMap(SPRITES.joseHelm,120,320,5);
+    psyRing(150,332,t,VIO,3);
+    text("(helmet on)",150,430,11,"#7e83a6");
+    // notes shelf on the right: the permanent collection
+    neon("notes/",790,130,13,GREEN);
+    const names=["team-os","flow","loops","5-dollar"];
+    names.forEach((n,i)=>{ const y=150+i*44;
+      box(740,y,120,32,"#0b0724","#2a4436"); text(n,800,y+20,10,"#5aa880"); });
+    /* the catch cycle: blip appears on the globe → tractor beam →
+       filed into inbox → linked into the graph */
+    const T=5200, p=(t%T)/T;
+    const bx0=W/2-60, by0=210;
+    if(p<0.30){
+      // blip surfaces
+      glow(GOLD,12); bubbleC(bx0,by0,11,GOLD,"!"); noglow();
+      ctx.strokeStyle=GOLD; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(bx0,by0,12+(p/0.3)*18,0,7); ctx.stroke();
+    } else if(p<0.55){
+      // tractor beam from jose's helmet
+      const q=(p-0.30)/0.25;
+      const bx=bx0+(700-bx0)*q, by=by0+(160-by0)*q;
+      ctx.setLineDash([5,5]); ctx.strokeStyle="rgba(180,76,255,0.6)"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(150,330); ctx.lineTo(bx,by); ctx.stroke(); ctx.setLineDash([]);
+      glow(GOLD,10); bubbleC(bx,by,11,GOLD,"!"); noglow();
+    } else if(p<0.68){
+      neon("caught",690,140,12,GOLD);
+      glow(GOLD,6); ctx.fillStyle="#f4f2ec"; ctx.fillRect(690,150,26,32); noglow();
+      ctx.fillStyle="#0b0724"; ctx.fillRect(694,156,18,2); ctx.fillRect(694,162,18,2);
+    } else {
+      const q=(p-0.68)/0.32;
+      glow(GOLD,10); box(740,326,120,32,"#241c08",GOLD); noglow();
+      text("new-idea",800,346,10,GOLD);
+      glow(GREEN,6); ctx.strokeStyle=GREEN; ctx.lineWidth=2;
+      if(q>0.2){ ctx.beginPath(); ctx.moveTo(740,342); ctx.lineTo(700,342);
+        ctx.lineTo(700,166); ctx.lineTo(740,166); ctx.stroke();
+        ctx.strokeRect(740,150,120,32); }
+      if(q>0.55){ ctx.beginPath(); ctx.moveTo(740,338); ctx.lineTo(688,338);
+        ctx.lineTo(688,210); ctx.lineTo(740,210); ctx.stroke();
+        ctx.strokeRect(740,194,120,32); }
+      noglow();
+      if(q>0.8) neon("linked ✓",690,300,12,GREEN);
+    }
+    // the receiver log, flipped from the first visit: nothing gets away
+    box(76,104,232,92,"#0a0722","#22305a");
+    text("RECEIVER LOG",192,126,10,"#7e83a6");
+    neon("detected: 143",192,156,15,ICE);
+    neon("kept: 143",192,184,17,GREEN);
+    motes(t);
+  }},
+
+/* 19 · DAWN */
 { world:"BRAIN v2.0", title:"Dawn",
   caption:[],
   render(t){
@@ -900,7 +1353,7 @@ const SCENES = [
     if(t>1400) neon("LEVERAGE, NOT A CRUTCH.",W/2,412,26,GREEN);
   }},
 
-/* 12 · THE CEILING */
+/* 20 · THE CEILING */
 { world:"BRAIN v2.0", title:"The Ceiling",
   caption:[
     ["q","“v2 was a memory prosthetic. Powerful. And patient.”"],
@@ -913,7 +1366,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 13 · CHANGELOG v3.0 */
+/* 21 · CHANGELOG v3.0 */
 { world:"PATCH NOTES", title:"Changelog",
   caption:[["l","The update that changed what the machine is."]],
   render(t){
@@ -925,7 +1378,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 14 · THE SYNAPSE */
+/* 22 · THE SYNAPSE */
 { world:"BRAIN v3.0", title:"The Synapse",
   caption:[
     ["q","“I kept adding. One day it started connecting. Lines I never drew.”"],
@@ -953,7 +1406,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 15 · THE TECH TREE */
+/* 23 · THE TECH TREE */
 { world:"BRAIN v3.0", title:"The Tech Tree",
   caption:[
     ["q","“Then the connections started building. Not helping me build. Building.”"],
@@ -991,7 +1444,7 @@ const SCENES = [
       text("I did not build these alone. The connections did.",W/2,124,13,"#e9ecf6"); }
   }},
 
-/* 16 · OVERWORLD */
+/* 24 · OVERWORLD */
 { world:"BRAIN v3.0", title:"Overworld",
   caption:[
     ["q","“The map after one year. Every region used to be fog.”"],
@@ -1021,7 +1474,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 17 · PARTY SELECT */
+/* 25 · PARTY SELECT */
 { world:"BRAIN v3.0", title:"Party Select",
   caption:[
     ["q","“v3 is when the brain stopped being a tool and became a party.”"],
@@ -1049,7 +1502,7 @@ const SCENES = [
     if(t>2600&&Math.floor(t/650)%2===0) text("ALL SIX AUTO-SELECTED. THEY DO NOT WAIT FOR PLAYER 1.",W/2,505,12,GREEN);
   }},
 
-/* 18 · QUEST LOG */
+/* 26 · QUEST LOG */
 { world:"BRAIN v3.0", title:"Quest Log",
   caption:[
     ["q","“One real morning, exactly as the log recorded it.”"],
@@ -1067,7 +1520,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 19 · IT PUBLISHES */
+/* 27 · IT PUBLISHES */
 { world:"BRAIN v3.0", title:"It Publishes",
   caption:[
     ["q","“My brain publishes a newspaper about the world every morning. While I sleep.”"],
@@ -1087,7 +1540,7 @@ const SCENES = [
     if(t>2600) text("every issue writes itself at dawn. the archive never misses.",640,462,11,"#7e83a6");
   }},
 
-/* 20 · BOSS FIGHT 1 · IT TEACHES */
+/* 28 · BOSS FIGHT 1 · IT TEACHES */
 { world:"BOSS FIGHT", title:"It Teaches",
   caption:[
     ["q","“My instructor judgment, running as a skill. My rubric, my voice, my standards.”"],
@@ -1123,7 +1576,7 @@ const SCENES = [
     if(hp<=0){ neon("AUDIT DELIVERED",W/2,285,16,GREEN); text("kind, but direct",W/2,305,11,"#7e83a6"); }
   }},
 
-/* 21 · BOSS FIGHT 2 · IT BUILDS */
+/* 29 · BOSS FIGHT 2 · IT BUILDS */
 { world:"BOSS FIGHT", title:"It Builds",
   caption:[
     ["q","“Final boss of every job search: the blank screen. Nobody starts from one anymore.”"],
@@ -1146,7 +1599,7 @@ const SCENES = [
       if(Math.floor(t/650)%2===0) text("cut to the real terminal",480,472,11,GOLD); }
   }},
 
-/* 22 · IT KNOWS ME */
+/* 30 · IT KNOWS ME */
 { world:"BRAIN v3.0", title:"It Knows Me",
   caption:[
     ["q","“It knows how I talk. And it knows how I am wrong.”"],
@@ -1172,7 +1625,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 23 · IT SURVIVES */
+/* 31 · IT SURVIVES */
 { world:"BRAIN v3.0", title:"It Survives",
   caption:[
     ["q","“Twice, the pipeline died in silence. No error. No briefs. Just quiet.”"],
@@ -1197,7 +1650,7 @@ const SCENES = [
     }
   }},
 
-/* 24 · THE COMPOUNDING */
+/* 32 · THE COMPOUNDING */
 { world:"BRAIN v3.0", title:"The Compounding",
   caption:[],
   render(t){
@@ -1209,7 +1662,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 25 · PLAYER 2 START */
+/* 33 · PLAYER 2 START */
 { world:"ENDING", title:"The School Is Open",
   caption:[
     ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
@@ -1229,7 +1682,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 26 · THE STRATEGY GUIDE */
+/* 34 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
@@ -1251,7 +1704,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 27 · CO-OP MODE */
+/* 35 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
@@ -1291,11 +1744,11 @@ function frame(now){
   ctx.fillStyle="#04030e"; ctx.fillRect(0,0,W,H);
   SCENES[idx].render(now-sceneStart);
   // persistent version badge: v1.0 for the origin, v2.0 from its changelog, v3.0 from its changelog
-  const ver = idx>=13 ? "v3.0" : idx>=6 ? "v2.0" : "v1.0";
-  text(ver, W-20, 28, 12, idx>=13 ? PSY : idx>=6 ? GREEN : "#ff4f6e", "right");
+  const ver = idx>=21 ? "v3.0" : idx>=9 ? "v2.0" : "v1.0";
+  text(ver, W-20, 28, 12, idx>=21 ? PSY : idx>=9 ? GREEN : "#ff4f6e", "right");
   // act III wears its RPG HUD: level = how deep into v3, xp = progress through the scene
-  if(idx>=13 && idx<=24){
-    const lv=idx-12, xp=Math.min(1,(now-sceneStart)/9000);
+  if(idx>=21 && idx<=32){
+    const lv=idx-20, xp=Math.min(1,(now-sceneStart)/9000);
     text("LV "+lv, 24, 28, 12, GREEN, "left");
     box(70,20,90,8,"#171233","#3a2a66"); box(70,20,90*xp,8,GREEN,GREEN);
   }
@@ -1307,7 +1760,7 @@ addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
   else if(/^[1-9]$/.test(e.key)){
-    const jumps={1:0,2:3,3:7,4:13,5:14,6:16,7:20,8:21,9:25}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+    const jumps={1:0,2:4,3:10,4:14,5:21,6:22,7:28,8:29,9:33}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
 setScene(0); requestAnimationFrame(frame);
