@@ -440,7 +440,6 @@ const SCENES = [
       "MarTech & AdTech · Air Canada",
       "Teaches AI & product at BrainStation",
       "Writes Loops & Letters",
-      "Publishes The Platero Brief, daily",
     ];
     bio.forEach((l,i)=>{ if(t>600+i*350) text(l,640,220+i*26,14,"#e9ecf6"); });
     // mutation profile: the man and the talk, summarized
@@ -468,7 +467,7 @@ const SCENES = [
   render(t){
     ctx.fillStyle="rgba(255,255,255,0.02)";
     for(let y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
-    text("JOSE-CEREBRO v3.0 · SUBJECT SCAN",W/2,60,14,"#7e83a6");
+    text("JOSE-CEREBRO v1.0 · SUBJECT SCAN",W/2,60,14,"#7e83a6");
     // the subject: a brain in a scan reticle
     box(120,140,220,220,"#070a1e","#22305a");
     ctx.strokeStyle=ICE; ctx.lineWidth=1.5;
@@ -544,7 +543,7 @@ const SCENES = [
     ctx.globalAlpha = 0.8+0.2*Math.sin(t/420);
     neon("JOSE-CEREBRO", W/2, 170, 56, VIO);
     ctx.globalAlpha = 1;
-    neon("SECOND BRAIN · THE OPERATING SYSTEM", W/2, 214, 18, ICE);
+    neon("SECOND BRAIN · AMPLIFIED", W/2, 214, 18, ICE);
     text("now running: v1.0 · unamplified", W/2, 242, 13, "#ff4f6e");
     drawMap(SPRITES.joseIdle, W/2-36, 388, 5);
     blink(W/2-36, 388, 5, t);
@@ -553,32 +552,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 3 · THE COPING GRAVEYARD */
-{ world:"BRAIN v1.0", title:"The Coping Graveyard",
-  caption:[
-    ["q","“Every system lasted two weeks. Then my brain found the exit.”"],
-    ["l","Tools were never the problem."]],
-  render(t){
-    floorGrid(t,470);
-    neon("THE COPING GRAVEYARD",W/2,80,22,"#ff4f6e");
-    const graves=[["NOTION","2019"],["BULLET JRNL","6 WEEKS"],["TODOIST","2020"],["PAPER GTD","2 WEEKS"],["EVERNOTE","2016-17"],["REMINDERS","YEARLY"]];
-    graves.forEach(([name,dates],i)=>{
-      if(t>300+i*420){
-        const gx=110+i*128, gy=330;
-        box(gx,gy,104,120,"#0b0724","#3a2a66");
-        box(gx+12,gy-24,80,24,"#0b0724","#3a2a66");
-        text("R.I.P.",gx+52,gy-7,10,"#7e83a6");
-        text(name,gx+52,gy+38,11,"#e9ecf6");
-        text(dates,gx+52,gy+66,10,"#7e83a6");
-      }
-    });
-    walker(24,398,5,t);
-    if(t>3200){ neon("leverage, not cope.",W/2,170,26,GOLD);
-      text("the brain was never broken. it was unamplified.",W/2,208,14,"#e9ecf6"); }
-    motes(t);
-  }},
-
-/* 4 · THE SIGNALS */
+/* 3 · THE SIGNALS */
 { world:"WORLD 1", title:"The Signals",
   caption:[
     ["q","“How many of you have had a great idea in the shower and lost it by noon?”"],
@@ -617,7 +591,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 5 · THE PARADOX */
+/* 4 · THE PARADOX */
 { world:"WORLD 1", title:"The Paradox",
   caption:[
     ["q","“I think in decades. Then I think: what's the quickest thing I can do today?”"],
@@ -697,7 +671,7 @@ const SCENES = [
     text("*door pop*",750,468,11,"#7e83a6");
   }},
 
-/* 6 · THE DANGER ROOM */
+/* 5 · THE DANGER ROOM */
 { world:"WORLD 2", title:"The Danger Room",
   caption:[
     ["q","“Every meeting is a training simulation. The setting changes. The drill doesn't.”"],
@@ -828,7 +802,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 7 · FEARED AND MISUNDERSTOOD */
+/* 6 · FEARED AND MISUNDERSTOOD */
 { world:"WORLD 2", title:"Feared and Misunderstood",
   caption:[
     ["q","“You clearly see the opportunity. Say it out loud, and people back away slowly.”"],
@@ -898,7 +872,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 8 · GAME OVER? */
+/* 7 · GAME OVER? */
 { world:"WORLD 2", title:"Game Over?",
   caption:[
     ["q","“I stopped trying to pass for normal. I built an amplifier.”"]],
@@ -917,19 +891,7 @@ const SCENES = [
     }
   }},
 
-/* 9 · CHANGELOG v2.0 */
-{ world:"PATCH NOTES", title:"Changelog",
-  caption:[["l","Every good system ships patch notes."]],
-  render(t){
-    box(180,130,600,270,"#0b0724","#3a2a66");
-    neon("CHANGELOG v2.0",W/2,182,24,GREEN);
-    const lines=[["+ added: memory",GREEN],["+ added: capture",GREEN],["+ added: retrieval",GREEN],["- removed: panic","#ff4f6e"]];
-    lines.forEach(([l,c],i)=>{ if(t>500+i*550) text(l,W/2,240+i*34,16,c); });
-    if(t>3000&&Math.floor(t/650)%2===0) text("installing v2.0 ...",W/2,440,12,"#7e83a6");
-    motes(t);
-  }},
-
-/* 10 · WORLD 3 TITLE CARD */
+/* 8 · WORLD 3 TITLE CARD */
 { world:"", title:"",
   caption:[],
   render(t){
@@ -947,7 +909,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 11 · THE CHAMBER */
+/* 9 · THE CHAMBER */
 { world:"WORLD 3", title:"The Chamber",
   caption:[
     ["q","“It's embarrassingly simple. Flat folders. Markdown files. That's the whole machine.”"],
@@ -975,7 +937,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 12 · THE HELMET */
+/* 10 · THE HELMET */
 { world:"WORLD 3", title:"The Helmet",
   caption:[
     ["q","“One file changes everything. CLAUDE.md is the helmet. It programs how the machine reads my world.”"],
@@ -1014,7 +976,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 13 · THE PROTOCOLS */
+/* 11 · THE PROTOCOLS */
 { world:"WORLD 3", title:"The Protocols (Skills)",
   caption:[
     ["q","“Each protocol is just a markdown file. That's the part nobody believes.”"],
@@ -1097,7 +1059,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 14 · BOSS FIGHT · THE FIRST DEMO */
+/* 12 · BOSS FIGHT (LIVE DEMO) */
 { world:"LIVE", title:"Boss Fight",
   caption:[
     ["q","“That was the cartoon. Here's the actual machine, running. Give me a real problem.”"]],
@@ -1120,7 +1082,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 15 · THE NIGHT SWEEP */
+/* 13 · THE NIGHT SWEEP */
 { world:"WORLD 4", title:"The Night Sweep",
   caption:[
     ["q","“Five telepaths sweep the world before I wake up.”"],
@@ -1162,7 +1124,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 16 · I ALREADY READ THE WORLD */
+/* 14 · I ALREADY READ THE WORLD */
 { world:"WORLD 4", title:"I Already Read the World",
   caption:[
     ["q","“So I can absorb it on the bike without getting hit by a car.”"],
@@ -1207,7 +1169,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 17 · THE QUIET ROOM */
+/* 15 · THE QUIET ROOM */
 { world:"WORLD 4", title:"The Quiet Room",
   caption:[
     ["q","“Boxing and bowling are the only places my brain goes quiet. I didn't know why until I wrote it down.”"],
@@ -1274,7 +1236,7 @@ const SCENES = [
     neon("notes/flow-as-leverage.md",W/2,503,13,GREEN);
   }},
 
-/* 18 · EVERY BLIP CAUGHT */
+/* 16 · EVERY BLIP CAUGHT */
 { world:"WORLD 4", title:"Every Blip Caught",
   caption:[
     ["q","“Same brain. Same hundred signals. Nothing lost. Everything compounds.”"],
@@ -1334,8 +1296,8 @@ const SCENES = [
     motes(t);
   }},
 
-/* 19 · DAWN */
-{ world:"BRAIN v2.0", title:"Dawn",
+/* 17 · FINAL SCREEN · DAWN */
+{ world:"WORLD 4", title:"Final Screen",
   caption:[],
   render(t){
     // dawn light bleeding into the chamber
@@ -1353,7 +1315,7 @@ const SCENES = [
     if(t>1400) neon("LEVERAGE, NOT A CRUTCH.",W/2,412,26,GREEN);
   }},
 
-/* 20 · THE CEILING */
+/* 18 · THE CEILING */
 { world:"BRAIN v2.0", title:"The Ceiling",
   caption:[
     ["q","“v2 was a memory prosthetic. Powerful. And patient.”"],
@@ -1366,7 +1328,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 21 · CHANGELOG v3.0 */
+/* 19 · CHANGELOG v3.0 */
 { world:"PATCH NOTES", title:"Changelog",
   caption:[["l","The update that changed what the machine is."]],
   render(t){
@@ -1378,7 +1340,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 22 · THE SYNAPSE */
+/* 20 · THE SYNAPSE */
 { world:"BRAIN v3.0", title:"The Synapse",
   caption:[
     ["q","“I kept adding. One day it started connecting. Lines I never drew.”"],
@@ -1406,7 +1368,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 23 · THE TECH TREE */
+/* 21 · THE TECH TREE */
 { world:"BRAIN v3.0", title:"The Tech Tree",
   caption:[
     ["q","“Then the connections started building. Not helping me build. Building.”"],
@@ -1444,7 +1406,7 @@ const SCENES = [
       text("I did not build these alone. The connections did.",W/2,124,13,"#e9ecf6"); }
   }},
 
-/* 24 · OVERWORLD */
+/* 22 · OVERWORLD */
 { world:"BRAIN v3.0", title:"Overworld",
   caption:[
     ["q","“The map after one year. Every region used to be fog.”"],
@@ -1474,7 +1436,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 25 · PARTY SELECT */
+/* 23 · PARTY SELECT */
 { world:"BRAIN v3.0", title:"Party Select",
   caption:[
     ["q","“v3 is when the brain stopped being a tool and became a party.”"],
@@ -1502,7 +1464,7 @@ const SCENES = [
     if(t>2600&&Math.floor(t/650)%2===0) text("ALL SIX AUTO-SELECTED. THEY DO NOT WAIT FOR PLAYER 1.",W/2,505,12,GREEN);
   }},
 
-/* 26 · QUEST LOG */
+/* 24 · QUEST LOG */
 { world:"BRAIN v3.0", title:"Quest Log",
   caption:[
     ["q","“One real morning, exactly as the log recorded it.”"],
@@ -1520,7 +1482,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 27 · IT PUBLISHES */
+/* 25 · IT PUBLISHES */
 { world:"BRAIN v3.0", title:"It Publishes",
   caption:[
     ["q","“My brain publishes a newspaper about the world every morning. While I sleep.”"],
@@ -1540,7 +1502,7 @@ const SCENES = [
     if(t>2600) text("every issue writes itself at dawn. the archive never misses.",640,462,11,"#7e83a6");
   }},
 
-/* 28 · BOSS FIGHT 1 · PRODUCT OS */
+/* 26 · BOSS FIGHT 1 · PRODUCT OS */
 { world:"BOSS FIGHT", title:"Product OS",
   caption:[
     ["q","“The enemy in every product org is the seam: PM to design to eng, where handoffs fall and die.”"],
@@ -1570,7 +1532,7 @@ const SCENES = [
       text("two apps shipped by the pipeline itself",W/2,292,10,"#7e83a6"); }
   }},
 
-/* 29 · BOSS FIGHT 2 · THE CONTENT PIPELINE */
+/* 27 · BOSS FIGHT 2 · THE CONTENT PIPELINE */
 { world:"BOSS FIGHT", title:"The Content Pipeline",
   caption:[
     ["q","“One vault in. Carousels, videos, reels out. In my voice, not the machine's.”"],
@@ -1600,7 +1562,7 @@ const SCENES = [
     if(hp<=0) neon("FEED DEFEATED · IN MY VOICE",W/2,108,14,GREEN);
   }},
 
-/* 30 · BOSS FIGHT 3 · JOB OS */
+/* 28 · BOSS FIGHT 3 · JOB OS */
 { world:"BOSS FIGHT", title:"Job OS",
   caption:[
     ["q","“Final boss of every job search: the blank screen. Nobody starts from one anymore.”"],
@@ -1623,7 +1585,7 @@ const SCENES = [
       if(Math.floor(t/650)%2===0) text("cut to the real terminal",480,472,11,GOLD); }
   }},
 
-/* 31 · IT KNOWS ME */
+/* 29 · IT KNOWS ME */
 { world:"BRAIN v3.0", title:"It Knows Me",
   caption:[
     ["q","“It knows how I talk. And it knows how I am wrong.”"],
@@ -1649,7 +1611,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 32 · IT SURVIVES */
+/* 30 · IT SURVIVES */
 { world:"BRAIN v3.0", title:"It Survives",
   caption:[
     ["q","“Twice, the pipeline died in silence. No error. No briefs. Just quiet.”"],
@@ -1674,7 +1636,7 @@ const SCENES = [
     }
   }},
 
-/* 33 · THE COMPOUNDING */
+/* 31 · THE COMPOUNDING */
 { world:"BRAIN v3.0", title:"The Compounding",
   caption:[],
   render(t){
@@ -1686,7 +1648,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 34 · PLAYER 2 START */
+/* 32 · PLAYER 2 START */
 { world:"ENDING", title:"The School Is Open",
   caption:[
     ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
@@ -1706,7 +1668,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 35 · THE STRATEGY GUIDE */
+/* 33 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
@@ -1728,7 +1690,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 36 · CO-OP MODE */
+/* 34 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
@@ -1768,11 +1730,11 @@ function frame(now){
   ctx.fillStyle="#04030e"; ctx.fillRect(0,0,W,H);
   SCENES[idx].render(now-sceneStart);
   // persistent version badge: v1.0 for the origin, v2.0 from its changelog, v3.0 from its changelog
-  const ver = idx>=21 ? "v3.0" : idx>=9 ? "v2.0" : "v1.0";
-  text(ver, W-20, 28, 12, idx>=21 ? PSY : idx>=9 ? GREEN : "#ff4f6e", "right");
+  const ver = idx>=18 ? "v3.0" : idx>=8 ? "v2.0" : "v1.0";
+  text(ver, W-20, 28, 12, idx>=18 ? PSY : idx>=8 ? GREEN : "#ff4f6e", "right");
   // act III wears its RPG HUD: level = how deep into v3, xp = progress through the scene
-  if(idx>=21 && idx<=34){
-    const lv=idx-20, xp=Math.min(1,(now-sceneStart)/9000);
+  if(idx>=18 && idx<=31){
+    const lv=idx-17, xp=Math.min(1,(now-sceneStart)/9000);
     text("LV "+lv, 24, 28, 12, GREEN, "left");
     box(70,20,90,8,"#171233","#3a2a66"); box(70,20,90*xp,8,GREEN,GREEN);
   }
@@ -1784,7 +1746,7 @@ addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
   else if(/^[1-9]$/.test(e.key)){
-    const jumps={1:0,2:4,3:10,4:14,5:21,6:22,7:28,8:30,9:35}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+    const jumps={1:0,2:8,3:12,4:17,5:20,6:22,7:26,8:28,9:32}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
 setScene(0); requestAnimationFrame(frame);
