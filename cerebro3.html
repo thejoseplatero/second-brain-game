@@ -1485,7 +1485,7 @@ const SCENES = [
     ctx.strokeStyle="#3a2a66"; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(90,beltY+52); ctx.lineTo(870,beltY+52); ctx.stroke();
     for(let x=((t/16)%40);x<780;x+=40){ box(90+x,beltY+52,20,4,"#171233","#171233"); }
-    const st=[["VAULT",160,VIO,"ideas"],["VOICE",320,ICE,"sounds like me"],["CAROUSEL",480,GOLD,"6 slides"],["VIDEO",640,GREEN,"safe zones"],["REEL",800,PSY,"9:16 native"]];
+    const st=[["VAULT",160,VIO,"ideas"],["VOICE",320,ICE,"sounds like me"],["CAROUSEL",480,GOLD,"6 slides"],["VIDEO",640,GREEN,"safe zones"],["ARTICLES",800,PSY,"long form, my voice"]];
     st.forEach(([s,x,c,sub],i)=>{ if(t>300+i*550){
       box(x-62,beltY-62,124,102,"#0b0724",c);
       neon(s,x,beltY-32,12,c);
@@ -1493,7 +1493,8 @@ const SCENES = [
       if(t>650+i*550){
         if(i===2){ [0,1,2].forEach(k=>box(x-32+k*23,beltY+12,19,26,"#e9ecf6","#171233")); }
         else if(i===3){ box(x-27,beltY+10,54,30,"#e9ecf6","#171233"); box(x-19,beltY+16,38,18,"#171233","#171233"); }
-        else if(i===4){ box(x-13,beltY+4,26,40,"#e9ecf6","#171233"); }
+        else if(i===4){ box(x-16,beltY+6,32,38,"#e9ecf6","#171233");
+          [0,1,2,3].forEach(k=>box(x-11,beltY+13+k*7,22-(k===3?8:0),2,"#171233","#171233")); }
         else box(x-15,beltY+14,30,22,"#e9ecf6","#171233");
       }
     }});
