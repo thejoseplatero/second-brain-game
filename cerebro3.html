@@ -1062,7 +1062,8 @@ const SCENES = [
 /* 12 · BOSS FIGHT (LIVE DEMO) */
 { world:"LIVE", title:"Boss Fight",
   caption:[
-    ["q","“That was the cartoon. Here's the actual machine, running. Give me a real problem.”"]],
+    ["q","“That was the cartoon. Here's the actual machine, running. Give me a real problem.”"],
+    ["l","LIVE DEMO: the Coaches Council and the Six Thinking Hats, on your problem."]],
   render(t){
     chamber(t,W/2,200);
     neon("▶ LIVE DEMO",W/2,80,34,GREEN);
@@ -1076,6 +1077,7 @@ const SCENES = [
     text("?",720,288,48,"#7e83a6");
     sign(110,410,200,34,"JOSE + CLAUDE",ICE,12,t);
     sign(620,410,200,34,"YOUR PROBLEM",PSY,12,t);
+    if(t>800) text("council convenes · hats go on",W/2,455,12,GOLD);
     meterBar(110,390,200,1,"");
     meterBar(620,390,200,1,"");
     if(Math.floor(t/650)%2===0) text("EXIT GAME → ENTER REAL WORLD",W/2,510,14,"#7e83a6");
