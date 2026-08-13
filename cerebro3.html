@@ -1357,25 +1357,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 19 · NEW FEATURES */
-{ world:"BRAIN v3.0", title:"New Features",
-  caption:[["l","What the upgrade actually adds."]],
-  render(t){
-    box(150,104,660,330,"#0b0724","#3a2a66");
-    neon("NEW IN v3.0",W/2,152,24,PSY);
-    const feats=[
-      ["research agents run every morning, unprompted",GREEN],
-      ["a public daily brief that publishes itself",ICE],
-      ["connections drawn across everything I add",GOLD],
-      ["and it builds: whole systems ship from those connections",PSY]];
-    feats.forEach(([f,c],i)=>{ if(t>500+i*600){
-      box(192,186+i*54,10,10,c,c);
-      text(f,218,196+i*54,14,"#e9ecf6","left"); }});
-    if(t>3200&&Math.floor(t/650)%2===0) text("free upgrade. mandatory install.",W/2,468,12,"#7e83a6");
-    motes(t);
-  }},
-
-/* 20 · THE SYNAPSE */
+/* 19 · THE SYNAPSE */
 { world:"BRAIN v3.0", title:"The Synapse",
   caption:[
     ["q","“I kept adding. One day it started connecting. Lines I never drew.”"],
@@ -1403,7 +1385,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 21 · THE TECH TREE */
+/* 20 · THE TECH TREE */
 { world:"BRAIN v3.0", title:"The Tech Tree",
   caption:[
     ["q","“Then the connections started building. Not helping me build. Building.”"],
@@ -1441,7 +1423,7 @@ const SCENES = [
       text("I did not build these alone. The connections did.",W/2,124,13,"#e9ecf6"); }
   }},
 
-/* 22 · OVERWORLD · THE AGENDA */
+/* 21 · OVERWORLD · THE AGENDA */
 { world:"BRAIN v3.0", title:"Overworld",
   caption:[
     ["q","“The map after one year. Every region used to be fog.”"],
@@ -1471,7 +1453,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 23 · STOP 1 · CONTENT PIPELINE */
+/* 22 · STOP 1 · CONTENT PIPELINE */
 { world:"STOP 1", title:"The Content Pipeline",
   caption:[
     ["q","“One vault in. Carousels, videos, reels out. In my voice, not the machine's.”"],
@@ -1503,7 +1485,7 @@ const SCENES = [
     if(hp<=0) neon("FEED DEFEATED · IN MY VOICE",W/2,108,14,GREEN);
   }},
 
-/* 24 · STOP 2 · THE PLATERO BRIEF */
+/* 23 · STOP 2 · THE PLATERO BRIEF */
 { world:"STOP 2", title:"The Platero Brief",
   caption:[
     ["q","“My brain publishes a newspaper about the world every morning. While I sleep.”"],
@@ -1523,7 +1505,7 @@ const SCENES = [
     if(t>2600) text("every issue writes itself at dawn. the archive never misses.",640,462,11,"#7e83a6");
   }},
 
-/* 25 · STOP 3 · PRODUCT OS */
+/* 24 · STOP 3 · PRODUCT OS */
 { world:"STOP 3", title:"Product OS",
   caption:[
     ["q","“The enemy in every product org is the seam: PM to design to eng, where handoffs fall and die.”"],
@@ -1553,7 +1535,7 @@ const SCENES = [
       text("two apps shipped by the pipeline itself",W/2,292,10,"#7e83a6"); }
   }},
 
-/* 26 · STOP 4 · JOB OS */
+/* 25 · STOP 4 · JOB OS */
 { world:"STOP 4", title:"Job OS",
   caption:[
     ["q","“A job search that runs as a system. It remembers you, watches your targets, and always knows the next move.”"],
@@ -1586,7 +1568,7 @@ const SCENES = [
     if(t>8300&&Math.floor(t/650)%2===0) text("/setup interviews you once. you never answer the same question twice.",W/2,505,11,"#7e83a6");
   }},
 
-/* 27 · THE COMPOUNDING */
+/* 26 · THE COMPOUNDING */
 { world:"BRAIN v3.0", title:"The Compounding",
   caption:[],
   render(t){
@@ -1598,7 +1580,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 28 · PLAYER 2 START */
+/* 27 · PLAYER 2 START */
 { world:"ENDING", title:"The School Is Open",
   caption:[
     ["q","“Everything I just showed you is one git clone away. The school takes anyone.”"],
@@ -1618,7 +1600,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 29 · THE STRATEGY GUIDE */
+/* 28 · THE STRATEGY GUIDE */
 { world:"ENDING", title:"The Strategy Guide",
   caption:[
     ["q","“Every game you loved had a strategy guide. This one's is my newsletter.”"],
@@ -1640,7 +1622,7 @@ const SCENES = [
     motes(t);
   }},
 
-/* 30 · CO-OP MODE */
+/* 29 · CO-OP MODE */
 { world:"ENDING", title:"Co-op Mode",
   caption:[
     ["q","“The people who get the most out of AI aren't the ones with the best prompts."],
@@ -1671,7 +1653,7 @@ const SCENES = [
 /* ═══════════ ACT III ENGINE UPGRADE ═══════════ */
 /* v1 and v2 render on the original engine. From The Ceiling on, the game
    itself levels up: depth, juice, and consequence. That is the story. */
-const A3_FIRST = 18, A3_LAST = 27;
+const A3_FIRST = 18, A3_LAST = 26;
 const A3_STARS = Array.from({length:90},(_,i)=>({x:(i*211)%960, y:(i*137)%440+20, z:1+(i%3)}));
 function act3bg(t){
   const g=ctx.createLinearGradient(0,0,0,H);
@@ -1692,14 +1674,14 @@ function vignette(){
 function enterFade(t){
   if(t<320){ ctx.fillStyle="rgba(4,3,14,"+(1-t/320).toFixed(3)+")"; ctx.fillRect(0,0,W,H); }
 }
-const A3_HITS={23:[1900,2900,4000,5100], 25:[900,2000,3100,4200,5300], 26:[2600,5600]};
+const A3_HITS={22:[1900,2900,4000,5100], 24:[900,2000,3100,4200,5300], 25:[2600,5600]};
 function sceneShake(i,t){
   const hits=A3_HITS[i]; if(!hits) return [0,0];
   for(const t0 of hits){ const d=t-t0;
     if(d>0&&d<240){ const a=(1-d/240)*7; return [Math.sin(d/9)*a, Math.cos(d/13)*a]; } }
   return [0,0];
 }
-const A3_BURSTS={21:[[170,240,2400],[400,180,3900],[620,230,5400],[810,170,6900]]};
+const A3_BURSTS={20:[[170,240,2400],[400,180,3900],[620,230,5400],[810,170,6900]]};
 function burst(x,y,age){
   const f=age/700; if(f>=1) return;
   for(let k=0;k<12;k++){ const a=k/12*6.283, r=8+f*46;
@@ -1754,7 +1736,7 @@ addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft") setScene(idx-1);
   else if(e.key.toLowerCase()==="f") document.documentElement.requestFullscreen?.();
   else if(/^[1-9]$/.test(e.key)){
-    const jumps={1:0,2:8,3:12,4:17,5:20,6:22,7:23,8:26,9:28}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
+    const jumps={1:0,2:8,3:12,4:17,5:19,6:21,7:22,8:25,9:27}; if(jumps[e.key]!==undefined) setScene(jumps[e.key]);
   }
 });
 setScene(0); requestAnimationFrame(frame);
